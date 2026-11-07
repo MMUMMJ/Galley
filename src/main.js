@@ -3,6 +3,7 @@ import { load, createStory, createAsset, newId } from './model.js';
 import './adapters/save-indexeddb.js';
 import './adapters/export-zip.js';
 import './adapters/export-html.js';
+import './adapters/save-folder.js';
 import { availableSavers } from './adapters/registry.js';
 import { createStore, STORY_DETAILS } from './store.js';
 import { loadAssets, putAsset, assetUrl, getBlob, pruneAssets } from './assets.js';
@@ -16,6 +17,7 @@ import { startAutosave } from './editor/autosave.js';
 import { loadPack, setPack, applyPack, startStory } from './packs.js';
 import { mountFileMenu } from './editor/file-menu.js';
 import { mountChecks } from './editor/checks-panel.js';
+import { mountFolder } from './editor/folder-ui.js';
 
 export const EDITOR_VERSION = '0.3.0';
 
@@ -111,6 +113,10 @@ async function boot() {
     setStatus: (text) => { statusLine.textContent = text; },
   });
 
+  mountFolder(store, {
+    wrap: $('folder-wrap'), button: $('folder'), menu: $('folder-menu'), dialog: $('choice-dialog'),
+    folderLine: $('folder-status'), exportLine: $('export-status'), exportButton: $('export'), announce, toast,
+  });
   const autosave = startAutosave(store, savers, {
     getBlob,
     onStatus: (state, detail) => {

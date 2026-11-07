@@ -14,6 +14,7 @@ The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
 - Phase 6 (effects): fade, rise, slide or zoom per block, run once by the runtime as the reader scrolls. Nothing is hidden without JavaScript, in print, or with reduced motion. Choosing an effect offers a note: "What does this movement do for the reader?"
 - Phase 7 (pedagogy + packs): craft prompts on every block, maker's notes, reflection questions, an optional maker's notes appendix in the export, and prompt packs.
 - Phase 8 (checks): a Checks panel of editor's questions (never marks), one module per check in `src/checks/`. Run <http://localhost:8000/test/checks.html> to confirm every check fires on `test/fixtures/flawed.json` and stays silent on `clean.json`.
+- Phase 9 (folder saver): in Chrome and Edge, **Save to folder…** keeps an unzipped copy (`index.html`, `story.json`, `assets/`) in a folder the student chooses, ideally inside their synced OneDrive folder. Choosing a folder that already has a story offers to open it. Other browsers show: "To save straight to your OneDrive folder, use Chrome or Edge. Until then, Export is your save." The header shows when the story was last saved to the folder and last exported, and nudges after 3 days without an export.
 
 ## Prompt packs
 

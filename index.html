@@ -25,8 +25,16 @@
         <ul class="menu" id="export-menu" hidden></ul>
       </div>
       <button type="button" class="btn" id="checks" aria-expanded="false" aria-controls="checks-panel">Checks <span class="count"></span></button>
+      <div class="menu-wrap" id="folder-wrap" hidden>
+        <button type="button" class="btn" id="folder" aria-controls="folder-menu">Save to folder…</button>
+        <ul class="menu" id="folder-menu" hidden></ul>
+      </div>
     </div>
-    <p class="app-status" id="app-status">Loading editor…</p>
+    <div class="status-lines">
+      <p class="app-status" id="app-status">Loading editor…</p>
+      <p class="app-status" id="folder-status"></p>
+      <p class="app-status" id="export-status"></p>
+    </div>
   </header>
 
   <noscript>
@@ -52,5 +60,6 @@
 
   <div id="announcer" class="sr-only" aria-live="polite"></div>
   <div id="toasts" class="toast-region" aria-live="polite"></div>
+  <dialog id="choice-dialog" class="choice-dialog"></dialog>
 </body>
 </html>

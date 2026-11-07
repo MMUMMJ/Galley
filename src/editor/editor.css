@@ -92,7 +92,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .app-title { margin: 0 8px 0 0; font-size: 1.25rem; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
-.app-status { margin: 0 0 0 auto; color: var(--muted); font-size: 0.875rem; }
+.status-lines { margin-left: auto; text-align: right; }
+.app-status { margin: 0; color: var(--muted); font-size: 0.875rem; }
+.app-status:empty { display: none; }
+.app-status.is-note { max-width: 32rem; }
+.app-status.is-problem, .app-status.is-nudge { color: var(--warn-text); }
+.app-status.is-nudge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--warn-bg); }
+.link-button { padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; min-height: 24px; }
+.btn-warn { background: var(--warn-bg); color: var(--warn-text); border-color: currentColor; }
+.choice-dialog { max-width: min(30rem, calc(100vw - 32px)); padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); }
+.choice-dialog::backdrop { background: rgb(0 0 0 / 0.4); }
+.choice-dialog p { margin: 0 0 12px; }
+@media (max-width: 760px) { .status-lines { margin-left: 0; text-align: left; width: 100%; } }
 .noscript { margin: var(--gap); }
 
 /* ---------- layout: blocks | inspector | preview, in reading and Tab order */
