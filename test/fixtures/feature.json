@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "runtimeVersion": "1.0.0",
+  "meta": {
+    "title": "Who keeps the canal alive?",
+    "standfirst": "On a stretch of the Rochdale Canal, a dozen volunteers spend their Saturdays pulling trolleys, traffic cones and shopping bags out of the water. *Why do they keep coming back?*",
+    "byline": "By Sam Example · Sample fixture",
+    "seoTitle": "Who keeps the canal alive? Volunteers on the Rochdale Canal",
+    "seoDescription": "Every Saturday, volunteers clear rubbish from a stretch of the Rochdale Canal. A sample feature for testing the Illuminate runtime.",
+    "shareImage": "a_hero",
+    "shareText": "Meet the volunteers who clear the canal every week.",
+    "pack": null,
+    "created": "2026-11-07T10:00:00.000Z",
+    "modified": "2026-11-07T10:00:00.000Z"
+  },
+  "blocks": [
+    { "id": "b_header", "type": "header", "effect": "none", "note": "", "data": {
+      "variant": "full", "kicker": "Manchester · Feature", "title": "", "standfirst": "", "byline": "", "media": "a_hero" } },
+    { "id": "b_intro", "type": "text", "effect": "none", "note": "", "data": { "body":
+      "It is 9am on a wet Saturday, and Rita Okafor is already up to her elbows in the Rochdale Canal.\n\"You'd be amazed what people throw in,\" she says, hauling a **bicycle wheel** onto the towpath. \"Last month we found a safe. Empty, before you ask.\"\nThe group meets every week near Ancoats. Most members found it by accident: a poster in a café, a friend of a friend, a walk that ended with someone handing them a litter-picker.\nThis is a sample story for testing. People, places and sources are invented." } },
+    { "id": "b_towpath", "type": "media", "effect": "none", "note": "", "data": { "kind": "image", "asset": "a_towpath", "width": "wide" } },
+    { "id": "b_why", "type": "text", "effect": "none", "note": "", "data": { "body":
+      "## A slow, muddy kind of care\nVolunteering on waterways has grown since the pandemic, according to a regional survey (Hughes 2021). Members describe three reasons for joining:\n- the *visible* result at the end of a session;\n- the company;\n- a sense that the canal belongs to them.\nFor background on the canal's history, see [the Rochdale Canal entry on Wikipedia](https://en.wikipedia.org/wiki/Rochdale_Canal).\n### What they find\n1. Shopping trolleys, usually two or three a month.\n2. Traffic cones.\n3. Plastic bottles, by the hundred." } },
+    { "id": "b_quote", "type": "quote", "effect": "none", "note": "", "data": {
+      "text": "Nobody asked us to do this. That's sort of the point.", "cite": "Rita Okafor", "role": "volunteer since 2019" } },
+    { "id": "b_lock", "type": "media", "effect": "none", "note": "", "data": { "kind": "image", "asset": "a_lock", "width": "full" } },
+    { "id": "b_gallery", "type": "gallery", "effect": "none", "note": "", "data": {
+      "items": ["a_g1", "a_g2", "a_g3", "a_g4"], "caption": "A morning on the towpath, from first light to the last trolley.", "width": "wide" } },
+    { "id": "b_divider", "type": "divider", "effect": "none", "note": "", "data": { "text": "" } },
+    { "id": "b_video", "type": "media", "effect": "none", "note": "", "data": { "kind": "video", "asset": "a_video", "width": "column" } },
+    { "id": "b_audio", "type": "media", "effect": "none", "note": "", "data": { "kind": "audio", "asset": "a_audio", "width": "column" } },
+    { "id": "b_embed", "type": "embed", "effect": "none", "note": "", "data": {
+      "url": "https://www.youtube.com/watch?v=aqz-KE-bpKQ", "title": "Big Buck Bunny (Blender Foundation)",
+      "description": "A sample YouTube video, used here to test the embed card and player.", "screenshot": "a_shot", "width": "column" } },
+    { "id": "b_embed2", "type": "embed", "effect": "none", "note": "", "data": {
+      "url": "https://www.bbc.co.uk/news", "title": "BBC News", "description": "A sample link card with no player.", "screenshot": null, "width": "column" } },
+    { "id": "b_outro", "type": "text", "effect": "none", "note": "", "data": { "body":
+      "By noon the rain has stopped. The trolley count stands at three. Rita is already planning next week." } },
+    { "id": "b_refs", "type": "references", "effect": "none", "note": "", "data": {
+      "title": "References", "collapsed": false, "items": [
+        "Hughes, R. (2021) *Water under the bridge: volunteering on northern canals*. Manchester: Northern Press.",
+        "Okafor, R. (2024) Interview with the author, 12 October.",
+        "Wikipedia (2026) *Rochdale Canal*. Available at: https://en.wikipedia.org/wiki/Rochdale_Canal (Accessed: 7 November 2026)."
+      ] } }
+  ],
+  "assets": {
+    "a_hero": { "name": "canal-at-dusk.svg", "mime": "image/svg+xml", "bytes": 6565, "width": 1800, "height": 1000,
+      "alt": "A row of mill buildings silhouetted against an orange sky, reflected in still canal water.",
+      "caption": "", "credit": "Illustration: Illuminate fixture", "licence": "Own work" },
+    "a_towpath": { "name": "towpath-volunteers.svg", "mime": "image/svg+xml", "bytes": 6155, "width": 1200, "height": 800,
+      "alt": "Brick warehouses beside the canal under a pale blue sky.",
+      "caption": "The towpath near Ancoats, where the group meets every Saturday.", "credit": "Sam Example", "licence": "Own work" },
+    "a_lock": { "name": "lock-gates.svg", "mime": "image/svg+xml", "bytes": 6751, "width": 1800, "height": 900,
+      "alt": "Grey industrial buildings above dark water on an overcast day.",
+      "caption": "A full-width image. Locks on this stretch date from the 1790s.", "credit": "Sam Example", "licence": "CC BY" },
+    "a_g1": { "name": "gallery-1.svg", "mime": "image/svg+xml", "bytes": 5953, "width": 1200, "height": 900,
+      "alt": "Green banks and a low skyline in soft morning light.", "caption": "8am: kit check.", "credit": "Sam Example", "licence": "Own work" },
+    "a_g2": { "name": "gallery-2.svg", "mime": "image/svg+xml", "bytes": 6049, "width": 1200, "height": 900,
+      "alt": "Lit windows reflected in the canal at night.", "caption": "The same stretch after dark.", "credit": "Sam Example", "licence": "Own work" },
+    "a_g3": { "name": "gallery-3.svg", "mime": "image/svg+xml", "bytes": 6365, "width": 1200, "height": 900,
+      "alt": "Warehouses under a clear sky.", "caption": "Midday: the trolley count reaches three.", "credit": "Sam Example", "licence": "Own work" },
+    "a_g4": { "name": "gallery-4.svg", "mime": "image/svg+xml", "bytes": 5991, "width": 1200, "height": 900,
+      "alt": "Buildings silhouetted at sunset over the water.", "caption": "Last light.", "credit": "Sam Example", "licence": "CC BY-SA" },
+    "a_video": { "name": "bridge-timelapse.mp4", "mime": "video/mp4", "bytes": 31277, "width": 640, "height": 360,
+      "alt": "Timelapse: the sun sets behind mill buildings.", "caption": "Three seconds of sunset over the canal.", "credit": "Sam Example", "licence": "Own work" },
+    "a_audio": { "name": "interview-clip.wav", "mime": "audio/wav", "bytes": 48044,
+      "alt": "Audio clip (a test tone standing in for an interview).", "caption": "Rita Okafor on why she volunteers (test tone).", "credit": "Sam Example", "licence": "Own work" },
+    "a_shot": { "name": "youtube-screenshot.svg", "mime": "image/svg+xml", "bytes": 6142, "width": 1200, "height": 630,
+      "alt": "Screenshot of the video's YouTube page.", "caption": "Screenshot archived 7 November 2026.", "credit": "YouTube", "licence": "Used with permission" }
+  },
+  "reflection": []
+}

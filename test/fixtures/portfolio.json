@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "runtimeVersion": "1.0.0",
+  "meta": {
+    "title": "Process portfolio: Who keeps the canal alive?",
+    "standfirst": "How I researched, planned and produced a multimedia feature about canal volunteers.",
+    "byline": "Sam Example · Advanced Storytelling · Sample fixture",
+    "seoTitle": "", "seoDescription": "", "shareImage": null, "shareText": "", "pack": null,
+    "created": "2026-11-07T10:00:00.000Z", "modified": "2026-11-07T10:00:00.000Z"
+  },
+  "blocks": [
+    { "id": "b_top", "type": "header", "effect": "none", "note": "", "data": {
+      "variant": "full", "kicker": "Process portfolio", "title": "", "standfirst": "", "byline": "", "media": "a_lock" } },
+    { "id": "b_h1", "type": "header", "effect": "none", "note": "", "data": {
+      "variant": "compact", "kicker": "Part 1", "title": "Idea & inspirations", "standfirst": "", "byline": "", "media": null } },
+    { "id": "b_t1", "type": "text", "effect": "none", "note": "", "data": { "body":
+      "The idea came from a walk along the towpath in September.\n## Inspirations\nI studied long-form features that combine audio with photography (Hughes 2021)." } },
+    { "id": "b_h2", "type": "header", "effect": "none", "note": "", "data": {
+      "variant": "compact", "kicker": "Part 2", "title": "Audience / research", "standfirst": "Who this story is for, and what I needed to find out.", "byline": "", "media": "a_towpath" } },
+    { "id": "b_t2", "type": "text", "effect": "none", "note": "", "data": { "body":
+      "My audience is readers of a regional news site, aged 25–45, who use the canal but have never volunteered.\n- Two interviews\n- One site visit\n- A short survey of towpath users" } },
+    { "id": "b_e2", "type": "embed", "effect": "none", "note": "", "data": {
+      "url": "https://vimeo.com/76979871", "title": "A reference video on Vimeo", "description": "", "screenshot": null, "width": "column" } },
+    { "id": "b_h3", "type": "header", "effect": "none", "note": "", "data": {
+      "variant": "compact", "kicker": "Part 3", "title": "Planning & technical practice", "standfirst": "", "byline": "", "media": null } },
+    { "id": "b_a3", "type": "media", "effect": "none", "note": "", "data": { "kind": "audio", "asset": "a_audio", "width": "column" } },
+    { "id": "b_g3", "type": "gallery", "effect": "none", "note": "", "data": { "items": ["a_g1", "a_g3"], "caption": "Contact sheet from the first shoot.", "width": "column" } },
+    { "id": "b_h4", "type": "header", "effect": "none", "note": "", "data": {
+      "variant": "compact", "kicker": "Part 4", "title": "Reflection", "standfirst": "", "byline": "", "media": null } },
+    { "id": "b_q4", "type": "quote", "effect": "none", "note": "", "data": { "text": "Start recording sound on day one.", "cite": "Note to self", "role": "" } },
+    { "id": "b_d4", "type": "divider", "effect": "none", "note": "", "data": { "text": "End of portfolio" } },
+    { "id": "b_r4", "type": "references", "effect": "none", "note": "", "data": { "title": "References", "collapsed": true, "items": [
+      "Hughes, R. (2021) *Water under the bridge: volunteering on northern canals*. Manchester: Northern Press."
+    ] } }
+  ],
+  "assets": {
+    "a_lock": { "name": "lock-gates.svg", "mime": "image/svg+xml", "bytes": 6751, "width": 1800, "height": 900,
+      "alt": "Grey industrial buildings above dark water on an overcast day.", "caption": "", "credit": "Sam Example", "licence": "Own work" },
+    "a_towpath": { "name": "towpath-volunteers.svg", "mime": "image/svg+xml", "bytes": 6155, "width": 1200, "height": 800,
+      "alt": "Brick warehouses beside the canal under a pale blue sky.", "caption": "", "credit": "Sam Example", "licence": "Own work" },
+    "a_audio": { "name": "interview-clip.wav", "mime": "audio/wav", "bytes": 48044,
+      "alt": "Audio clip (a test tone).", "caption": "First interview, raw (test tone).", "credit": "Sam Example", "licence": "Own work" },
+    "a_g1": { "name": "gallery-1.svg", "mime": "image/svg+xml", "bytes": 5953, "width": 1200, "height": 900,
+      "alt": "Green banks and a low skyline.", "caption": "Frame 1", "credit": "", "licence": "" },
+    "a_g3": { "name": "gallery-3.svg", "mime": "image/svg+xml", "bytes": 6365, "width": 1200, "height": 900,
+      "alt": "Warehouses under a clear sky.", "caption": "Frame 7", "credit": "", "licence": "" }
+  },
+  "reflection": [ { "q": "What would you do differently?", "a": "Record ambient sound earlier." } ]
+}

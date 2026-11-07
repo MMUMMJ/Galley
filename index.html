@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Illuminate</title>
+  <meta name="description" content="Illuminate: a scrollytelling editor for journalism students.">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="src/editor/editor.css">
+  <script src="runtime/illuminate-runtime.js"></script>
+  <script type="module" src="src/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#inspector">Skip to inspector</a>
+
+  <header class="app-header">
+    <h1 class="app-title">Illuminate</h1>
+    <div class="toolbar">
+      <button type="button" class="btn" id="undo" aria-keyshortcuts="Control+Z Meta+Z" disabled>Undo</button>
+      <button type="button" class="btn" id="redo" aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y" disabled>Redo</button>
+      <button type="button" class="btn" id="new-story">New story</button>
+      <button type="button" class="btn" id="open">Open…</button>
+      <div class="menu-wrap">
+        <button type="button" class="btn btn-primary" id="export" aria-expanded="false" aria-controls="export-menu">Export</button>
+        <ul class="menu" id="export-menu" hidden></ul>
+      </div>
+    </div>
+    <p class="app-status" id="app-status">Loading editor…</p>
+  </header>
+
+  <noscript>
+    <p class="noscript">Illuminate needs JavaScript turned on to edit stories.</p>
+  </noscript>
+
+  <main class="app-main" id="app">
+    <section class="panel panel-blocks" id="blocks" aria-labelledby="blocks-heading">
+      <h2 id="blocks-heading" class="panel-heading">Blocks</h2>
+    </section>
+
+    <section class="panel panel-inspector" id="inspector" tabindex="-1" aria-labelledby="inspector-heading">
+      <h2 id="inspector-heading" class="panel-heading">Inspector</h2>
+    </section>
+
+    <section class="panel panel-preview" aria-labelledby="preview-heading">
+      <h2 id="preview-heading" class="panel-heading">Preview</h2>
+      <iframe id="preview-frame" class="preview-frame" title="Preview of your story"></iframe>
+    </section>
+  </main>
+
+  <div id="announcer" class="sr-only" aria-live="polite"></div>
+  <div id="toasts" class="toast-region" aria-live="polite"></div>
+</body>
+</html>
