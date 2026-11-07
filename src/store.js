@@ -6,6 +6,7 @@ const MAX_UNDO = 200;
 
 // A selection that isn't a block: the story's metadata ("Story details").
 export const STORY_DETAILS = 'story-details';
+export const REFLECTION = 'reflection';
 const COALESCE_MS = 1500;
 
 export function createStore(initial) {
@@ -18,7 +19,7 @@ export function createStore(initial) {
   const listeners = new Set();
 
   const emit = (change) => listeners.forEach((fn) => fn(change));
-  const exists = (id) => id === STORY_DETAILS || present.blocks.some((b) => b.id === id);
+  const exists = (id) => id === STORY_DETAILS || id === REFLECTION || present.blocks.some((b) => b.id === id);
 
   return {
     get story() { return present; },

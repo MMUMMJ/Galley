@@ -6,7 +6,7 @@ export default {
   label: 'Media',
   description: 'One image, video or audio clip.',
   defaults: () => blockDefaults('media'),
-  prompt: null,
+  prompt: "What does this show the reader that your words can't? Does the caption add context rather than describe the obvious? Is the credit right?",
   summary: (d, story) => story.assets[d.asset]?.name || '(no file)',
   editorUI(el, ctx) {
     const asset = ctx.story.assets[ctx.block.data.asset];

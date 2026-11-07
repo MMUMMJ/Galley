@@ -189,6 +189,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 
 .badge-fx { background: var(--accent-soft); color: var(--text); border: 1px solid var(--accent); }
+.pack-details { margin-bottom: 10px; padding: 6px 10px; border-radius: var(--radius); background: var(--surface-2); font-size: 0.875rem; }
+.pack-details summary { min-height: 32px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.pack-details ul { margin: 4px 0 4px; padding-left: 1.2em; color: var(--muted); }
+.reflection-list { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 14px; }
+.reflection-item { display: grid; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.reflection-q { font-weight: 600; }
+.reflection-item textarea, .reflection-item input { width: 100%; min-height: var(--tap); padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 1rem; }
+.reflection-item .btn { justify-self: start; }
+.appendix-choice { margin-top: 18px; }
+.makers-note { margin-top: 14px; }
+.makers-note textarea { width: 100%; min-height: var(--tap); padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 1rem; }
+.movement select, .effect-note textarea { width: 100%; min-height: var(--tap); padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 1rem; }
 .add-block { margin-top: 12px; }
 .add-menu { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
 

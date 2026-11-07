@@ -12,6 +12,29 @@ The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
 - Phase 4 (newsroom metadata): Story details panel (title, standfirst, byline, SEO title and description, share image and text); exports write `<title>`, description, Open Graph and Twitter-card tags.
 - Phase 5 (showpiece blocks): scroll sequence, before/after slider and big number, each with a craft prompt and required fields. Every effect is optional: without JavaScript, in print and with reduced motion the content is all there.
 - Phase 6 (effects): fade, rise, slide or zoom per block, run once by the runtime as the reader scrolls. Nothing is hidden without JavaScript, in print, or with reduced motion. Choosing an effect offers a note: "What does this movement do for the reader?"
+- Phase 7 (pedagogy + packs): craft prompts on every block, maker's notes, reflection questions, an optional maker's notes appendix in the export, and prompt packs.
+
+## Prompt packs
+
+A pack sets up the editor for a course. Give students a link with `?pack=`:
+
+- `…/index.html?pack=packs/digital-publishing.json` (Digital Publishing)
+- `…/index.html?pack=packs/advanced-storytelling.json` (Advanced Storytelling)
+
+The story remembers its pack, so later visits don't need the link. Packs must live in `packs/`; any other address is refused. Every key in a pack is optional:
+
+| Key | What it does |
+|---|---|
+| `name` | Shown in the editor as "Pack: …" |
+| `blocks` | Which blocks the Add block menu offers |
+| `prompts` | Craft prompts by block type, replacing the defaults |
+| `reflection` | Reflection questions added to every story |
+| `includeNotes` | `false` hides the maker's note on each block |
+| `skeleton` | Blocks to start an empty story with |
+| `effectNotes` | `"off"`, `"optional"` or `"required"` |
+| `sourcing` | `"inline"`, `"references"` or `"both"` (used by the checks in Phase 8) |
+| `requireShowpiece` | How many showpiece blocks the course expects (shown as progress) |
+| `maxExportMB` | Export size limit (used by the checks in Phase 8) |
 
 ## Test the runtime
 

@@ -5,26 +5,31 @@ import { createBlock, newId } from '../model.js';
 import { BLOCKS, blockLabel } from '../blocks/index.js';
 import { esc, preserveFocus } from './dom.js';
 import { enableDrag } from './drag.js';
-import { STORY_DETAILS } from '../store.js';
+import { STORY_DETAILS, REFLECTION } from '../store.js';
+import { getPack, allowedBlocks, blockIssues, showpieceCount } from '../packs.js';
 import { effectBadge } from './effects.js';
 
 export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   panel.innerHTML = `
     <h2 class="panel-heading" id="blocks-heading">Blocks</h2>
-    <button type="button" class="details-select" data-focus="details"></button>
+    <div class="pack-info"></div>
+    <button type="button" class="details-select story-select" data-focus="details"></button>
+    <button type="button" class="details-select reflection-select" data-focus="reflection"></button>
     <ol class="block-list" aria-labelledby="blocks-heading" aria-describedby="blocks-tip"></ol>
     <p class="panel-empty" hidden>Your story has no blocks yet. Add one below.</p>
     <div class="add-block">
       <button type="button" class="btn btn-primary" aria-expanded="false" aria-controls="add-menu" data-focus="add">Add block</button>
       <ul class="add-menu" id="add-menu" hidden>
-        ${Object.values(BLOCKS).map((b) => `<li><button type="button" class="add-option" data-type="${b.type}">
+        ${Object.values(BLOCKS).filter((b) => allowedBlocks().includes(b.type)).map((b) => `<li><button type="button" class="add-option" data-type="${b.type}">
           <strong>${esc(b.label)}</strong><span>${esc(b.description)}</span></button></li>`).join('')}
       </ul>
     </div>
     <p class="panel-tip" id="blocks-tip">Arrow keys move between blocks. Alt + ↑ or ↓ moves the selected block. Drag ⠿ to reorder.</p>`;
 
   const list = panel.querySelector('.block-list');
-  const details = panel.querySelector('.details-select');
+  const details = panel.querySelector('.story-select');
+  const reflection = panel.querySelector('.reflection-select');
+  const packInfo = panel.querySelector('.pack-info');
   const empty = panel.querySelector('.panel-empty');
   const addButton = panel.querySelector('[aria-controls="add-menu"]');
   const menu = panel.querySelector('#add-menu');
@@ -43,10 +48,41 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
       <span class="block-summary">${esc(m.title || 'Title, byline, search and sharing')}</span>`;
   }
 
+  function renderReflection() {
+    const r = store.story.reflection;
+    const on = store.selected === REFLECTION;
+    const answered = r.filter((x) => x.a.trim()).length;
+    reflection.classList.toggle('is-selected', on);
+    reflection.setAttribute('aria-current', on ? 'true' : 'false');
+    reflection.innerHTML = `<span class="block-type">Reflection</span>
+      <span class="block-summary">${r.length ? `${answered} of ${r.length} questions answered` : 'Questions about how you made it'}</span>`;
+  }
+
+  // The pack's name and rules, so students can see what their course expects.
+  function renderPack() {
+    const pack = getPack();
+    packInfo.hidden = !pack.path;
+    if (!pack.path) return;
+    const rules = [
+      pack.includeNotes ? 'Maker\'s notes on every block' : null,
+      pack.effectNotes === 'required' ? 'Every effect needs a note' : null,
+      { inline: 'Source claims with links in the text', references: 'Source claims with a reference list', both: 'Source claims with links and a reference list' }[pack.sourcing],
+      pack.requireShowpiece ? `Showpiece blocks: ${showpieceCount(store.story)} of ${pack.requireShowpiece}` : null,
+      `Export size limit: ${pack.maxExportMB} MB`,
+    ].filter(Boolean);
+    packInfo.innerHTML = `<details class="pack-details"><summary>Pack: <strong>${esc(pack.name || pack.path)}</strong></summary>
+      <ul>${rules.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></details>`;
+    packInfo.querySelector('details').open = packOpen;
+  }
+  let packOpen = false;
+  packInfo.addEventListener('toggle', (e) => { packOpen = e.target.open; }, true);
+
   function render() {
+    renderPack();
     renderDetails();
+    renderReflection();
     const all = blocks();
-    const selected = store.selected === STORY_DETAILS ? null : store.selected;
+    const selected = store.selected === STORY_DETAILS || store.selected === REFLECTION ? null : store.selected;
     const tabbable = selected || all[0]?.id;
     empty.hidden = all.length > 0;
     list.innerHTML = all.map((b, i) => {
@@ -54,7 +90,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
       const label = blockLabel(b.type);
       let summary = '';
       try { summary = mod ? mod.summary(b.data, store.story) : 'Not supported in this version'; } catch { summary = ''; }
-      const issues = mod ? safeIssues(mod, b, store.story) : [];
+      const issues = mod ? blockIssues(b, store.story) : [];
       let badge = issues.length ? 'Unfinished' : '';
       try { badge = (mod && mod.badge && mod.badge(b.data, store.story)) || badge; } catch { /* keep default */ }
       const isSel = b.id === selected;
@@ -110,7 +146,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   function add(type) {
     const block = createBlock(type);
     const i = indexOf(store.selected);
-    const at = store.selected === STORY_DETAILS ? 0 : i < 0 ? blocks().length : i + 1;
+    const at = store.selected === STORY_DETAILS || store.selected === REFLECTION ? 0 : i < 0 ? blocks().length : i + 1;
     store.update((s) => { s.blocks.splice(at, 0, block); }, { select: block.id, from: 'list' });
     announce(`${blockLabel(type)} block added at position ${at + 1}.`);
     closeMenu();
@@ -168,8 +204,8 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
     }
     if (e.key === 'ArrowUp' && i === 0) {
       e.preventDefault();
-      store.select(STORY_DETAILS, 'list');
-      details.focus();
+      store.select(REFLECTION, 'list');
+      reflection.focus();
       return;
     }
     if (e.key === 'ArrowUp') target = Math.max(0, i - 1);
@@ -183,13 +219,26 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
     focusKey(`sel:${next}`);
   });
 
+  // Story details → Reflection → blocks, by arrow keys.
   details.addEventListener('click', () => store.select(STORY_DETAILS, 'list'));
+  reflection.addEventListener('click', () => store.select(REFLECTION, 'list'));
   details.addEventListener('keydown', (e) => {
-    if (e.key !== 'ArrowDown' || !blocks().length) return;
+    if (e.key !== 'ArrowDown') return;
     e.preventDefault();
-    const first = blocks()[0].id;
-    store.select(first, 'list');
-    focusKey(`sel:${first}`);
+    store.select(REFLECTION, 'list');
+    reflection.focus();
+  });
+  reflection.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      store.select(STORY_DETAILS, 'list');
+      details.focus();
+    } else if (e.key === 'ArrowDown' && blocks().length) {
+      e.preventDefault();
+      const first = blocks()[0].id;
+      store.select(first, 'list');
+      focusKey(`sel:${first}`);
+    }
   });
 
   enableDrag(list, { onDrop: (id, to) => moveTo(id, to) });
@@ -201,6 +250,3 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   render();
 }
 
-function safeIssues(mod, block, story) {
-  try { return mod.validate(block.data, story) || []; } catch { return []; }
-}

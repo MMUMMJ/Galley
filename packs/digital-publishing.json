@@ -1,0 +1,25 @@
+{
+  "name": "Digital Publishing",
+  "blocks": ["header", "text", "quote", "media", "gallery", "embed", "divider", "references", "compare", "number"],
+  "prompts": {
+    "header": "Write the headline last. Would it make someone stop scrolling, without overselling the story? The standfirst should promise what the piece delivers.",
+    "text": "Write for the screen: lead with what's new, keep paragraphs short, and link each claim to its source in the sentence that makes it, using [text](https://…).",
+    "quote": "Choose a line that only this person could have said. Is it accurate, and fair to what they meant in context?",
+    "embed": "Link to the original source, not a page about it. Would your editor trust it? Keep a screenshot in case it changes.",
+    "references": "In this pack you source claims with links in the text. Use this list only for sources you can't link to, such as interviews or print."
+  },
+  "reflection": [
+    "Who is this story for, and how did that shape what you included and left out?",
+    "Which source was hardest to verify, and how did you check it?",
+    "What would you change if you had another week?"
+  ],
+  "includeNotes": true,
+  "skeleton": [
+    { "type": "header", "variant": "full" },
+    { "type": "text" }
+  ],
+  "effectNotes": "optional",
+  "sourcing": "inline",
+  "requireShowpiece": 0,
+  "maxExportMB": 100
+}

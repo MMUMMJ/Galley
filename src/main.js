@@ -13,6 +13,7 @@ import { mountInspector } from './editor/inspector.js';
 import { mountPreview } from './editor/preview.js';
 import { mountToolbar, saveStatusText } from './editor/toolbar.js';
 import { startAutosave } from './editor/autosave.js';
+import { loadPack, setPack, applyPack, startStory } from './packs.js';
 import { mountFileMenu } from './editor/file-menu.js';
 
 export const EDITOR_VERSION = '0.3.0';
@@ -45,12 +46,27 @@ async function boot() {
     savers = [];
     toast(`Illuminate couldn't open this browser's saved story, so it won't save changes. ${problem.message}`, { tone: 'warning' });
   }
-  story = story || createStory();
+
+  // 2. Pack: ?pack=packs/<name>.json, or else the pack this story was made with.
+  const packPath = new URLSearchParams(location.search).get('pack') || story?.meta.pack || null;
+  let packReady = !packPath;
+  if (packPath) {
+    try {
+      setPack(await loadPack(packPath));
+      packReady = true;
+    } catch (err) {
+      toast(`${err.message} Carrying on without a pack.`, { tone: 'warning' });
+    }
+  }
+  const before = story ? JSON.stringify(story) : '';
+  if (!story) story = packReady ? startStory() : createStory();
+  else if (packReady) applyPack(story); // records the pack; skeleton only if the story is empty
+  const packChanged = Boolean(before) && JSON.stringify(story) !== before;
 
   await loadAssets(Object.keys(story.assets));
   if (!problem) pruneAssets(new Set(Object.keys(story.assets)));
 
-  // 2. State.
+  // 3. State.
   const store = createStore(story);
   store.select(story.blocks[0] ? story.blocks[0].id : STORY_DETAILS);
 
@@ -83,7 +99,7 @@ async function boot() {
     return added;
   }
 
-  // 3. Panels.
+  // 4. Panels.
   mountToolbar(store, { undoBtn: $('undo'), redoBtn: $('redo'), newBtn: $('new-story'), announce });
   const inspector = mountInspector($('inspector'), store, { importFiles, assetUrl, announce });
   mountBlockList($('blocks'), store, { announce, toast, onAdded: () => inspector.focusFirstField() });
@@ -93,7 +109,7 @@ async function boot() {
     setStatus: (text) => { statusLine.textContent = text; },
   });
 
-  startAutosave(store, savers, {
+  const autosave = startAutosave(store, savers, {
     getBlob,
     onStatus: (state, detail) => {
       statusLine.textContent = saveStatusText(state, detail);
@@ -101,6 +117,7 @@ async function boot() {
     },
   });
   if (savers.length) statusLine.textContent = story.blocks.length ? 'Story restored from this browser' : '';
+  if (packChanged || (!before && story.blocks.length)) autosave.markDirty(); // save the pack's changes
   document.documentElement.dataset.ready = 'true';
 }
 

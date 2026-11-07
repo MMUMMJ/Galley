@@ -6,7 +6,7 @@ export default {
   label: 'References',
   description: 'Your reference list, which readers can open and close.',
   defaults: () => blockDefaults('references'),
-  prompt: null,
+  prompt: "Is every source you cite in the text listed here, and is everything listed here cited? Use your course's Harvard style.",
   summary: (d) => {
     const n = (d.items || []).filter((s) => s.trim()).length;
     return `${n} reference${n === 1 ? '' : 's'}`;

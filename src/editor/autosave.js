@@ -8,7 +8,7 @@ export function startAutosave(store, savers, { getBlob, onStatus, delay = 800 })
 
   if (!savers.length) {
     onStatus('off');
-    return { saveNow: () => Promise.resolve() };
+    return { saveNow: () => Promise.resolve(), markDirty: () => {} };
   }
 
   function saveNow() {
@@ -29,12 +29,15 @@ export function startAutosave(store, savers, { getBlob, onStatus, delay = 800 })
     return chain;
   }
 
-  store.subscribe((change) => {
-    if (change.type === 'select') return;
+  function markDirty() {
     dirty = true;
     onStatus('pending');
     clearTimeout(timer);
     timer = setTimeout(saveNow, delay);
+  }
+
+  store.subscribe((change) => {
+    if (change.type !== 'select') markDirty();
   });
 
   window.addEventListener('pagehide', saveNow);
@@ -43,5 +46,5 @@ export function startAutosave(store, savers, { getBlob, onStatus, delay = 800 })
     if (document.visibilityState === 'hidden') saveNow();
   });
 
-  return { saveNow };
+  return { saveNow, markDirty };
 }

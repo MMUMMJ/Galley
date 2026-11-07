@@ -6,7 +6,7 @@ export default {
   label: 'Text',
   description: 'Paragraphs, subheadings, lists and links.',
   defaults: () => blockDefaults('text'),
-  prompt: null,
+  prompt: "Lead with what's new. One idea per paragraph, kept short for screens. Where does each claim come from?",
   summary: (d) => (d.body || '').split('\n').find((l) => l.trim()) || '(empty)',
   editorUI(el, ctx) {
     el.append(textArea(ctx, 'body', {

@@ -1,5 +1,5 @@
 // Block registry. Each module: { type, label, description, defaults, prompt, summary, editorUI, validate, badge? }.
-// prompt: the craft prompt shown above the block's fields (null until Phase 7 for most blocks).
+// prompt: the default craft prompt shown above the block's fields (a pack can replace it).
 import header from './header.js';
 import text from './text.js';
 import quote from './quote.js';

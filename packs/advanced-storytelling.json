@@ -1,0 +1,36 @@
+{
+  "name": "Advanced Storytelling",
+  "blocks": ["header", "text", "quote", "media", "gallery", "embed", "divider", "references", "scrolly", "compare", "number"],
+  "prompts": {
+    "header": "Each part of your portfolio starts with a compact header. Name the stage plainly, so a marker can find it at a glance.",
+    "text": "Show your process, not just the result. What did you try, what did you learn, and what evidence (sketches, drafts, data) shows it? Cite sources as (Author Year).",
+    "media": "Process evidence counts: drafts, contact sheets, screenshots of edits. Caption each one with what it shows about your decisions.",
+    "scrolly": "Why does this need to scroll? Each step should reveal one new thing, at a pace you chose on purpose. Say why in your effect and step choices.",
+    "references": "List every source you cite in the text, in Harvard style, and cite every source you list."
+  },
+  "reflection": [
+    "What was your idea at the start, and how did it change?",
+    "Which technique did you try for the first time, and what did you learn from it?",
+    "What feedback did you get, and what did you do with it?",
+    "What would you do differently next time?"
+  ],
+  "includeNotes": false,
+  "skeleton": [
+    { "type": "header", "variant": "full", "kicker": "Process portfolio" },
+    { "type": "header", "variant": "compact", "title": "Idea & inspirations" },
+    { "type": "text" },
+    { "type": "header", "variant": "compact", "title": "Audience / research" },
+    { "type": "text" },
+    { "type": "header", "variant": "compact", "title": "Planning & technical practice" },
+    { "type": "text" },
+    { "type": "header", "variant": "compact", "title": "Post-production" },
+    { "type": "text" },
+    { "type": "header", "variant": "compact", "title": "Reflection" },
+    { "type": "text" },
+    { "type": "references" }
+  ],
+  "effectNotes": "required",
+  "sourcing": "both",
+  "requireShowpiece": 1,
+  "maxExportMB": 100
+}

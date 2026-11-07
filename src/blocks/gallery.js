@@ -7,7 +7,7 @@ export default {
   label: 'Gallery',
   description: 'A grid of images that readers can open full size.',
   defaults: () => blockDefaults('gallery'),
-  prompt: null,
+  prompt: 'Does every image earn its place? Put them in an order that tells a story, and cut any that repeat.',
   summary: (d) => {
     const n = (d.items || []).length;
     return `${n} image${n === 1 ? '' : 's'}`;

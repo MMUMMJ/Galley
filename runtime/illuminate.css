@@ -332,6 +332,22 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   background: #fff4d6; color: #5c3d00; font: 700 0.8125rem/1.4 var(--il-sans);
 }
 
+/* ---------- maker's notes appendix */
+.il-appendix {
+  margin-top: 4rem; padding: 1.5rem 1.25rem; border: 1px dashed var(--il-muted); border-radius: 6px;
+  background: #f6f4ef; font: 1rem/1.55 var(--il-sans);
+}
+.il-appendix h2 { margin: 0; font-size: 1.35rem; }
+.il-appendix h3 { margin: 1.5rem 0 0.5rem; font-size: 1.05rem; }
+.il-appendix__intro { margin: 0.4rem 0 0; color: var(--il-muted); font-style: italic; }
+.il-appendix__notes { margin: 0; padding-left: 1.4em; }
+.il-appendix__notes li + li { margin-top: 0.9rem; }
+.il-appendix__notes p { margin: 0.25rem 0 0; }
+.il-appendix__block { font-weight: 700; }
+.il-appendix__reflection dt { margin-top: 0.9rem; font-weight: 700; }
+.il-appendix__reflection dd { margin: 0.25rem 0 0; }
+.il-appendix__reflection dd p { margin: 0 0 0.5em; }
+
 /* ---------- editor preview only */
 .il-placeholder {
   padding: 1rem;
@@ -443,6 +459,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   .il-compare__pair { grid-template-columns: 1fr 1fr; }
   .il-number__figure { font-size: 36pt; }
   .il-fx { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .il-appendix { break-before: page; background: none; border-color: #999; }
   .il-references summary { min-height: 0; }
   .il-references summary::before { content: none; }
 }

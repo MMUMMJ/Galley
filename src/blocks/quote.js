@@ -6,7 +6,7 @@ export default {
   label: 'Quote',
   description: 'A pull quote with who said it.',
   defaults: () => blockDefaults('quote'),
-  prompt: null,
+  prompt: 'Pull the line that carries feeling or a turn in the story, not a fact you could paraphrase. Is it accurate, and fair to what they meant?',
   summary: (d) => d.text || '(empty)',
   editorUI(el, ctx) {
     el.append(

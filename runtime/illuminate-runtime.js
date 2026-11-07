@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.5.0';
+  const RUNTIME_VERSION = '1.6.0';
 
   // ------------------------------------------------------------ helpers
 
@@ -387,7 +387,35 @@
       out.push(html);
     }
     if (inPart) out.push('</section>');
+    if (isObj(ctx.meta) && ctx.meta.appendix === true) out.push(appendix(blocks, s.reflection));
     return `<article class="il-story">\n${out.filter(Boolean).join('\n')}\n</article>`;
+  }
+
+  // The maker's notes appendix (Phase 7): the student's notes on blocks and effects, and
+  // their reflection answers, after the story and clearly marked as not part of it.
+  const TYPE_LABELS = {
+    header: 'Header', text: 'Text', quote: 'Quote', media: 'Media', gallery: 'Gallery', embed: 'Embed',
+    divider: 'Divider', references: 'References', scrolly: 'Scroll sequence', compare: 'Before/after slider', number: 'Big number',
+  };
+  function appendix(blocks, reflection) {
+    const notes = blocks.map((b, i) => {
+      const note = str(b.note).trim();
+      const fx = EFFECTS.includes(b.effect) ? str(b.effectNote).trim() : '';
+      if (!note && !fx) return '';
+      return `<li><p class="il-appendix__block">Block ${i + 1}: ${esc(TYPE_LABELS[b.type] || b.type)}</p>`
+        + (note ? markdown(note, 4) : '')
+        + (fx ? `<p><em>Movement (${esc(b.effect)}):</em> ${inline(fx)}</p>` : '') + '</li>';
+    }).filter(Boolean);
+    const answers = (Array.isArray(reflection) ? reflection : [])
+      .filter((r) => isObj(r) && str(r.q).trim() && str(r.a).trim())
+      .map((r) => `<dt>${esc(r.q)}</dt><dd>${markdown(r.a, 4)}</dd>`);
+    if (!notes.length && !answers.length) return '';
+    return '<aside class="il-appendix" aria-labelledby="il-appendix-title">'
+      + '<h2 id="il-appendix-title">Maker\'s notes</h2>'
+      + '<p class="il-appendix__intro">Notes from the maker about how this story was made. Not part of the story.</p>'
+      + (notes.length ? `<h3>Notes on blocks</h3><ol class="il-appendix__notes">${notes.join('')}</ol>` : '')
+      + (answers.length ? `<h3>Reflection</h3><dl class="il-appendix__reflection">${answers.join('')}</dl>` : '')
+      + '</aside>';
   }
 
   // Markdown-free text for meta tags.

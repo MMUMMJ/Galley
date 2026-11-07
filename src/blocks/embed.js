@@ -6,7 +6,7 @@ export default {
   label: 'Embed',
   description: 'A link card for a web page. YouTube, Vimeo, Spotify and SoundCloud play in the story.',
   defaults: () => blockDefaults('embed'),
-  prompt: null,
+  prompt: 'Why send the reader to this source? Is it credible, and have you kept a screenshot in case it changes or disappears?',
   summary: (d) => d.title || d.url || '(no link)',
   editorUI(el, ctx) {
     const urlField = textInput(ctx, 'url', { label: 'Web address', type: 'url', placeholder: 'https://…' });

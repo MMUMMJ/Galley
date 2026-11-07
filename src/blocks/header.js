@@ -6,7 +6,7 @@ export default {
   label: 'Header',
   description: 'Title, standfirst and byline. Full screen or compact.',
   defaults: () => blockDefaults('header'),
-  prompt: null, // craft prompt: Phase 7
+  prompt: "Would your headline make sense on its own, in a news feed or a search result? Does the standfirst add something the headline doesn't?",
   summary: (d, story) => d.title || story.meta.title || '(no title)',
   editorUI(el, ctx) {
     const first = ctx.story.blocks.find((b) => b.type === 'header')?.id === ctx.block.id;

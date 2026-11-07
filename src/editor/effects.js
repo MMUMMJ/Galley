@@ -14,7 +14,8 @@ export const EFFECT_LABELS = {
 export const effectBadge = (effect) => (effect && effect !== 'none' ? EFFECT_LABELS[effect].split(':')[0] : '');
 
 // setBlock(key, value, opts) changes a block-level field (not block.data).
-export function renderEffects(block, { setBlock, announce }) {
+// noteMode comes from the pack: 'off' hides the note, 'required' asks for it.
+export function renderEffects(block, { setBlock, announce, noteMode = 'optional' }) {
   const selectId = `fx-${block.id}`;
   const noteId = `fx-note-${block.id}`;
   const moving = block.effect && block.effect !== 'none';
@@ -30,11 +31,13 @@ export function renderEffects(block, { setBlock, announce }) {
         setBlock('effect', value, { rerender: true });
         announce(value === 'none'
           ? 'Movement removed.'
-          : `${EFFECT_LABELS[value].split(':')[0]} chosen. Below, you can note what this movement does for the reader.`);
+          : `${EFFECT_LABELS[value].split(':')[0]} chosen.${noteMode === 'off' ? ''
+            : noteMode === 'required' ? ' Below, say what this movement does for the reader.'
+              : ' Below, you can note what this movement does for the reader.'}`);
       },
     }, Object.entries(EFFECT_LABELS).map(([value, label]) => h('option', { value, selected: value === (block.effect || 'none') }, label))),
-    moving ? h('div', { class: 'field effect-note' },
-      h('label', { for: noteId }, 'What does this movement do for the reader? (optional)'),
+    moving && noteMode !== 'off' ? h('div', { class: 'field effect-note' },
+      h('label', { for: noteId }, `What does this movement do for the reader? (${noteMode === 'required' ? 'required' : 'optional'})`),
       h('p', { class: 'field-hint', id: `${noteId}-hint` }, 'For example: "The quote rises in to slow the reader down before the turn in the story."'),
       h('textarea', {
         id: noteId, rows: 3, value: block.effectNote || '', 'data-focus': `${block.id}:effectNote`, 'aria-describedby': `${noteId}-hint`,

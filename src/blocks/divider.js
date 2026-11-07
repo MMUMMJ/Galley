@@ -6,7 +6,7 @@ export default {
   label: 'Divider',
   description: 'A break between sections, with an optional label.',
   defaults: () => blockDefaults('divider'),
-  prompt: null,
+  prompt: 'A break should mark a real shift: in time, place, voice or perspective.',
   summary: (d) => d.text || '* * *',
   editorUI(el, ctx) {
     el.append(textInput(ctx, 'text', { label: 'Label', hint: 'Leave empty to show * * *.' }));

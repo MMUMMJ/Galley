@@ -7,7 +7,7 @@ export const SCHEMA_VERSION = 1;
 
 // Must match RUNTIME_VERSION in runtime/illuminate-runtime.js.
 // test/runtime.html flags any mismatch.
-export const RUNTIME_VERSION = '1.5.0';
+export const RUNTIME_VERSION = '1.6.0';
 
 export const BLOCK_TYPES = ['header', 'text', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'compare', 'number'];
 export const SCROLLY_LAYOUTS = ['side', 'overlay'];
@@ -59,6 +59,7 @@ export function createMeta(now = new Date().toISOString()) {
   return {
     title: '', standfirst: '', byline: '', seoTitle: '', seoDescription: '',
     shareImage: null, shareText: '', pack: null, created: now, modified: now,
+    appendix: false, // add maker's notes and reflection to the end of the export (Phase 7)
   };
 }
 
@@ -178,6 +179,7 @@ export function validate(story) {
     for (const k of META_STRINGS) isString(story.meta[k], `meta.${k}`);
     ref(story.meta.shareImage, 'meta.shareImage');
     if (story.meta.pack !== null && typeof story.meta.pack !== 'string') err('meta.pack', 'Must be null or text.');
+    if (typeof story.meta.appendix !== 'boolean') err('meta.appendix', 'Must be true or false.');
   }
 
   if (!Array.isArray(story.blocks)) err('blocks', 'Must be a list.');
