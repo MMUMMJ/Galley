@@ -1,5 +1,6 @@
 import { blockDefaults } from '../model.js';
-import { textInput, textArea, selectInput, assetPicker, help } from '../editor/fields.js';
+import { textInput, selectInput, assetPicker, help } from '../editor/fields.js';
+import { richText } from '../editor/rich-text.js';
 
 export default {
   type: 'header',
@@ -20,7 +21,7 @@ export default {
       textInput(ctx, 'title', first
         ? { label: 'Title', placeholder: ctx.story.meta.title, hint: 'Leave empty to use the title from Story details.' }
         : { label: 'Title', hint: 'The heading for this part.' }),
-      textArea(ctx, 'standfirst', { label: 'Standfirst', rows: 3, hint: 'One or two sentences that sell the story. *Italics* and links work here.' }),
+      richText(ctx, 'standfirst', { label: 'Standfirst', mode: 'inline', hint: 'One or two sentences that sell the story.' }),
       textInput(ctx, 'byline', { label: 'Byline', placeholder: 'By …' }),
       assetPicker(ctx, 'media', { label: 'Header image', kinds: ['image'] }),
       first ? null : help('This is not the first header, so it starts a new part of the page.'),

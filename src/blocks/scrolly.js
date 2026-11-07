@@ -1,7 +1,8 @@
 import { blockDefaults } from '../model.js';
 import { h } from '../editor/dom.js';
-import { textArea, selectInput, assetPicker, help, nested } from '../editor/fields.js';
-import { inlineImages } from '../editor/inline-images.js';
+import { selectInput, assetPicker, help, nested } from '../editor/fields.js';
+import { richText, plainText } from '../editor/rich-text.js';
+import { imageDetails } from '../editor/inline-images.js';
 
 export default {
   type: 'scrolly',
@@ -62,15 +63,12 @@ export default {
         return h('li', {},
           h('fieldset', { class: 'field step-item' },
             h('legend', {}, `Step ${i + 1}`),
-            ...(() => {
-              const area = textArea(sub, 'text', {
-                label: `Step ${i + 1} text (required)`,
-                rows: 4,
-                hint: i === 0 ? 'What should the reader notice first? Keep each step short.' : null,
-              });
-              // Two kinds of image in a step: one inside the text, and the one behind or beside it.
-              return [area, inlineImages(sub, 'text', () => area.querySelector('textarea'), { buttonLabel: 'Insert an image in the text…' })];
-            })(),
+            // Two kinds of image in a step: one inside the text, and the one behind or beside it.
+            richText(sub, 'text', {
+              label: `Step ${i + 1} text (required)`, mode: 'blocks', images: true, imageLabel: 'Image in text', rows: 4,
+              hint: i === 0 ? 'What should the reader notice first? Keep each step short.' : null,
+            }),
+            imageDetails(sub, 'text'),
             assetPicker(sub, 'media', { label: i === 0 ? 'Image behind or beside the text' : 'New image behind or beside the text (optional)', kinds: ['image'] }),
             i > 0 && !st.media ? help('No new image: the previous one stays on screen for this step.') : null,
             h('div', { class: 'button-row' },
@@ -91,7 +89,7 @@ export default {
     const steps = d.steps || [];
     const issues = [];
     if (steps.length < 2) issues.push('A scroll sequence needs at least two steps.');
-    steps.forEach((st, i) => { if (!(st.text || '').trim()) issues.push(`Step ${i + 1} has no text. Every step needs some.`); });
+    steps.forEach((st, i) => { if (!plainText(st.text).trim()) issues.push(`Step ${i + 1} has no text. Every step needs some.`); });
     if (!steps.some((st) => st.media)) issues.push('Add an image: start with step 1.');
     return issues;
   },

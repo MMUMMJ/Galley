@@ -74,7 +74,7 @@ export function sentences(text) {
 }
 
 export const plain = (text) => stripImages(text)
-  .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[*_#]/g, '').replace(/\s+/g, ' ').trim();
+  .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/\\([\\*_[\]#!().+-])|[*_#]/g, (m, c) => c || '').replace(/\s+/g, ' ').trim();
 
 export const wordCount = (text) => (plain(text).match(/[\p{L}\p{N}][\p{L}\p{N}'’.-]*/gu) || []).length;
 

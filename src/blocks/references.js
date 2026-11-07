@@ -1,5 +1,6 @@
 import { blockDefaults } from '../model.js';
-import { textInput, textArea, checkbox } from '../editor/fields.js';
+import { textInput, checkbox } from '../editor/fields.js';
+import { richText } from '../editor/rich-text.js';
 
 export default {
   type: 'references',
@@ -14,11 +15,9 @@ export default {
   editorUI(el, ctx) {
     el.append(
       textInput(ctx, 'title', { label: 'Heading' }),
-      textArea(ctx, 'items', {
-        label: 'References',
-        rows: 10,
-        lines: true,
-        hint: 'One reference per line, in Harvard style. *Italics* for titles.',
+      richText(ctx, 'items', {
+        label: 'References', mode: 'lines', rows: 8,
+        hint: 'One reference per line, in Harvard style. Use I for titles.',
       }),
       checkbox(ctx, 'collapsed', { label: 'Start closed', hint: 'Readers click the heading to open the list.' }),
     );

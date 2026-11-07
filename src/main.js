@@ -109,13 +109,13 @@ async function boot() {
   mountPreview($('preview-frame'), store, { assetUrl });
   mountChecks(store, { button: $('checks'), panel: $('checks-panel'), announce });
   mountFileMenu(store, {
-    exportBtn: $('export'), menu: $('export-menu'), openBtn: $('open'), getBlob, announce, toast,
+    fileBtn: $('file'), menu: $('file-menu'), openBtn: $('open'), getBlob, announce, toast,
     setStatus: (text) => { statusLine.textContent = text; },
   });
 
   mountFolder(store, {
     wrap: $('folder-wrap'), button: $('folder'), menu: $('folder-menu'), dialog: $('choice-dialog'),
-    folderLine: $('folder-status'), exportLine: $('export-status'), exportButton: $('export'), announce, toast,
+    folderLine: $('folder-status'), exportLine: $('export-status'), exportButton: $('file'), announce, toast,
   });
   const autosave = startAutosave(store, savers, {
     getBlob,

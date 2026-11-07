@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.10.0';
+  const RUNTIME_VERSION = '1.11.0';
 
   // ------------------------------------------------------------ helpers
 
@@ -123,6 +123,9 @@
     const slots = [];
     const hold = (html) => '\u0000' + (slots.push(html) - 1) + '\u0000';
     let s = str(text).replace(/\u0000/g, '');
+    // A backslash makes the next symbol literal, e.g. \* for a real asterisk.
+    // The editor writes these when a student types symbols that would otherwise format text.
+    s = s.replace(/\\([\\*_[\]#!().+\-])/g, (m, c) => hold(esc(c)));
     s = s.replace(/\[([^\]\n]+)\]\(\s*([^)\s]+)\s*\)/g, (m, label, href) => {
       const url = safeUrl(href);
       const inner = emphasis(esc(label));
@@ -504,7 +507,9 @@
   }
 
   // Markdown-free text for meta tags.
-  const plain = (text) => str(text).replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[*_]/g, '').replace(/\s+/g, ' ').trim();
+  // Formatting marks go; escaped symbols (\*) stay as the symbol.
+  const plain = (text) => str(text).replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\\([\\*_[\]#!().+\-])|[*_]/g, (m, c) => c || '').replace(/\s+/g, ' ').trim();
 
   // Description, author, Open Graph and Twitter-card tags.
   // og:url is left out: an offline submission has no public address.

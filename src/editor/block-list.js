@@ -11,19 +11,21 @@ import { effectBadge } from './effects.js';
 
 export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   panel.innerHTML = `
-    <h2 class="panel-heading" id="blocks-heading">Blocks</h2>
     <div class="pack-info"></div>
-    <button type="button" class="details-select story-select" data-focus="details"></button>
-    <button type="button" class="details-select reflection-select" data-focus="reflection"></button>
-    <ol class="block-list" aria-labelledby="blocks-heading" aria-describedby="blocks-tip"></ol>
-    <p class="panel-empty" hidden>Your story has no blocks yet. Add one below.</p>
-    <div class="add-block">
-      <button type="button" class="btn btn-primary" aria-expanded="false" aria-controls="add-menu" data-focus="add">Add block</button>
-      <ul class="add-menu" id="add-menu" hidden>
-        ${Object.values(BLOCKS).filter((b) => allowedBlocks().includes(b.type)).map((b) => `<li><button type="button" class="add-option" data-type="${b.type}">
-          <strong>${esc(b.label)}</strong><span>${esc(b.description)}</span></button></li>`).join('')}
-      </ul>
+    <div class="story-rows">
+      <button type="button" class="details-select story-select" data-focus="details"></button>
+      <button type="button" class="details-select reflection-select" data-focus="reflection"></button>
     </div>
+    <div class="blocks-head">
+      <h2 class="panel-heading" id="blocks-heading">Blocks</h2>
+      <button type="button" class="btn btn-small" aria-expanded="false" aria-controls="add-menu" data-focus="add">+ Add block</button>
+    </div>
+    <ul class="add-menu" id="add-menu" hidden>
+      ${Object.values(BLOCKS).filter((b) => allowedBlocks().includes(b.type)).map((b) => `<li><button type="button" class="add-option" data-type="${b.type}">
+        <strong>${esc(b.label)}</strong><span>${esc(b.description)}</span></button></li>`).join('')}
+    </ul>
+    <ol class="block-list" aria-labelledby="blocks-heading" aria-describedby="blocks-tip"></ol>
+    <p class="panel-empty" hidden>Your story has no blocks yet. Use + Add block to start.</p>
     <p class="panel-tip" id="blocks-tip">Arrow keys move between blocks. Alt + ↑ or ↓ moves the selected block. Drag ⠿ to reorder.</p>`;
 
   const list = panel.querySelector('.block-list');
@@ -39,10 +41,14 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   const labelOf = (id) => blockLabel(blocks()[indexOf(id)]?.type);
   const focusKey = (key) => list.querySelector(`[data-focus="${CSS.escape(key)}"]`)?.focus();
 
-  // A small swatch when the block has a background band.
-  function bandBadge(b) {
+  // Small word tags after the summary: what still needs doing, movement, and a band.
+  function tags(b, warning) {
+    const out = [];
+    if (warning) out.push(`<span class="tag tag-warn">${esc(warning)}</span>`);
+    if (effectBadge(b.effect)) out.push(`<span class="tag">${esc(effectBadge(b.effect).split(' ')[0])}</span>`);
     const colour = b.background && window.Illuminate ? window.Illuminate.bandColour(b.background, store.story.meta.theme) : '';
-    return colour ? ` <span class="badge badge-band"><span class="badge-dot" style="background:${colour}" aria-hidden="true"></span>Band</span>` : '';
+    if (colour) out.push(`<span class="tag"><span class="tag-dot" style="background:${colour}" aria-hidden="true"></span>Band</span>`);
+    return out.join('');
   }
 
   function renderDetails() {
@@ -102,22 +108,21 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
       try { badge = (mod && mod.badge && mod.badge(b.data, store.story)) || badge; } catch { /* keep default */ }
       const isSel = b.id === selected;
       const tab = b.id === tabbable ? '0' : '-1';
-      const act = isSel ? '0' : '-1';
       const name = `${label} block ${i + 1}`;
+      // One line per block; only the selected block shows its actions (never on hover).
       return `<li class="block-item${isSel ? ' is-selected' : ''}" data-id="${esc(b.id)}">
         <span class="drag-handle" aria-hidden="true">⠿</span>
         <button type="button" class="block-select" data-act="select" data-focus="sel:${esc(b.id)}" tabindex="${tab}"
           aria-current="${isSel ? 'true' : 'false'}">
-          <span class="block-num">${i + 1}</span>
-          <span class="block-text"><span class="block-type">${esc(label)}${badge ? ` <span class="badge">${esc(badge)}</span>` : ''}${effectBadge(b.effect) ? ` <span class="badge badge-fx" title="Movement">↯ ${esc(effectBadge(b.effect))}</span>` : ''}${bandBadge(b)}</span>
-          <span class="block-summary">${esc(String(summary).slice(0, 80))}</span></span>
+          <span class="block-num">${i + 1}</span><span class="block-type">${esc(label)}</span>
+          <span class="block-summary">${esc(String(summary).slice(0, 80))}</span>${tags(b, badge)}
         </button>
-        <span class="block-actions">
-          <button type="button" class="btn btn-icon" data-act="up" data-focus="up:${esc(b.id)}" tabindex="${act}" aria-label="Move ${name} up" title="Move up" ${i === 0 ? 'disabled' : ''}>↑</button>
-          <button type="button" class="btn btn-icon" data-act="down" data-focus="down:${esc(b.id)}" tabindex="${act}" aria-label="Move ${name} down" title="Move down" ${i === all.length - 1 ? 'disabled' : ''}>↓</button>
-          <button type="button" class="btn btn-icon" data-act="dup" data-focus="dup:${esc(b.id)}" tabindex="${act}" aria-label="Duplicate ${name}" title="Duplicate">⧉</button>
-          <button type="button" class="btn btn-icon btn-danger" data-act="del" data-focus="del:${esc(b.id)}" tabindex="${act}" aria-label="Delete ${name}" title="Delete">✕</button>
-        </span>
+        ${isSel ? `<span class="block-actions" role="group" aria-label="${esc(name)}">
+          <button type="button" class="btn-slim" data-act="up" data-focus="up:${esc(b.id)}" aria-label="Move ${esc(name)} up" ${i === 0 ? 'disabled' : ''}>Up</button>
+          <button type="button" class="btn-slim" data-act="down" data-focus="down:${esc(b.id)}" aria-label="Move ${esc(name)} down" ${i === all.length - 1 ? 'disabled' : ''}>Down</button>
+          <button type="button" class="btn-slim" data-act="dup" data-focus="dup:${esc(b.id)}" aria-label="Duplicate ${esc(name)}">Duplicate</button>
+          <button type="button" class="btn-slim btn-danger" data-act="del" data-focus="del:${esc(b.id)}" aria-label="Delete ${esc(name)}">Delete</button>
+        </span>` : ''}
       </li>`;
     }).join('');
   }

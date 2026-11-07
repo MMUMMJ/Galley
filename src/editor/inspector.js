@@ -46,6 +46,34 @@ export function mountInspector(panel, store, deps) {
     if (b) b[key] = value;
   }, opts(o, `${blockId}:${key}`));
 
+  // Write / Look / Notes tabs. The chosen tab stays as the student moves between blocks.
+  let tab = 'write';
+  const TAB_LABELS = { write: 'Write', look: 'Look', notes: 'Notes' };
+  function tabList(block) {
+    const keys = ['write', 'look', ...(getPack().includeNotes ? ['notes'] : [])];
+    if (!keys.includes(tab)) tab = 'write';
+    const moving = block.effect && block.effect !== 'none';
+    const set = { look: moving || Boolean(block.background), notes: Boolean((block.note || '').trim()) };
+    const needs = { look: moving && getPack().effectNotes === 'required' && !(block.effectNote || '').trim() };
+    const go = (k, focus) => {
+      tab = k;
+      preserveFocus(panel, render);
+      if (focus) panel.querySelector(`[data-focus="tab:${k}"]`)?.focus();
+    };
+    const list = h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Block settings' }, keys.map((k) => h('button', {
+      type: 'button', role: 'tab', id: `tab-${k}`, 'aria-selected': String(k === tab), 'aria-controls': 'inspector-tabpanel',
+      tabindex: k === tab ? '0' : '-1', 'data-focus': `tab:${k}`, onclick: () => go(k),
+    }, TAB_LABELS[k],
+    needs[k] ? h('span', { class: 'tab-dot tab-dot-warn', 'aria-hidden': 'true' }) : set[k] ? h('span', { class: 'tab-dot', 'aria-hidden': 'true' }) : null,
+    needs[k] ? h('span', { class: 'sr-only' }, ' (needs attention)') : set[k] ? h('span', { class: 'sr-only' }, ' (set)') : null)));
+    list.addEventListener('keydown', (e) => {
+      const i = keys.indexOf(tab);
+      const next = { ArrowRight: keys[(i + 1) % keys.length], ArrowLeft: keys[(i - 1 + keys.length) % keys.length], Home: keys[0], End: keys[keys.length - 1] }[e.key];
+      if (next) { e.preventDefault(); go(next, true); }
+    });
+    return list;
+  }
+
   // Updated on every keystroke without redrawing the fields.
   const issuesEl = h('ul', { class: 'inspector-issues', 'aria-label': 'Still to do' });
   function renderIssues() {
@@ -115,24 +143,31 @@ export function mountInspector(panel, store, deps) {
       body.append(h('p', {}, `This version of Illuminate can't edit "${block.type}" blocks. The block is kept so nothing is lost.`));
       return;
     }
-    const prompt = promptFor(block.type);
-    if (prompt) {
-      body.append(h('aside', { class: 'craft-prompt', 'aria-label': 'Craft prompt' },
-        h('strong', {}, 'Craft prompt'), h('p', {}, prompt)));
+    body.append(tabList(block));
+    const panelEl = h('div', { class: 'tabpanel', role: 'tabpanel', id: 'inspector-tabpanel', 'aria-labelledby': `tab-${tab}` });
+    body.append(panelEl);
+    if (tab === 'write') {
+      const prompt = promptFor(block.type);
+      if (prompt) {
+        panelEl.append(h('aside', { class: 'craft-prompt', 'aria-label': 'Craft prompt' },
+          h('strong', {}, 'Craft prompt'), h('p', {}, prompt)));
+      }
+      panelEl.append(issuesEl);
+      renderIssues();
+      const fields = h('div', { class: 'inspector-fields' });
+      panelEl.append(fields);
+      try {
+        mod.editorUI(fields, makeCtx(block));
+      } catch (e) {
+        fields.append(h('p', { class: 'error' }, `Couldn't show this block's fields: ${e.message}`));
+      }
+    } else if (tab === 'look') {
+      panelEl.append(renderEffects(block, { announce: deps.announce, setBlock: setBlock(block.id), noteMode: getPack().effectNotes }));
+      const background = renderBackground(block, store.story, { announce: deps.announce, setBlock: setBlock(block.id) });
+      if (background) panelEl.append(background);
+    } else {
+      panelEl.append(makersNote(block));
     }
-    body.append(issuesEl);
-    renderIssues();
-    const fields = h('div', { class: 'inspector-fields' });
-    body.append(fields);
-    try {
-      mod.editorUI(fields, makeCtx(block));
-    } catch (e) {
-      fields.append(h('p', { class: 'error' }, `Couldn't show this block's fields: ${e.message}`));
-    }
-    body.append(renderEffects(block, { announce: deps.announce, setBlock: setBlock(block.id), noteMode: getPack().effectNotes }));
-    const background = renderBackground(block, store.story, { announce: deps.announce, setBlock: setBlock(block.id) });
-    if (background) body.append(background);
-    if (getPack().includeNotes) body.append(makersNote(block));
   }
 
   store.subscribe((change) => {
@@ -146,7 +181,10 @@ export function mountInspector(panel, store, deps) {
 
   return {
     focusFirstField() {
-      const first = body.querySelector('.inspector-fields input:not(.sr-only), .inspector-fields textarea, .inspector-fields select, .inspector-fields button');
+      if (tab !== 'write') { tab = 'write'; render(); }
+      // A place to type first; buttons (such as a formatting toolbar) only if there's nothing else.
+      const first = body.querySelector('.inspector-fields [contenteditable="true"], .inspector-fields input:not(.sr-only):not([type="file"]), .inspector-fields textarea')
+        || body.querySelector('.inspector-fields select, .inspector-fields button');
       if (first) first.focus();
     },
   };

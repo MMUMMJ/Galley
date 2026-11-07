@@ -4,13 +4,15 @@
 import { h } from './dom.js';
 import { textInput, textArea, thumb, assetKind } from './fields.js';
 import { renderSchemePicker } from './scheme-picker.js';
+import { richText } from './rich-text.js';
 
 export const SEO_TITLE_MAX = 60;
 export const SEO_DESCRIPTION_MAX = 155;
 
 // Markdown-free text, for previews and fallbacks.
 export function plain(text) {
-  return String(text || '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[*_]/g, '').replace(/\s+/g, ' ').trim();
+  return String(text || '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\\([\\*_[\]#!().+-])|[*_]/g, (m, c) => c || '').replace(/\s+/g, ' ').trim();
 }
 
 const chars = (s) => [...String(s || '')].length;
@@ -89,7 +91,7 @@ export function renderMetadata(el, ctx) {
     h('p', { class: 'inspector-help' }, 'The fields an editor fills in before publishing. Search engines and social media use them; readers see the first three.'),
     h('fieldset', { class: 'field' }, h('legend', {}, 'On the page'),
       textInput(ctx, 'title', { label: 'Title', hint: 'Your headline. The first header shows it unless you give that header its own title.' }),
-      textArea(ctx, 'standfirst', { label: 'Standfirst', rows: 3, hint: 'One or two sentences under the headline. *Italics* and links work.' }),
+      richText(ctx, 'standfirst', { label: 'Standfirst', mode: 'inline', hint: 'One or two sentences under the headline.' }),
       textInput(ctx, 'byline', { label: 'Byline', placeholder: 'By …' })),
     renderSchemePicker(story, { set: ctx.set, announce: ctx.announce }),
     h('fieldset', { class: 'field' }, h('legend', {}, 'Search engines'),

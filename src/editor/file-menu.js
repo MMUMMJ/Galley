@@ -14,11 +14,14 @@ function download(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
-export function mountFileMenu(store, { exportBtn, menu, openBtn, getBlob, announce, toast, setStatus }) {
+// fileBtn opens the File menu, which already holds New story and Open…; exporters are added after them.
+export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, getBlob, announce, toast, setStatus }) {
   const exporters = Object.values(ADAPTERS.exporters);
-  menu.replaceChildren(...exporters.map((ex) => h('li', {},
+  menu.append(...exporters.map((ex) => h('li', {},
     h('button', { type: 'button', class: 'menu-option', onclick: () => run(ex) },
-      h('strong', {}, ex.label), h('span', {}, ex.description)))));
+      h('strong', {}, `Export: ${ex.label}`), h('span', {}, ex.description)))));
+  // Any choice closes the menu (New story and Open… have their own handlers too).
+  menu.addEventListener('click', (e) => { if (e.target.closest('button')) close(false); });
 
   const close = (refocus) => {
     menu.hidden = true;

@@ -17,7 +17,8 @@ The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
 - Phase 9 (folder saver): in Chrome and Edge, **Save to folder…** keeps an unzipped copy (`index.html`, `story.json`, `assets/`) in a folder the student chooses, ideally inside their synced OneDrive folder. Choosing a folder that already has a story offers to open it. Other browsers show: "To save straight to your OneDrive folder, use Chrome or Edge. Until then, Export is your save." The header shows when the story was last saved to the folder and last exported, and nudges after 3 days without an export.
 - Colour schemes and block backgrounds: six ready-made colour schemes (House, Wire, Long read, Magazine, Night desk, Investigation), all checked for 4.5:1 contrast, chosen in Story details; a pack can lock one as its house style. Any block can sit on a full-width coloured band, from the scheme's colours or any colour; Illuminate picks black or white text for it. Print always uses black on white.
 - Scroll sequence layouts: side by side (text left or right), overlay (text boxes left, centre or right), and text column (one continuous column of text, left, centre or right, while full-screen images crossfade behind).
-- Inline images: Text blocks and scroll steps can hold images inside the text, inserted with a button and shown full width or floated left or right with the text wrapping round. In the text they're a line like `![canal.jpg](asset:a_x12)`.
+- Inline images: Text blocks and scroll steps can hold images inside the text, full width or floated left or right with the text wrapping round.
+- Editor redesign: a File menu (New story, Open…, Export) with Undo, Redo and Checks; compact one-line block cards whose actions show only on the selected block; Write / Look / Notes tabs in the inspector; and a formatted text editor (bold, italics, links, subheadings, lists, images) so students never type Markdown. Pasting from Word or the web keeps only that formatting.
 
 ## Prompt packs
 
@@ -49,7 +50,7 @@ Serve the folder (below) and open <http://localhost:8000/test/runtime.html>. Pic
 - **Open as exported page** builds the page the way an export will: CSS and runtime inlined, story JSON embedded.
 - **Open exported page without JavaScript** builds the same page with no script, to check that the content still reads. Use it for print preview too.
 
-Mini-markdown in text blocks: each line is a paragraph; `## ` and `### ` start headings; `- ` and `1. ` start list items; `**bold**`, `*italic*`, `[text](https://…)`, and bare `https://` links.
+Behind the formatted editor, text is saved as a small Markdown subset, which is what the runtime reads: each line is a paragraph; `## ` and `### ` start headings; `- ` and `1. ` start list items; `**bold**`, `*italic*`, `[text](https://…)`, bare `https://` links, and `![name](asset:<id> "left"|"right")` images on their own line. A backslash makes a symbol literal (`\*`). Students never see it.
 
 ## Run it locally
 

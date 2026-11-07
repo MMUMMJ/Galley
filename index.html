@@ -16,23 +16,28 @@
   <header class="app-header">
     <h1 class="app-title">Illuminate</h1>
     <div class="toolbar">
-      <button type="button" class="btn" id="undo" aria-keyshortcuts="Control+Z Meta+Z" disabled>Undo</button>
-      <button type="button" class="btn" id="redo" aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y" disabled>Redo</button>
-      <button type="button" class="btn" id="new-story">New story</button>
-      <button type="button" class="btn" id="open">Open…</button>
       <div class="menu-wrap">
-        <button type="button" class="btn btn-primary" id="export" aria-expanded="false" aria-controls="export-menu">Export</button>
-        <ul class="menu" id="export-menu" hidden></ul>
+        <button type="button" class="btn btn-quiet" id="file" aria-expanded="false" aria-controls="file-menu">File <span aria-hidden="true">▾</span></button>
+        <ul class="menu" id="file-menu" hidden>
+          <li><button type="button" class="menu-option" id="new-story"><strong>New story</strong></button></li>
+          <li><button type="button" class="menu-option" id="open"><strong>Open…</strong><span>A ZIP or web page exported from Illuminate</span></button></li>
+          <li class="menu-sep" role="separator"></li>
+        </ul>
       </div>
+      <button type="button" class="btn btn-quiet btn-icon" id="undo" aria-label="Undo" title="Undo (Ctrl/Cmd+Z)" aria-keyshortcuts="Control+Z Meta+Z" disabled><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+      <button type="button" class="btn btn-quiet btn-icon" id="redo" aria-label="Redo" title="Redo (Ctrl/Cmd+Shift+Z)" aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y" disabled><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+      <span class="toolbar-sep" aria-hidden="true"></span>
       <button type="button" class="btn" id="checks" aria-expanded="false" aria-controls="checks-panel">Checks <span class="count"></span></button>
-      <div class="menu-wrap" id="folder-wrap" hidden>
-        <button type="button" class="btn" id="folder" aria-controls="folder-menu">Save to folder…</button>
-        <ul class="menu" id="folder-menu" hidden></ul>
-      </div>
     </div>
     <div class="status-lines">
       <p class="app-status" id="app-status">Loading editor…</p>
-      <p class="app-status" id="folder-status"></p>
+      <div class="folder-line">
+        <div class="menu-wrap" id="folder-wrap" hidden>
+          <button type="button" class="link-button" id="folder" aria-controls="folder-menu">Save to folder…</button>
+          <ul class="menu menu-right" id="folder-menu" hidden></ul>
+        </div>
+        <p class="app-status" id="folder-status"></p>
+      </div>
       <p class="app-status" id="export-status"></p>
     </div>
   </header>
