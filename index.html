@@ -24,6 +24,7 @@
         <button type="button" class="btn btn-primary" id="export" aria-expanded="false" aria-controls="export-menu">Export</button>
         <ul class="menu" id="export-menu" hidden></ul>
       </div>
+      <button type="button" class="btn" id="checks" aria-expanded="false" aria-controls="checks-panel">Checks <span class="count"></span></button>
     </div>
     <p class="app-status" id="app-status">Loading editor…</p>
   </header>
@@ -45,6 +46,8 @@
       <h2 id="preview-heading" class="panel-heading">Preview</h2>
       <iframe id="preview-frame" class="preview-frame" title="Preview of your story"></iframe>
     </section>
+
+    <aside class="panel checks-panel" id="checks-panel" tabindex="-1" aria-labelledby="checks-heading" hidden></aside>
   </main>
 
   <div id="announcer" class="sr-only" aria-live="polite"></div>

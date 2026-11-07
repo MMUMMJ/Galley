@@ -15,6 +15,7 @@ import { mountToolbar, saveStatusText } from './editor/toolbar.js';
 import { startAutosave } from './editor/autosave.js';
 import { loadPack, setPack, applyPack, startStory } from './packs.js';
 import { mountFileMenu } from './editor/file-menu.js';
+import { mountChecks } from './editor/checks-panel.js';
 
 export const EDITOR_VERSION = '0.3.0';
 
@@ -104,6 +105,7 @@ async function boot() {
   const inspector = mountInspector($('inspector'), store, { importFiles, assetUrl, announce });
   mountBlockList($('blocks'), store, { announce, toast, onAdded: () => inspector.focusFirstField() });
   mountPreview($('preview-frame'), store, { assetUrl });
+  mountChecks(store, { button: $('checks'), panel: $('checks-panel'), announce });
   mountFileMenu(store, {
     exportBtn: $('export'), menu: $('export-menu'), openBtn: $('open'), getBlob, announce, toast,
     setStatus: (text) => { statusLine.textContent = text; },

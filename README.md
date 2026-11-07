@@ -13,6 +13,7 @@ The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
 - Phase 5 (showpiece blocks): scroll sequence, before/after slider and big number, each with a craft prompt and required fields. Every effect is optional: without JavaScript, in print and with reduced motion the content is all there.
 - Phase 6 (effects): fade, rise, slide or zoom per block, run once by the runtime as the reader scrolls. Nothing is hidden without JavaScript, in print, or with reduced motion. Choosing an effect offers a note: "What does this movement do for the reader?"
 - Phase 7 (pedagogy + packs): craft prompts on every block, maker's notes, reflection questions, an optional maker's notes appendix in the export, and prompt packs.
+- Phase 8 (checks): a Checks panel of editor's questions (never marks), one module per check in `src/checks/`. Run <http://localhost:8000/test/checks.html> to confirm every check fires on `test/fixtures/flawed.json` and stays silent on `clean.json`.
 
 ## Prompt packs
 
@@ -83,7 +84,7 @@ src/                editor (plain ES modules, no build step)
   blocks/           one module per block type
   editor/           editor UI panels and styles
   adapters/         savers and exporters
-  checks/           one module per check
+  checks/           one module per check (questions, never marks)
 runtime/            reader-facing renderer, inlined into every export
 packs/              prompt packs
 test/fixtures/      sample stories
