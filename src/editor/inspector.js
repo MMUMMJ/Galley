@@ -5,6 +5,7 @@ import { BLOCKS, blockLabel } from '../blocks/index.js';
 import { h, preserveFocus } from './dom.js';
 import { STORY_DETAILS } from '../store.js';
 import { renderMetadata } from './metadata.js';
+import { renderEffects } from './effects.js';
 
 export function mountInspector(panel, store, deps) {
   const body = h('div', { class: 'inspector-body' });
@@ -101,6 +102,14 @@ export function mountInspector(panel, store, deps) {
     } catch (e) {
       fields.append(h('p', { class: 'error' }, `Couldn't show this block's fields: ${e.message}`));
     }
+    body.append(renderEffects(block, {
+      announce: deps.announce,
+      // Block-level fields (effect, effectNote) rather than block.data.
+      setBlock: (key, value, opts = {}) => store.update((s) => {
+        const b = s.blocks.find((x) => x.id === block.id);
+        if (b) b[key] = value;
+      }, { from: opts.rerender ? 'inspector-structural' : 'inspector', coalesce: opts.rerender ? null : `${block.id}:${key}` }),
+    }));
   }
 
   store.subscribe((change) => {

@@ -2,7 +2,7 @@
 // and reports what src/model.js thinks of them.
 import { load, RUNTIME_VERSION as MODEL_RUNTIME_VERSION } from '../src/model.js';
 
-const FIXTURES = { feature: 'Feature article', portfolio: 'Process portfolio', showpiece: 'Showpiece blocks', 'edge-cases': 'Edge cases' };
+const FIXTURES = { feature: 'Feature article', portfolio: 'Process portfolio', showpiece: 'Showpiece blocks', effects: 'Effects', 'edge-cases': 'Edge cases' };
 const $ = (id) => document.getElementById(id);
 const R = window.Illuminate;
 let story = null;

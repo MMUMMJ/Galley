@@ -6,6 +6,7 @@ import { BLOCKS, blockLabel } from '../blocks/index.js';
 import { esc, preserveFocus } from './dom.js';
 import { enableDrag } from './drag.js';
 import { STORY_DETAILS } from '../store.js';
+import { effectBadge } from './effects.js';
 
 export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   panel.innerHTML = `
@@ -65,7 +66,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
         <button type="button" class="block-select" data-act="select" data-focus="sel:${esc(b.id)}" tabindex="${tab}"
           aria-current="${isSel ? 'true' : 'false'}">
           <span class="block-num">${i + 1}</span>
-          <span class="block-text"><span class="block-type">${esc(label)}${badge ? ` <span class="badge">${esc(badge)}</span>` : ''}</span>
+          <span class="block-text"><span class="block-type">${esc(label)}${badge ? ` <span class="badge">${esc(badge)}</span>` : ''}${effectBadge(b.effect) ? ` <span class="badge badge-fx" title="Movement">↯ ${esc(effectBadge(b.effect))}</span>` : ''}</span>
           <span class="block-summary">${esc(String(summary).slice(0, 80))}</span></span>
         </button>
         <span class="block-actions">

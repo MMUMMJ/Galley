@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.4.0';
+  const RUNTIME_VERSION = '1.5.0';
 
   // ------------------------------------------------------------ helpers
 
@@ -14,6 +14,7 @@
   const str = (v) => (typeof v === 'string' ? v : '');
   const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
   const WIDTHS = ['column', 'wide', 'full'];
+  const EFFECTS = ['fade', 'rise', 'slide', 'zoom'];
   const widthClass = (w, fallback) => 'il-w-' + (WIDTHS.includes(w) ? w : fallback || 'column');
 
   // Allows http(s), mailto and relative links. Drops javascript:, data: and friends.
@@ -377,7 +378,13 @@
         out.push(str(d.title) ? `<section class="il-part" aria-labelledby="${esc(b.id)}-title">` : '<section class="il-part">');
         inPart = true;
       }
-      try { out.push(fn(b, d, ctx)); } catch (e) { out.push(placeholder(b, ctx, 'This block could not be shown')); }
+      let html;
+      try { html = fn(b, d, ctx); } catch (e) { html = placeholder(b, ctx, 'This block could not be shown'); }
+      // Effects are only a marker in the HTML; the runtime's CSS and IntersectionObserver do the rest.
+      if (html && EFFECTS.includes(b.effect)) {
+        html = html.replace(` id="${esc(b.id)}"`, ` id="${esc(b.id)}" data-il-effect="${b.effect}"`);
+      }
+      out.push(html);
     }
     if (inPart) out.push('</section>');
     return `<article class="il-story">\n${out.filter(Boolean).join('\n')}\n</article>`;
@@ -708,6 +715,26 @@
     io.observe(el);
   }
 
+  // Effects: a block with data-il-effect fades, rises, slides or zooms in the first time it
+  // scrolls into view. The hidden starting state only exists in CSS under
+  // prefers-reduced-motion: no-preference, and only once this has added .il-fx,
+  // so without JavaScript, with reduced motion, or in print, nothing is ever hidden.
+  function setupEffects(elements, doc) {
+    const win = doc.defaultView;
+    if (!elements.length || !win || reducedMotion(doc) || typeof win.IntersectionObserver !== 'function') return;
+    const io = new win.IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('is-in');
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    elements.forEach((el) => {
+      el.classList.add('il-fx');
+      io.observe(el);
+    });
+  }
+
   // Single-file pages hold video and audio as data: URLs, which some browsers
   // (notably Safari) can't seek in or play. A blob: URL of the same bytes plays everywhere.
   function dataToBlobUrl(media) {
@@ -732,6 +759,7 @@
     fresh('[data-il-scrolly]').forEach((el) => setupScrolly(el, doc));
     fresh('[data-il-compare]').forEach((el) => setupCompare(el, doc));
     fresh('[data-il-count]').forEach((el) => setupNumber(el, doc));
+    setupEffects(Array.from(rootNode.querySelectorAll('[data-il-effect]:not(.il-fx)')), doc);
     setupPrint(doc);
   }
 

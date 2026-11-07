@@ -7,7 +7,7 @@ export const SCHEMA_VERSION = 1;
 
 // Must match RUNTIME_VERSION in runtime/illuminate-runtime.js.
 // test/runtime.html flags any mismatch.
-export const RUNTIME_VERSION = '1.4.0';
+export const RUNTIME_VERSION = '1.5.0';
 
 export const BLOCK_TYPES = ['header', 'text', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'compare', 'number'];
 export const SCROLLY_LAYOUTS = ['side', 'overlay'];
@@ -52,7 +52,7 @@ export function blockDefaults(type) {
 }
 
 export function createBlock(type, data = {}) {
-  return { id: newId('b'), type, effect: 'none', note: '', data: { ...blockDefaults(type), ...data } };
+  return { id: newId('b'), type, effect: 'none', effectNote: '', note: '', data: { ...blockDefaults(type), ...data } };
 }
 
 export function createMeta(now = new Date().toISOString()) {
@@ -125,6 +125,7 @@ export function normalise(input) {
       id,
       type: typeof b.type === 'string' ? b.type : '',
       effect: EFFECTS.includes(b.effect) ? b.effect : 'none',
+      effectNote: typeof b.effectNote === 'string' ? b.effectNote : '', // why this block moves (Phase 6)
       note: typeof b.note === 'string' ? b.note : '',
       data: { ...defaults, ...(isObj(b.data) ? b.data : {}) },
     };
@@ -191,6 +192,7 @@ export function validate(story) {
       ids.add(b.id);
       if (!BLOCK_TYPES.includes(b.type)) err(`${p}.type`, `Unknown block type "${b.type}".`);
       oneOf(b.effect, EFFECTS, `${p}.effect`);
+      isString(b.effectNote, `${p}.effectNote`);
       isString(b.note, `${p}.note`);
       if (!isObj(b.data)) return err(`${p}.data`, 'Must be an object.');
       const rule = BLOCK_RULES[b.type];

@@ -29,6 +29,7 @@
   font: 400 1.1875rem/1.65 var(--il-serif);
   -webkit-text-size-adjust: 100%;
   overflow-wrap: break-word;
+  overflow-x: clip; /* slide effects must never cause sideways scrolling (clip keeps sticky working) */
 }
 
 .il-story *, .il-story *::before, .il-story *::after { box-sizing: border-box; }
@@ -364,6 +365,12 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
 
 /* ---------- motion: only ever decorative, and off when the reader asks */
 @media (prefers-reduced-motion: no-preference) {
+  /* Effects (Phase 6). .il-fx is added by the runtime only when motion is allowed. */
+  .il-fx { transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .il-fx:not(.is-in) { opacity: 0; }
+  .il-fx[data-il-effect="rise"]:not(.is-in) { transform: translateY(2.5rem); }
+  .il-fx[data-il-effect="slide"]:not(.is-in) { transform: translateX(-3rem); }
+  .il-fx[data-il-effect="zoom"]:not(.is-in) { transform: scale(0.94); }
   .il-references summary::before { transition: transform 0.15s ease; }
   .il-scrolly__frame { transition: opacity 0.45s ease; }
   .il-lightbox[open] { animation: il-fade 0.18s ease-out; }
@@ -435,6 +442,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   .il-scrolly.is-enhanced .il-scrolly__card { padding: 0; background: none; box-shadow: none; border: 0; }
   .il-compare__pair { grid-template-columns: 1fr 1fr; }
   .il-number__figure { font-size: 36pt; }
+  .il-fx { opacity: 1 !important; transform: none !important; transition: none !important; }
   .il-references summary { min-height: 0; }
   .il-references summary::before { content: none; }
 }

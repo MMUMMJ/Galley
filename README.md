@@ -11,6 +11,7 @@ The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
 - Phase 3 (export + open): export a ZIP or a single web page; open either one again to keep editing.
 - Phase 4 (newsroom metadata): Story details panel (title, standfirst, byline, SEO title and description, share image and text); exports write `<title>`, description, Open Graph and Twitter-card tags.
 - Phase 5 (showpiece blocks): scroll sequence, before/after slider and big number, each with a craft prompt and required fields. Every effect is optional: without JavaScript, in print and with reduced motion the content is all there.
+- Phase 6 (effects): fade, rise, slide or zoom per block, run once by the runtime as the reader scrolls. Nothing is hidden without JavaScript, in print, or with reduced motion. Choosing an effect offers a note: "What does this movement do for the reader?"
 
 ## Test the runtime
 
