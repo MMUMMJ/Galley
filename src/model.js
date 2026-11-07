@@ -7,9 +7,10 @@ export const SCHEMA_VERSION = 1;
 
 // Must match RUNTIME_VERSION in runtime/illuminate-runtime.js.
 // test/runtime.html flags any mismatch.
-export const RUNTIME_VERSION = '1.1.0';
+export const RUNTIME_VERSION = '1.4.0';
 
-export const BLOCK_TYPES = ['header', 'text', 'quote', 'media', 'gallery', 'embed', 'divider', 'references'];
+export const BLOCK_TYPES = ['header', 'text', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'compare', 'number'];
+export const SCROLLY_LAYOUTS = ['side', 'overlay'];
 export const EFFECTS = ['none', 'fade', 'rise', 'slide', 'zoom'];
 export const HEADER_VARIANTS = ['full', 'compact'];
 export const MEDIA_KINDS = ['image', 'video', 'audio'];
@@ -32,6 +33,10 @@ const BLOCK_DATA = {
   embed: () => ({ url: '', title: '', description: '', screenshot: null, width: 'column' }),
   divider: () => ({ text: '' }),
   references: () => ({ title: 'References', items: [], collapsed: false }),
+  // Showpiece blocks (Phase 5)
+  scrolly: () => ({ layout: 'side', steps: [{ media: null, text: '' }, { media: null, text: '' }] }),
+  compare: () => ({ before: { asset: null, label: '' }, after: { asset: null, label: '' }, caption: '', width: 'wide' }),
+  number: () => ({ value: '', unit: '', context: '', sourceName: '', sourceRef: '' }),
 };
 
 export function newId(prefix) {
@@ -244,6 +249,28 @@ const BLOCK_RULES = {
     v.oneOf(d.width, MEDIA_WIDTHS, `${p}.width`);
   },
   divider(d, p, v) { v.isString(d.text, `${p}.text`); },
+  scrolly(d, p, v) {
+    v.oneOf(d.layout, SCROLLY_LAYOUTS, `${p}.layout`);
+    if (!Array.isArray(d.steps)) return v.err(`${p}.steps`, 'Must be a list of steps.');
+    d.steps.forEach((step, i) => {
+      if (!step || typeof step !== 'object') return v.err(`${p}.steps[${i}]`, 'Each step must be an object.');
+      v.isString(step.text, `${p}.steps[${i}].text`);
+      v.ref(step.media, `${p}.steps[${i}].media`);
+    });
+  },
+  compare(d, p, v) {
+    for (const side of ['before', 'after']) {
+      const s = d[side];
+      if (!s || typeof s !== 'object') { v.err(`${p}.${side}`, 'Must be an object.'); continue; }
+      v.ref(s.asset, `${p}.${side}.asset`);
+      v.isString(s.label, `${p}.${side}.label`);
+    }
+    v.isString(d.caption, `${p}.caption`);
+    v.oneOf(d.width, MEDIA_WIDTHS, `${p}.width`);
+  },
+  number(d, p, v) {
+    for (const k of ['value', 'unit', 'context', 'sourceName', 'sourceRef']) v.isString(d[k], `${p}.${k}`);
+  },
   references(d, p, v) {
     v.isString(d.title, `${p}.title`);
     if (!Array.isArray(d.items) || d.items.some((x) => typeof x !== 'string')) v.err(`${p}.items`, 'Must be a list of text.');

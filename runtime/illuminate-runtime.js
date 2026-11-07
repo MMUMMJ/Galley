@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.1.0';
+  const RUNTIME_VERSION = '1.4.0';
 
   // ------------------------------------------------------------ helpers
 
@@ -255,7 +255,7 @@
       try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) { host = url; }
       const title = str(d.title) || (info ? `${info.label}: ${host}` : host);
       const shot = ctx.asset(d.screenshot);
-      const data = info ? ` data-il-embed-src="${esc(info.src)}" data-il-embed-label="${esc(info.label)}"`
+      const data = info ? ` data-il-embed-src="${esc(info.src)}" data-il-embed-label="${esc(info.label)}" data-il-embed-provider="${info.provider}"`
         + (info.height ? ` data-il-embed-height="${info.height}"` : '') : '';
       return `<figure class="il-embed ${widthClass(d.width)}" id="${esc(b.id)}"${data}><div class="il-embed__frame">`
         + `<a class="il-card" href="${esc(url)}">`
@@ -281,6 +281,67 @@
       return `<section class="il-references" id="${esc(b.id)}" aria-labelledby="${hid}"><details${d.collapsed === true ? '' : ' open'}>`
         + `<summary><h${lvl} class="il-references__title" id="${hid}">${esc(str(d.title) || 'References')}</h${lvl}></summary>`
         + `<ul class="il-references__list">${items.map((i) => `<li>${inline(i)}</li>`).join('')}</ul></details></section>`;
+    },
+
+    // ---- Showpiece blocks. Each renders complete, readable HTML; enhance() adds the effect.
+
+    // Scroll sequence: steps of text, each optionally bringing in a new image.
+    // Static: image then text, step by step. Enhanced: sticky image panel, steps scroll past.
+    scrolly(b, d, ctx) {
+      const steps = (Array.isArray(d.steps) ? d.steps : []).filter(isObj);
+      if (!steps.some((st) => str(st.text).trim() || ctx.asset(st.media))) return placeholder(b, ctx, 'Add steps to this scroll sequence');
+      const layout = d.layout === 'overlay' ? 'overlay' : 'side';
+      const html = steps.map((st, i) => {
+        const a = ctx.asset(st.media);
+        const fig = a && kindOf(a) === 'image'
+          ? `<figure class="il-scrolly__media"><img src="${esc(ctx.url(st.media))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(st.media)}>${figcaption(a)}</figure>`
+          : '';
+        const text = markdown(st.text, 2 + ctx.offset);
+        return `<div class="il-scrolly__step" data-il-step="${i}">${fig}<div class="il-scrolly__card">${text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '')}</div></div>`;
+      }).join('');
+      return `<section class="il-scrolly il-scrolly--${layout}" id="${esc(b.id)}" data-il-scrolly aria-label="Scroll sequence">`
+        + `<div class="il-scrolly__steps">${html}</div></section>`;
+    },
+
+    // Before/after: two labelled images. Static: side by side. Enhanced: one slider.
+    compare(b, d, ctx) {
+      const side = (key, word) => {
+        const s = isObj(d[key]) ? d[key] : {};
+        const a = ctx.asset(s.asset);
+        if (!a || kindOf(a) !== 'image') return '';
+        const credit = [str(a.credit), str(a.licence)].filter(Boolean).join(' · ');
+        const label = str(s.label).trim();
+        return `<figure class="il-compare__side il-compare__${key}"><img src="${esc(ctx.url(s.asset))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(s.asset)}>`
+          + `<figcaption><strong class="il-compare__label">${esc(word)}${label ? ': ' + esc(label) : ''}</strong>`
+          + (credit ? ` <span class="il-credit">${esc(credit)}</span>` : '') + '</figcaption></figure>';
+      };
+      const before = side('before', 'Before');
+      const after = side('after', 'After');
+      if (!before || !after) return placeholder(b, ctx, 'Choose a before and an after image');
+      return `<figure class="il-compare ${widthClass(d.width, 'wide')}" id="${esc(b.id)}" data-il-compare>`
+        + `<div class="il-compare__pair">${before}${after}</div>`
+        + (str(d.caption) ? `<figcaption class="il-compare__caption">${inline(d.caption)}</figcaption>` : '') + '</figure>';
+    },
+
+    // Big number: always in the HTML at its final value; enhance() may count up to it.
+    number(b, d, ctx) {
+      const value = str(d.value).trim();
+      if (!value) return placeholder(b, ctx, 'Add a number');
+      const unit = str(d.unit).trim();
+      const name = str(d.sourceName).trim();
+      const ref = str(d.sourceRef).trim();
+      const refUrl = /^https?:\/\//i.test(ref) ? safeUrl(ref) : '';
+      const source = name
+        ? (refUrl ? `<a href="${esc(refUrl)}">${esc(name)}</a>` : esc(name) + (ref ? `, ${inline(ref)}` : ''))
+        : (ref ? inline(ref) : '');
+      return `<figure class="il-number" id="${esc(b.id)}">`
+        + `<p class="il-number__figure"><span class="il-number__value" aria-hidden="true" data-il-count="${esc(value)}">${esc(value)}</span>`
+        + (unit ? `<span class="il-number__unit" aria-hidden="true">${esc(unit)}</span>` : '')
+        + `<span class="il-sr">${esc(value)}${unit ? ' ' + esc(unit) : ''}</span></p>`
+        + '<figcaption>'
+        + (str(d.context).trim() ? `<p class="il-number__context">${inline(d.context)}</p>` : '')
+        + (source ? `<p class="il-number__source">Source: ${source}</p>` : (ctx.preview ? '<p class="il-number__source"><span class="il-badge">Unsourced</span></p>' : ''))
+        + '</figcaption></figure>';
     },
   };
 
@@ -322,6 +383,40 @@
     return `<article class="il-story">\n${out.filter(Boolean).join('\n')}\n</article>`;
   }
 
+  // Markdown-free text for meta tags.
+  const plain = (text) => str(text).replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[*_]/g, '').replace(/\s+/g, ' ').trim();
+
+  // Description, author, Open Graph and Twitter-card tags.
+  // og:url is left out: an offline submission has no public address.
+  function headTags(story, o, title) {
+    const m = isObj(story && story.meta) ? story.meta : {};
+    const assets = isObj(story && story.assets) ? story.assets : {};
+    const desc = plain(m.seoDescription) || plain(m.standfirst);
+    const share = plain(m.shareText) || desc;
+    const author = str(m.byline).replace(/^\s*by\s+/i, '').trim();
+    const img = typeof m.shareImage === 'string' && isObj(assets[m.shareImage]) ? assets[m.shareImage] : null;
+    // A single-file page would have to repeat the whole image as a data: URL; leave it out there.
+    const imgUrl = img && !o.inline ? (o.assetUrl ? o.assetUrl(m.shareImage, img) : assetPath(m.shareImage, img)) : '';
+    const tag = (attr, name, content) => (content ? `<meta ${attr}="${name}" content="${esc(content)}">\n` : '');
+    const time = (v) => (str(v) && !Number.isNaN(Date.parse(v)) ? new Date(v).toISOString() : '');
+    return tag('name', 'description', desc)
+      + tag('name', 'author', author)
+      + tag('property', 'og:type', 'article')
+      + tag('property', 'og:title', title)
+      + tag('property', 'og:description', share)
+      + tag('property', 'og:locale', 'en_GB')
+      + tag('property', 'og:image', imgUrl)
+      + (imgUrl ? tag('property', 'og:image:alt', str(img.alt))
+        + (img.width > 0 && img.height > 0 ? tag('property', 'og:image:width', String(+img.width)) + tag('property', 'og:image:height', String(+img.height)) : '') : '')
+      + tag('property', 'article:published_time', time(m.created))
+      + tag('property', 'article:modified_time', time(m.modified))
+      + tag('name', 'twitter:card', imgUrl ? 'summary_large_image' : 'summary')
+      + tag('name', 'twitter:title', title)
+      + tag('name', 'twitter:description', share)
+      + tag('name', 'twitter:image', imgUrl)
+      + (imgUrl ? tag('name', 'twitter:image:alt', str(img.alt)) : '');
+  }
+
   // A complete, self-contained page. Pass opts.css / opts.js as text to inline them
   // (what the exporter does), or opts.cssHref / opts.jsSrc to link them.
   function renderDocument(story, opts) {
@@ -330,7 +425,6 @@
     const firstHeader = (Array.isArray(story && story.blocks) ? story.blocks : [])
       .find((b) => isObj(b) && b.type === 'header' && isObj(b.data) && str(b.data.title));
     const title = str(m.seoTitle) || str(m.title) || (firstHeader ? firstHeader.data.title : '') || 'Untitled story';
-    const desc = str(m.seoDescription) || str(m.standfirst);
     const json = JSON.stringify(Object.assign({}, story, { runtimeVersion: RUNTIME_VERSION })).replace(/</g, '\\u003c');
     const boot = '<script>window.Illuminate && window.Illuminate.enhance(document);</' + 'script>';
     const css = o.css != null ? `<style>\n${String(o.css).replace(/<\/style/gi, '<\\/style')}\n</style>`
@@ -340,7 +434,7 @@
     return '<!doctype html>\n<html lang="en-GB">\n<head>\n<meta charset="utf-8">\n'
       + '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
       + `<title>${esc(title)}</title>\n`
-      + (desc ? `<meta name="description" content="${esc(desc)}">\n` : '')
+      + headTags(story, o, title)
       + `<meta name="generator" content="Illuminate ${RUNTIME_VERSION}">\n${css}\n</head>\n`
       + `<body class="il-page">\n<main>\n${renderArticle(story, o)}\n</main>\n`
       + `<script type="application/json" id="illuminate-source">${json}</` + 'script>\n'
@@ -434,31 +528,44 @@
     });
   }
 
+  // Embedded players for YouTube, Vimeo, Spotify and SoundCloud. The link card (with its
+  // archived screenshot) is in the HTML; the player is added on top of it when the page opens.
+  // Without JavaScript, offline, and in print, the card is what readers get.
   function setupEmbed(fig, doc) {
     const frame = fig.querySelector('.il-embed__frame');
     const card = fig.querySelector('.il-card');
-    if (!frame || !card) return;
+    const win = doc.defaultView;
+    if (!frame || !card || !win) return;
     const label = fig.getAttribute('data-il-embed-label');
-    const btn = doc.createElement('button');
-    btn.type = 'button';
-    btn.className = 'il-btn il-embed__play';
-    btn.textContent = `Play here (loads ${label})`;
-    btn.addEventListener('click', () => {
+    // YouTube refuses to play inside a page opened from a file (it shows "Error 153"),
+    // so readers get the link there, with a note saying why.
+    if (fig.getAttribute('data-il-embed-provider') === 'youtube' && doc.location && doc.location.protocol === 'file:') {
+      const note = doc.createElement('p');
+      note.className = 'il-embed__note';
+      note.textContent = 'YouTube doesn\'t play videos inside a story opened from a file. Use the link to watch it on YouTube.';
+      frame.after(note);
+      return;
+    }
+    const insert = () => {
+      if (fig.querySelector('.il-embed__iframe')) return;
       const f = doc.createElement('iframe');
       f.className = 'il-embed__iframe';
       f.src = fig.getAttribute('data-il-embed-src');
       f.title = `${card.querySelector('.il-card__title').textContent} (${label} player)`;
+      f.setAttribute('loading', 'lazy');
       f.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write');
       f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
       const h = fig.getAttribute('data-il-embed-height');
       if (h) f.style.height = h + 'px';
       else f.classList.add('il-embed__iframe--video');
       frame.insertBefore(f, card);
-      btn.remove();
-      f.focus();
-    });
-    frame.after(btn);
+      fig.classList.add('has-player');
+    };
+    // Offline, a player would only show an error page: keep the card until the connection is back.
+    if (win.navigator && win.navigator.onLine === false) win.addEventListener('online', insert, { once: true });
+    else insert();
   }
+
 
   // Collapsed references open for printing, then close again.
   function setupPrint(doc) {
@@ -466,11 +573,139 @@
     if (!win || doc.ilPrint) return;
     doc.ilPrint = true;
     win.addEventListener('beforeprint', () => {
+      (doc.ilFinalisers || []).forEach((finish) => finish());
       doc.querySelectorAll('.il-story details:not([open])').forEach((d) => { d.open = true; d.dataset.ilPrintOpened = ''; });
     });
     win.addEventListener('afterprint', () => {
       doc.querySelectorAll('[data-il-print-opened]').forEach((d) => { d.open = false; delete d.dataset.ilPrintOpened; });
     });
+  }
+
+  const reducedMotion = (doc) => {
+    const win = doc.defaultView;
+    return !win || !win.matchMedia || win.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  };
+
+  // Scroll sequence: copies each step's image into one sticky panel and shows the image
+  // for whichever step is in the middle of the screen. The step's own image stays in the
+  // page (hidden on screen, shown in print), so nothing depends on the effect.
+  function setupScrolly(section, doc) {
+    const win = doc.defaultView;
+    if (!win || typeof win.IntersectionObserver !== 'function') return;
+    const steps = Array.from(section.querySelectorAll('.il-scrolly__step'));
+    const panel = doc.createElement('div');
+    panel.className = 'il-scrolly__panel';
+    const frames = [];
+    let current = -1;
+    const frameFor = steps.map((step) => {
+      const fig = step.querySelector('.il-scrolly__media');
+      if (fig) {
+        const frame = fig.cloneNode(true);
+        frame.className = 'il-scrolly__frame';
+        frame.setAttribute('aria-hidden', 'true'); // the step's own figure is the accessible copy
+        panel.appendChild(frame);
+        frames.push(frame);
+        current = frames.length - 1;
+      }
+      return current; // steps without an image keep the previous one
+    });
+    if (!frames.length) return;
+    section.insertBefore(panel, section.firstChild);
+    section.classList.add('is-enhanced');
+    const show = (i) => {
+      const f = Math.max(0, frameFor[i]);
+      frames.forEach((fr, j) => fr.classList.toggle('is-active', j === f));
+      steps.forEach((st, j) => st.classList.toggle('is-active', j === i));
+    };
+    show(0);
+    const io = new win.IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) show(steps.indexOf(e.target)); });
+    }, { rootMargin: '-50% 0px -50% 0px' });
+    steps.forEach((st) => io.observe(st));
+  }
+
+  // Before/after slider. Skipped under reduced motion: the images stay side by side.
+  function setupCompare(fig, doc) {
+    if (reducedMotion(doc)) return;
+    const pair = fig.querySelector('.il-compare__pair');
+    const before = fig.querySelector('.il-compare__before');
+    const after = fig.querySelector('.il-compare__after');
+    if (!pair || !before || !after) return;
+    const label = (el) => {
+      const name = (el.querySelector('.il-compare__label') || {}).textContent || '';
+      const credit = (el.querySelector('.il-credit') || {}).textContent || '';
+      return credit ? `${name} (${credit})` : name;
+    };
+    const bar = doc.createElement('p');
+    bar.className = 'il-compare__labels';
+    bar.setAttribute('aria-hidden', 'true'); // the figcaptions stay as the accessible labels
+    bar.innerHTML = `<span>◀ ${esc(label(before))}</span><span>${esc(label(after))} ▶</span>`;
+    const input = doc.createElement('input');
+    input.type = 'range';
+    input.min = '0';
+    input.max = '100';
+    input.value = '50';
+    input.className = 'il-compare__range';
+    input.setAttribute('aria-label', 'Before and after comparison. Move left to see more of the after image, right to see more of the before image.');
+    const update = () => {
+      pair.style.setProperty('--il-pos', input.value + '%');
+      input.setAttribute('aria-valuetext', `${input.value}% before, ${100 - input.value}% after`);
+    };
+    input.addEventListener('input', update);
+    update();
+    pair.after(bar, input);
+    fig.classList.add('is-slider');
+  }
+
+  // Big number: counts up from zero each time it scrolls into view.
+  // Skipped under reduced motion; printing always shows the final value.
+  function parseCount(text) {
+    const m = String(text).match(/^(.*?)(\d[\d,]*(?:\.\d+)?)(.*)$/);
+    if (!m) return null;
+    const decimals = (m[2].split('.')[1] || '').length;
+    const commas = m[2].includes(',');
+    const target = parseFloat(m[2].replace(/,/g, ''));
+    if (!Number.isFinite(target)) return null;
+    const fmt = (x) => m[1] + (commas
+      ? x.toLocaleString('en-GB', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+      : x.toFixed(decimals)) + m[3];
+    return { target, fmt };
+  }
+
+  function setupNumber(el, doc) {
+    const win = doc.defaultView;
+    const final = el.getAttribute('data-il-count');
+    const parsed = parseCount(final);
+    if (!parsed || !win || reducedMotion(doc) || typeof win.IntersectionObserver !== 'function') return;
+    let frame = 0;
+    let armed = true; // ready to count the next time the number comes into view
+    const finish = () => { win.cancelAnimationFrame(frame); el.textContent = final; };
+    (doc.ilFinalisers = doc.ilFinalisers || []).push(finish);
+    el.textContent = parsed.fmt(0);
+    const count = () => {
+      const start = win.performance.now();
+      const tick = (now) => {
+        const t = Math.min(1, (now - start) / 1200);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = t < 1 ? parsed.fmt(parsed.target * eased) : final;
+        if (t < 1) frame = win.requestAnimationFrame(tick);
+      };
+      frame = win.requestAnimationFrame(tick);
+    };
+    // Counts up each time it comes into view. Once it has left the screen completely,
+    // it quietly resets to zero (out of sight) so it can count again next time.
+    const io = new win.IntersectionObserver((entries) => {
+      const e = entries[entries.length - 1];
+      if (e.intersectionRatio >= 0.6 && armed) {
+        armed = false;
+        count();
+      } else if (!e.isIntersecting && !armed) {
+        win.cancelAnimationFrame(frame);
+        el.textContent = parsed.fmt(0);
+        armed = true;
+      }
+    }, { threshold: [0, 0.6] });
+    io.observe(el);
   }
 
   // Single-file pages hold video and audio as data: URLs, which some browsers
@@ -494,6 +729,9 @@
     fresh('[data-il-gallery]').forEach((g) => setupGallery(g, doc));
     fresh('[data-il-embed-src]').forEach((e) => setupEmbed(e, doc));
     fresh('video[src^="data:"], audio[src^="data:"]').forEach(dataToBlobUrl);
+    fresh('[data-il-scrolly]').forEach((el) => setupScrolly(el, doc));
+    fresh('[data-il-compare]').forEach((el) => setupCompare(el, doc));
+    fresh('[data-il-count]').forEach((el) => setupNumber(el, doc));
     setupPrint(doc);
   }
 

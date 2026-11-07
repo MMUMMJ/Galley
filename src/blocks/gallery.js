@@ -15,16 +15,16 @@ export default {
   editorUI(el, ctx) {
     const items = ctx.block.data.items || [];
     const bid = ctx.block.id;
-    const setItems = (next, message) => {
-      ctx.set('items', next, { rerender: true });
+    // Change the live list, not the copy from when this panel was drawn.
+    const changeItems = (fn, message) => {
+      ctx.edit((data) => { data.items = fn((data.items || []).slice()); }, { rerender: true });
       if (message) ctx.announce(message);
     };
-    const move = (i, delta) => {
-      const next = items.slice();
+    const move = (i, delta) => changeItems((next) => {
       const [id] = next.splice(i, 1);
       next.splice(i + delta, 0, id);
-      setItems(next, `Image moved to position ${i + delta + 1} of ${next.length}.`);
-    };
+      return next;
+    }, `Image moved to position ${i + delta + 1} of ${items.length}.`);
 
     const list = h('ol', { class: 'gallery-items' }, items.map((id, i) => {
       const asset = ctx.story.assets[id];
@@ -46,7 +46,7 @@ export default {
             h('button', {
               type: 'button', class: 'btn btn-icon', 'aria-label': `Remove image ${i + 1} from gallery`, title: 'Remove',
               'data-focus': `${bid}:g-del:${id}`,
-              onclick: () => setItems(items.filter((_, j) => j !== i), `Image ${i + 1} removed from the gallery.`),
+              onclick: () => changeItems((next) => next.filter((_, j) => j !== i), `Image ${i + 1} removed from the gallery.`),
             }, '✕'))),
         asset ? h('details', { class: 'gallery-item-details', open: noAlt },
           h('summary', { 'data-focus': `${bid}:g-sum:${id}` }, 'Alt text, caption and credit'),
@@ -77,7 +77,7 @@ export default {
           h('label', { for: existingId }, 'Or add an image already in this story'),
           h('select', {
             id: existingId, 'data-focus': `${bid}:g-existing`,
-            onchange: (e) => { if (e.target.value) setItems([...items, e.target.value], 'Image added to the gallery.'); },
+            onchange: (e) => { const id = e.target.value; if (id) changeItems((next) => [...next, id], 'Image added to the gallery.'); },
           }, h('option', { value: '' }, 'Choose…'), others.map(([id, a]) => h('option', { value: id }, a.name || id)))) : null),
       textArea(ctx, 'caption', { label: 'Gallery caption', rows: 2 }),
       selectInput(ctx, 'width', { label: 'Width', options: [['column', 'Column'], ['wide', 'Wide'], ['full', 'Full width']] }),

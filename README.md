@@ -9,6 +9,8 @@ The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
 - Phase 1 (model + runtime): the story model (`src/model.js`) and the reader-facing renderer (`runtime/`).
 - Phase 2 (editor core): build, edit and reorder blocks, import media, undo and redo, live preview, autosave to this browser.
 - Phase 3 (export + open): export a ZIP or a single web page; open either one again to keep editing.
+- Phase 4 (newsroom metadata): Story details panel (title, standfirst, byline, SEO title and description, share image and text); exports write `<title>`, description, Open Graph and Twitter-card tags.
+- Phase 5 (showpiece blocks): scroll sequence, before/after slider and big number, each with a craft prompt and required fields. Every effect is optional: without JavaScript, in print and with reduced motion the content is all there.
 
 ## Test the runtime
 

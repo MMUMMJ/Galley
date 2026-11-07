@@ -3,6 +3,8 @@
 // edits (choosing a file, reordering gallery images), but not while the student types.
 import { BLOCKS, blockLabel } from '../blocks/index.js';
 import { h, preserveFocus } from './dom.js';
+import { STORY_DETAILS } from '../store.js';
+import { renderMetadata } from './metadata.js';
 
 export function mountInspector(panel, store, deps) {
   const body = h('div', { class: 'inspector-body' });
@@ -45,9 +47,34 @@ export function mountInspector(panel, store, deps) {
     issuesEl.replaceChildren(...issues.map((t) => h('li', {}, t)));
   }
 
+  // Story details reuses the field helpers, pointed at story.meta instead of a block's data.
+  let liveRefresh = null;
+  function renderDetails() {
+    body.append(h('h3', { class: 'inspector-title' }, 'Story details'));
+    const fields = h('div', { class: 'inspector-fields' });
+    body.append(fields);
+    liveRefresh = renderMetadata(fields, {
+      block: { id: 'meta', data: store.story.meta },
+      story: store.story,
+      liveStory: () => store.story,
+      set: (key, value, opts = {}) => store.update((s) => { s.meta[key] = value; }, {
+        from: opts.rerender ? 'inspector-structural' : 'inspector',
+        coalesce: opts.rerender ? null : `meta:${key}`,
+      }),
+      assetUrl: deps.assetUrl,
+      announce: deps.announce,
+    });
+  }
+
   function render() {
     const block = blockById(store.selected);
     body.replaceChildren();
+    liveRefresh = null;
+    if (store.selected === STORY_DETAILS) {
+      issuesEl.hidden = true;
+      renderDetails();
+      return;
+    }
     if (!block) {
       body.append(h('p', { class: 'panel-empty' },
         store.story.blocks.length ? 'Select a block to edit it.' : 'Add a block to start your story.'));
@@ -61,6 +88,10 @@ export function mountInspector(panel, store, deps) {
       body.append(h('p', {}, `This version of Illuminate can't edit "${block.type}" blocks. The block is kept so nothing is lost.`));
       return;
     }
+    if (mod.prompt) {
+      body.append(h('aside', { class: 'craft-prompt', 'aria-label': 'Craft prompt' },
+        h('strong', {}, 'Craft prompt'), h('p', {}, mod.prompt)));
+    }
     body.append(issuesEl);
     renderIssues();
     const fields = h('div', { class: 'inspector-fields' });
@@ -73,7 +104,10 @@ export function mountInspector(panel, store, deps) {
   }
 
   store.subscribe((change) => {
-    if (change.type === 'edit' && change.from === 'inspector') return renderIssues();
+    if (change.type === 'edit' && change.from === 'inspector') {
+      if (liveRefresh) liveRefresh();
+      return renderIssues();
+    }
     preserveFocus(panel, render);
   });
   render();

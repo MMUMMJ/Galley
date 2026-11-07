@@ -17,12 +17,14 @@ export default {
         options: [['full', 'Full screen'], ['compact', 'Compact']],
       }),
       textInput(ctx, 'kicker', { label: 'Kicker', hint: 'A short label above the title, e.g. "Manchester · Feature".' }),
-      textInput(ctx, 'title', { label: 'Title', hint: first ? 'The headline. This is the main heading of the page.' : 'The heading for this part.' }),
+      textInput(ctx, 'title', first
+        ? { label: 'Title', placeholder: ctx.story.meta.title, hint: 'Leave empty to use the title from Story details.' }
+        : { label: 'Title', hint: 'The heading for this part.' }),
       textArea(ctx, 'standfirst', { label: 'Standfirst', rows: 3, hint: 'One or two sentences that sell the story. *Italics* and links work here.' }),
       textInput(ctx, 'byline', { label: 'Byline', placeholder: 'By …' }),
       assetPicker(ctx, 'media', { label: 'Header image', kinds: ['image'] }),
       first ? null : help('This is not the first header, so it starts a new part of the page.'),
     );
   },
-  validate: (d) => (d.title ? [] : ['This header has no title yet.']),
+  validate: (d, story) => (d.title || story?.meta.title ? [] : ['This header has no title yet. Add one here or in Story details.']),
 };

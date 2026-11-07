@@ -170,3 +170,19 @@ export function assetDetails(ctx, assetId) {
       onchange: (e) => ctx.setAsset(assetId, 'licence', e.target.value),
     }, h('option', { value: '' }, 'Not set'), LICENCES.map((l) => h('option', { value: l, selected: l === asset.licence }, l)))));
 }
+
+// A context pointed at an object nested inside the block's data, such as
+// data.steps[2] or data.before, so the usual fields can edit it.
+// get(data) must return that object; focusId keeps focus keys unique.
+export function nested(ctx, get, focusId) {
+  const id = `${ctx.block.id}:${focusId}`;
+  return {
+    ...ctx,
+    block: { id, data: get(ctx.block.data) || {} },
+    edit: (fn, opts = {}) => ctx.edit((data, story) => fn(get(data), story), opts),
+    set: (key, value, opts = {}) => ctx.edit((data) => { get(data)[key] = value; }, {
+      rerender: opts.rerender,
+      coalesce: opts.rerender ? null : `${id}:${key}`,
+    }),
+  };
+}

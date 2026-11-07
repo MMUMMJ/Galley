@@ -13,6 +13,39 @@ export function mountPreview(iframe, store, { assetUrl }) {
       .il-header.il-editor-selected { outline-offset: -6px; }</style>
     </head><body class="il-page"><main id="preview-root"></main></body></html>`;
 
+  // Each live block remembers the HTML it was drawn from, so a redraw only replaces
+  // blocks whose HTML changed. Untouched blocks stay as they are: a video or an
+  // embedded player keeps playing while the student edits another block.
+  const source = new WeakMap();
+  const isPart = (el) => el.classList.contains('il-part');
+  const keyOf = (el) => el.id || (isPart(el) ? `part:${el.getAttribute('aria-labelledby') || ''}` : el.tagName);
+  function remember(el) {
+    source.set(el, el.outerHTML);
+    if (isPart(el)) Array.from(el.children).forEach(remember);
+  }
+  function patch(liveParent, nextParent) {
+    const live = Array.from(liveParent.children);
+    const next = Array.from(nextParent.children);
+    if (live.length !== next.length || live.some((el, i) => keyOf(el) !== keyOf(next[i]))) {
+      // Blocks added, removed or reordered: redraw this level.
+      liveParent.replaceChildren(...next);
+      next.forEach(remember);
+      return;
+    }
+    live.forEach((el, i) => {
+      const n = next[i];
+      const html = n.outerHTML;
+      if (source.get(el) === html) return;
+      if (isPart(el) && isPart(n)) {
+        patch(el, n);
+        source.set(el, html);
+      } else {
+        el.replaceWith(n);
+        remember(n);
+      }
+    });
+  }
+
   let timer = 0;
   let lastHtml = '';
   let lastSelected = null;
@@ -26,7 +59,12 @@ export function mountPreview(iframe, store, { assetUrl }) {
     const root = doc.getElementById('preview-root');
     const html = win.Illuminate.renderArticle(store.story, { assetUrl, mode: 'preview' });
     if (html !== lastHtml) {
-      root.innerHTML = html;
+      const fresh = doc.createElement('template');
+      fresh.innerHTML = html;
+      const next = fresh.content.firstElementChild;
+      const live = root.firstElementChild;
+      if (live && next) patch(live, next);
+      else { root.replaceChildren(next); remember(next); }
       lastHtml = html;
       win.Illuminate.enhance(root);
     }
@@ -39,9 +77,16 @@ export function mountPreview(iframe, store, { assetUrl }) {
     lastSelected = store.selected;
   }
 
+  // At most one redraw every 200ms while the student types, so the preview keeps
+  // up during long bursts of typing instead of waiting for a pause.
   store.subscribe((change) => {
-    clearTimeout(timer);
-    timer = setTimeout(render, change.type === 'select' ? 0 : 200);
+    if (change.type === 'select') {
+      clearTimeout(timer);
+      timer = 0;
+      render();
+      return;
+    }
+    if (!timer) timer = setTimeout(() => { timer = 0; render(); }, 200);
   });
   render();
 }

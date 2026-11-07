@@ -5,10 +5,12 @@ import { createBlock, newId } from '../model.js';
 import { BLOCKS, blockLabel } from '../blocks/index.js';
 import { esc, preserveFocus } from './dom.js';
 import { enableDrag } from './drag.js';
+import { STORY_DETAILS } from '../store.js';
 
 export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   panel.innerHTML = `
     <h2 class="panel-heading" id="blocks-heading">Blocks</h2>
+    <button type="button" class="details-select" data-focus="details"></button>
     <ol class="block-list" aria-labelledby="blocks-heading" aria-describedby="blocks-tip"></ol>
     <p class="panel-empty" hidden>Your story has no blocks yet. Add one below.</p>
     <div class="add-block">
@@ -21,6 +23,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
     <p class="panel-tip" id="blocks-tip">Arrow keys move between blocks. Alt + ↑ or ↓ moves the selected block. Drag ⠿ to reorder.</p>`;
 
   const list = panel.querySelector('.block-list');
+  const details = panel.querySelector('.details-select');
   const empty = panel.querySelector('.panel-empty');
   const addButton = panel.querySelector('[aria-controls="add-menu"]');
   const menu = panel.querySelector('#add-menu');
@@ -30,9 +33,19 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   const labelOf = (id) => blockLabel(blocks()[indexOf(id)]?.type);
   const focusKey = (key) => list.querySelector(`[data-focus="${CSS.escape(key)}"]`)?.focus();
 
+  function renderDetails() {
+    const m = store.story.meta;
+    const on = store.selected === STORY_DETAILS;
+    details.classList.toggle('is-selected', on);
+    details.setAttribute('aria-current', on ? 'true' : 'false');
+    details.innerHTML = `<span class="block-type">Story details${m.title ? '' : ' <span class="badge">No title yet</span>'}</span>
+      <span class="block-summary">${esc(m.title || 'Title, byline, search and sharing')}</span>`;
+  }
+
   function render() {
+    renderDetails();
     const all = blocks();
-    const selected = store.selected;
+    const selected = store.selected === STORY_DETAILS ? null : store.selected;
     const tabbable = selected || all[0]?.id;
     empty.hidden = all.length > 0;
     list.innerHTML = all.map((b, i) => {
@@ -40,7 +53,9 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
       const label = blockLabel(b.type);
       let summary = '';
       try { summary = mod ? mod.summary(b.data, store.story) : 'Not supported in this version'; } catch { summary = ''; }
-      const issues = mod ? safeIssues(mod, b) : [];
+      const issues = mod ? safeIssues(mod, b, store.story) : [];
+      let badge = issues.length ? 'Unfinished' : '';
+      try { badge = (mod && mod.badge && mod.badge(b.data, store.story)) || badge; } catch { /* keep default */ }
       const isSel = b.id === selected;
       const tab = b.id === tabbable ? '0' : '-1';
       const act = isSel ? '0' : '-1';
@@ -50,7 +65,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
         <button type="button" class="block-select" data-act="select" data-focus="sel:${esc(b.id)}" tabindex="${tab}"
           aria-current="${isSel ? 'true' : 'false'}">
           <span class="block-num">${i + 1}</span>
-          <span class="block-text"><span class="block-type">${esc(label)}${issues.length ? ' <span class="badge">Unfinished</span>' : ''}</span>
+          <span class="block-text"><span class="block-type">${esc(label)}${badge ? ` <span class="badge">${esc(badge)}</span>` : ''}</span>
           <span class="block-summary">${esc(String(summary).slice(0, 80))}</span></span>
         </button>
         <span class="block-actions">
@@ -94,7 +109,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   function add(type) {
     const block = createBlock(type);
     const i = indexOf(store.selected);
-    const at = i < 0 ? blocks().length : i + 1;
+    const at = store.selected === STORY_DETAILS ? 0 : i < 0 ? blocks().length : i + 1;
     store.update((s) => { s.blocks.splice(at, 0, block); }, { select: block.id, from: 'list' });
     announce(`${blockLabel(type)} block added at position ${at + 1}.`);
     closeMenu();
@@ -150,6 +165,12 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
       focusKey(`sel:${id}`);
       return;
     }
+    if (e.key === 'ArrowUp' && i === 0) {
+      e.preventDefault();
+      store.select(STORY_DETAILS, 'list');
+      details.focus();
+      return;
+    }
     if (e.key === 'ArrowUp') target = Math.max(0, i - 1);
     else if (e.key === 'ArrowDown') target = Math.min(last, i + 1);
     else if (e.key === 'Home') target = 0;
@@ -161,6 +182,15 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
     focusKey(`sel:${next}`);
   });
 
+  details.addEventListener('click', () => store.select(STORY_DETAILS, 'list'));
+  details.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowDown' || !blocks().length) return;
+    e.preventDefault();
+    const first = blocks()[0].id;
+    store.select(first, 'list');
+    focusKey(`sel:${first}`);
+  });
+
   enableDrag(list, { onDrop: (id, to) => moveTo(id, to) });
 
   store.subscribe(() => preserveFocus(panel, render, () => {
@@ -170,6 +200,6 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   render();
 }
 
-function safeIssues(mod, block) {
-  try { return mod.validate(block.data) || []; } catch { return []; }
+function safeIssues(mod, block, story) {
+  try { return mod.validate(block.data, story) || []; } catch { return []; }
 }

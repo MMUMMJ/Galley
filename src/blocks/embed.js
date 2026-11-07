@@ -4,7 +4,7 @@ import { textInput, textArea, selectInput, assetPicker, help } from '../editor/f
 export default {
   type: 'embed',
   label: 'Embed',
-  description: 'A link card for a web page. YouTube, Vimeo, Spotify and SoundCloud can also play here.',
+  description: 'A link card for a web page. YouTube, Vimeo, Spotify and SoundCloud play in the story.',
   defaults: () => blockDefaults('embed'),
   prompt: null,
   summary: (d) => d.title || d.url || '(no link)',
@@ -16,7 +16,10 @@ export default {
       const info = url ? window.Illuminate?.embedInfo(url) : null;
       note.hidden = !url;
       note.textContent = info
-        ? `${info.label} link: readers get a link card and a "Play here" button.`
+        ? `${info.label} link: readers see the ${info.label} player in the story, with a link to the original. `
+          + 'Offline, in print, and without JavaScript, they see the link card and screenshot instead.'
+          + (info.provider === 'youtube'
+            ? ' YouTube only plays when the story is on a website: opened from a downloaded folder, readers get the link.' : '')
         : 'Readers get a link card. Only YouTube, Vimeo, Spotify and SoundCloud can play inside the story.';
     };
     urlField.querySelector('input').addEventListener('input', (e) => describe(e.target.value.trim()));

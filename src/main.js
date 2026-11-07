@@ -4,7 +4,7 @@ import './adapters/save-indexeddb.js';
 import './adapters/export-zip.js';
 import './adapters/export-html.js';
 import { availableSavers } from './adapters/registry.js';
-import { createStore } from './store.js';
+import { createStore, STORY_DETAILS } from './store.js';
 import { loadAssets, putAsset, assetUrl, getBlob, pruneAssets } from './assets.js';
 import { processFile } from './media.js';
 import { createStatus } from './editor/status.js';
@@ -52,7 +52,7 @@ async function boot() {
 
   // 2. State.
   const store = createStore(story);
-  if (story.blocks[0]) store.select(story.blocks[0].id);
+  store.select(story.blocks[0] ? story.blocks[0].id : STORY_DETAILS);
 
   async function importFiles(files, kinds) {
     const added = [];
