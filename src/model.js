@@ -7,14 +7,19 @@ export const SCHEMA_VERSION = 1;
 
 // Must match RUNTIME_VERSION in runtime/illuminate-runtime.js.
 // test/runtime.html flags any mismatch.
-export const RUNTIME_VERSION = '1.6.0';
+export const RUNTIME_VERSION = '1.10.0';
 
 export const BLOCK_TYPES = ['header', 'text', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'compare', 'number'];
-export const SCROLLY_LAYOUTS = ['side', 'overlay'];
+export const SCROLLY_LAYOUTS = ['side', 'overlay', 'column'];
+export const SCROLLY_ALIGN = ['left', 'center', 'right']; // overlay and text column: where the text sits
+export const SCROLLY_TEXT_SIDE = ['right', 'left']; // side by side: which side the text is on
 export const EFFECTS = ['none', 'fade', 'rise', 'slide', 'zoom'];
 export const HEADER_VARIANTS = ['full', 'compact'];
 export const MEDIA_KINDS = ['image', 'video', 'audio'];
 export const MEDIA_WIDTHS = ['column', 'wide', 'full'];
+// Must match SCHEMES in runtime/illuminate-runtime.js (test/runtime.html checks).
+export const SCHEME_IDS = ['house', 'wire', 'longread', 'magazine', 'nightdesk', 'investigation'];
+export const BAND_SCHEME_COLOURS = ['tint', 'ink', 'accent'];
 export const LICENCES = ['Own work', 'CC BY', 'CC BY-SA', 'CC BY-NC', 'OGL', 'Used with permission', 'Other'];
 
 const META_STRINGS = ['title', 'standfirst', 'byline', 'seoTitle', 'seoDescription', 'shareText', 'created', 'modified'];
@@ -34,7 +39,7 @@ const BLOCK_DATA = {
   divider: () => ({ text: '' }),
   references: () => ({ title: 'References', items: [], collapsed: false }),
   // Showpiece blocks (Phase 5)
-  scrolly: () => ({ layout: 'side', steps: [{ media: null, text: '' }, { media: null, text: '' }] }),
+  scrolly: () => ({ layout: 'side', align: 'center', textSide: 'right', steps: [{ media: null, text: '' }, { media: null, text: '' }] }),
   compare: () => ({ before: { asset: null, label: '' }, after: { asset: null, label: '' }, caption: '', width: 'wide' }),
   number: () => ({ value: '', unit: '', context: '', sourceName: '', sourceRef: '' }),
 };
@@ -52,7 +57,7 @@ export function blockDefaults(type) {
 }
 
 export function createBlock(type, data = {}) {
-  return { id: newId('b'), type, effect: 'none', effectNote: '', note: '', data: { ...blockDefaults(type), ...data } };
+  return { id: newId('b'), type, effect: 'none', effectNote: '', note: '', background: null, data: { ...blockDefaults(type), ...data } };
 }
 
 export function createMeta(now = new Date().toISOString()) {
@@ -60,6 +65,7 @@ export function createMeta(now = new Date().toISOString()) {
     title: '', standfirst: '', byline: '', seoTitle: '', seoDescription: '',
     shareImage: null, shareText: '', pack: null, created: now, modified: now,
     appendix: false, // add maker's notes and reflection to the end of the export (Phase 7)
+    theme: 'house', // colour scheme
   };
 }
 
@@ -115,6 +121,7 @@ export function migrate(input) {
 export function normalise(input) {
   const s = isObj(input) ? input : {};
   const meta = { ...createMeta(''), ...(isObj(s.meta) ? s.meta : {}) };
+  if (!SCHEME_IDS.includes(meta.theme)) meta.theme = 'house';
 
   const seen = new Set();
   const blocks = (Array.isArray(s.blocks) ? s.blocks : []).filter(isObj).map((b) => {
@@ -128,6 +135,7 @@ export function normalise(input) {
       effect: EFFECTS.includes(b.effect) ? b.effect : 'none',
       effectNote: typeof b.effectNote === 'string' ? b.effectNote : '', // why this block moves (Phase 6)
       note: typeof b.note === 'string' ? b.note : '',
+      background: isBackground(b.background) ? b.background : null, // band colour behind the block
       data: { ...defaults, ...(isObj(b.data) ? b.data : {}) },
     };
   });
@@ -180,6 +188,7 @@ export function validate(story) {
     ref(story.meta.shareImage, 'meta.shareImage');
     if (story.meta.pack !== null && typeof story.meta.pack !== 'string') err('meta.pack', 'Must be null or text.');
     if (typeof story.meta.appendix !== 'boolean') err('meta.appendix', 'Must be true or false.');
+    oneOf(story.meta.theme, SCHEME_IDS, 'meta.theme');
   }
 
   if (!Array.isArray(story.blocks)) err('blocks', 'Must be a list.');
@@ -196,6 +205,7 @@ export function validate(story) {
       oneOf(b.effect, EFFECTS, `${p}.effect`);
       isString(b.effectNote, `${p}.effectNote`);
       isString(b.note, `${p}.note`);
+      if (b.background !== null && !isBackground(b.background)) err(`${p}.background`, 'Must be empty, a scheme colour, or #rrggbb.');
       if (!isObj(b.data)) return err(`${p}.data`, 'Must be an object.');
       const rule = BLOCK_RULES[b.type];
       if (rule) rule(b.data, `${p}.data`, { err, ref, oneOf, isString });
@@ -255,6 +265,8 @@ const BLOCK_RULES = {
   divider(d, p, v) { v.isString(d.text, `${p}.text`); },
   scrolly(d, p, v) {
     v.oneOf(d.layout, SCROLLY_LAYOUTS, `${p}.layout`);
+    v.oneOf(d.align, SCROLLY_ALIGN, `${p}.align`);
+    v.oneOf(d.textSide, SCROLLY_TEXT_SIDE, `${p}.textSide`);
     if (!Array.isArray(d.steps)) return v.err(`${p}.steps`, 'Must be a list of steps.');
     d.steps.forEach((step, i) => {
       if (!step || typeof step !== 'object') return v.err(`${p}.steps[${i}]`, 'Each step must be an object.');
@@ -288,6 +300,11 @@ const BLOCK_RULES = {
 export function load(input) {
   const story = normalise(migrate(input));
   return { story, ...validate(story) };
+}
+
+// A block background: null, a scheme colour that follows the story's scheme, or any #rrggbb colour.
+export function isBackground(v) {
+  return v === null || BAND_SCHEME_COLOURS.includes(v) || (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v));
 }
 
 function isObj(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }

@@ -1,6 +1,6 @@
 // Test harness for test/runtime.html: renders fixtures through the runtime
 // and reports what src/model.js thinks of them.
-import { load, RUNTIME_VERSION as MODEL_RUNTIME_VERSION } from '../src/model.js';
+import { load, RUNTIME_VERSION as MODEL_RUNTIME_VERSION, SCHEME_IDS } from '../src/model.js';
 
 const FIXTURES = { feature: 'Feature article', portfolio: 'Process portfolio', showpiece: 'Showpiece blocks', effects: 'Effects', 'edge-cases': 'Edge cases' };
 const $ = (id) => document.getElementById(id);
@@ -20,13 +20,14 @@ function esc(s) {
 }
 
 function report(errors, warnings) {
-  const versionOk = R.RUNTIME_VERSION === MODEL_RUNTIME_VERSION;
+  const versionOk = R.RUNTIME_VERSION === MODEL_RUNTIME_VERSION
+    && JSON.stringify(Object.keys(R.SCHEMES)) === JSON.stringify(SCHEME_IDS);
   const list = (items, cls) => (items.length
     ? `<ul class="${cls}">${items.map((e) => `<li><code>${esc(e.path)}</code> ${esc(e.message)}</li>`).join('')}</ul>` : '');
   $('t-summary').textContent = `Model checks: ${errors.length} errors, ${warnings.length} warnings`
     + (versionOk ? '' : ' · RUNTIME VERSION MISMATCH');
   $('t-report-body').innerHTML =
-    `<p class="${versionOk ? 't-ok' : 't-bad'}">Runtime ${esc(R.RUNTIME_VERSION)}; model expects ${esc(MODEL_RUNTIME_VERSION)}.</p>`
+    `<p class="${versionOk ? 't-ok' : 't-bad'}">Runtime ${esc(R.RUNTIME_VERSION)}; model expects ${esc(MODEL_RUNTIME_VERSION)}. Colour schemes ${versionOk ? 'match' : 'DIFFER'}.</p>`
     + list(errors, 't-bad') + list(warnings, 't-warn')
     + (errors.length + warnings.length ? '' : '<p class="t-ok">No structural problems.</p>');
 }

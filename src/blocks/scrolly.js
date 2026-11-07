@@ -1,6 +1,7 @@
 import { blockDefaults } from '../model.js';
 import { h } from '../editor/dom.js';
 import { textArea, selectInput, assetPicker, help, nested } from '../editor/fields.js';
+import { inlineImages } from '../editor/inline-images.js';
 
 export default {
   type: 'scrolly',
@@ -9,7 +10,9 @@ export default {
   defaults: () => blockDefaults('scrolly'),
   prompt: 'A scroll sequence controls the reader\'s pace. Each step should reveal one new thing. '
     + 'If a single image and a paragraph would do the job, use those instead.',
-  summary: (d) => `${(d.steps || []).length} steps · ${d.layout === 'overlay' ? 'overlay' : 'side by side'}`,
+  summary: (d) => `${(d.steps || []).length} steps · ${d.layout === 'overlay' || d.layout === 'column'
+    ? `${d.layout === 'column' ? 'text column' : 'overlay'}${d.align && d.align !== 'center' ? `, text ${d.align}` : ''}`
+    : `side by side${d.textSide === 'left' ? ', text left' : ''}`}`,
   editorUI(el, ctx) {
     const steps = ctx.block.data.steps || [];
     const bid = ctx.block.id;
@@ -35,19 +38,40 @@ export default {
     el.append(
       selectInput(ctx, 'layout', {
         label: 'Layout',
-        options: [['side', 'Side by side: image beside the text'], ['overlay', 'Overlay: text scrolls over a full-screen image']],
+        options: [
+          ['side', 'Side by side: image beside the text'],
+          ['overlay', 'Overlay: text boxes scroll over a full-screen image'],
+          ['column', 'Text column: one column of text scrolls while images crossfade behind'],
+        ],
       }),
+      ctx.block.data.layout === 'overlay' || ctx.block.data.layout === 'column'
+        ? selectInput(ctx, 'align', {
+          label: 'Text position',
+          hint: ctx.block.data.layout === 'column'
+            ? 'Where the column of text sits over the images. On phones it always fills the width.'
+            : 'Where the text boxes sit over the image. On phones they always fill the width.',
+          options: [['left', 'Left'], ['center', 'Centre'], ['right', 'Right']],
+        })
+        : selectInput(ctx, 'textSide', {
+          label: 'Text position',
+          hint: 'Which side of the screen the text is on. On phones the text scrolls over the image instead.',
+          options: [['right', 'Text on the right, images on the left'], ['left', 'Text on the left, images on the right']],
+        }),
       h('ol', { class: 'step-list' }, steps.map((st, i) => {
         const sub = nested(ctx, (d) => d.steps[i], `step${i}`);
         return h('li', {},
           h('fieldset', { class: 'field step-item' },
             h('legend', {}, `Step ${i + 1}`),
-            textArea(sub, 'text', {
-              label: `Step ${i + 1} text (required)`,
-              rows: 4,
-              hint: i === 0 ? 'What should the reader notice first? Keep each step short.' : null,
-            }),
-            assetPicker(sub, 'media', { label: i === 0 ? 'Image' : 'New image (optional)', kinds: ['image'] }),
+            ...(() => {
+              const area = textArea(sub, 'text', {
+                label: `Step ${i + 1} text (required)`,
+                rows: 4,
+                hint: i === 0 ? 'What should the reader notice first? Keep each step short.' : null,
+              });
+              // Two kinds of image in a step: one inside the text, and the one behind or beside it.
+              return [area, inlineImages(sub, 'text', () => area.querySelector('textarea'), { buttonLabel: 'Insert an image in the text…' })];
+            })(),
+            assetPicker(sub, 'media', { label: i === 0 ? 'Image behind or beside the text' : 'New image behind or beside the text (optional)', kinds: ['image'] }),
             i > 0 && !st.media ? help('No new image: the previous one stays on screen for this step.') : null,
             h('div', { class: 'button-row' },
               h('button', { type: 'button', class: 'btn', disabled: i === 0, 'data-focus': `${bid}:st-up:${i}`, onclick: () => moveAndFollow(i, -1) }, `Move step ${i + 1} up`),

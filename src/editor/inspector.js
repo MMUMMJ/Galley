@@ -7,6 +7,7 @@ import { STORY_DETAILS, REFLECTION } from '../store.js';
 import { renderMetadata } from './metadata.js';
 import { renderEffects } from './effects.js';
 import { renderReflection } from './reflection.js';
+import { renderBackground } from './background.js';
 import { getPack, promptFor, blockIssues } from '../packs.js';
 
 export function mountInspector(panel, store, deps) {
@@ -129,6 +130,8 @@ export function mountInspector(panel, store, deps) {
       fields.append(h('p', { class: 'error' }, `Couldn't show this block's fields: ${e.message}`));
     }
     body.append(renderEffects(block, { announce: deps.announce, setBlock: setBlock(block.id), noteMode: getPack().effectNotes }));
+    const background = renderBackground(block, store.story, { announce: deps.announce, setBlock: setBlock(block.id) });
+    if (background) body.append(background);
     if (getPack().includeNotes) body.append(makersNote(block));
   }
 

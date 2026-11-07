@@ -10,8 +10,9 @@ import effectsMirror from './effects-mirror.js';
 import videoCompat from './video-compat.js';
 import longText from './long-text.js';
 import exportSize from './export-size.js';
+import bandsMirror from './bands-mirror.js';
 
-export const CHECKS = [mediaCredits, searchLinks, citations, unsourcedStats, showpieceFields, effectsMirror, videoCompat, longText, exportSize];
+export const CHECKS = [mediaCredits, searchLinks, citations, unsourcedStats, showpieceFields, effectsMirror, videoCompat, longText, exportSize, bandsMirror];
 
 export function runChecks(story, ctx) {
   return CHECKS.map((check) => {

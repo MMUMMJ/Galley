@@ -42,16 +42,22 @@ export function assetUses(story) {
     if (b.type === 'embed') use(b, d.screenshot, 'screenshot');
     if (b.type === 'scrolly') (d.steps || []).forEach((st) => use(b, st && st.media, 'scroll image'));
     if (b.type === 'compare') { use(b, d.before?.asset, 'before image'); use(b, d.after?.asset, 'after image'); }
+    // Images placed inside running text: ![name](asset:<id>)
+    const texts = b.type === 'text' ? [d.body] : b.type === 'scrolly' ? (d.steps || []).map((st) => st && st.text) : [];
+    for (const t of texts) for (const m of String(t || '').matchAll(INLINE_IMAGE)) use(b, m[1], 'image in the text');
   }
   return uses;
 }
+
+export const INLINE_IMAGE = /^\s*!\[[^\]]*\]\(asset:([A-Za-z0-9_-]+)(?:\s+"(?:left|right)")?\)\s*$/gm;
+const stripImages = (text) => String(text || '').replace(INLINE_IMAGE, '');
 
 const MD_LINK = /\[[^\]]*\]\(\s*([^)\s]+)\s*\)/g;
 const BARE_URL = /\bhttps?:\/\/[^\s<>)\]]+/g;
 
 export function linksIn(text) {
   const urls = [];
-  const s = String(text || '');
+  const s = stripImages(text);
   for (const m of s.matchAll(MD_LINK)) urls.push(m[1]);
   for (const m of s.replace(MD_LINK, ' ').matchAll(BARE_URL)) urls.push(m[0].replace(/[.,;:!?'"]+$/, ''));
   return urls;
@@ -61,13 +67,13 @@ export const hasLink = (text) => linksIn(text).length > 0;
 
 // Splits prose into sentences: each line on its own, then on . ! ? followed by a space.
 export function sentences(text) {
-  return String(text || '').split('\n')
+  return stripImages(text).split('\n')
     .map((l) => l.replace(/^\s*(#{1,6}|[-*•]|\d+[.)])\s*/, '').trim())
     .filter(Boolean)
     .flatMap((l) => l.split(/(?<=[.!?])\s+(?=[A-Z0-9"“‘(\[*_])/));
 }
 
-export const plain = (text) => String(text || '')
+export const plain = (text) => stripImages(text)
   .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[*_#]/g, '').replace(/\s+/g, ' ').trim();
 
 export const wordCount = (text) => (plain(text).match(/[\p{L}\p{N}][\p{L}\p{N}'’.-]*/gu) || []).length;

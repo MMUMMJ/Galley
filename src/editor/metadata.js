@@ -3,6 +3,7 @@
 // go into the exported page's <head> for search engines and social media.
 import { h } from './dom.js';
 import { textInput, textArea, thumb, assetKind } from './fields.js';
+import { renderSchemePicker } from './scheme-picker.js';
 
 export const SEO_TITLE_MAX = 60;
 export const SEO_DESCRIPTION_MAX = 155;
@@ -90,6 +91,7 @@ export function renderMetadata(el, ctx) {
       textInput(ctx, 'title', { label: 'Title', hint: 'Your headline. The first header shows it unless you give that header its own title.' }),
       textArea(ctx, 'standfirst', { label: 'Standfirst', rows: 3, hint: 'One or two sentences under the headline. *Italics* and links work.' }),
       textInput(ctx, 'byline', { label: 'Byline', placeholder: 'By …' })),
+    renderSchemePicker(story, { set: ctx.set, announce: ctx.announce }),
     h('fieldset', { class: 'field' }, h('legend', {}, 'Search engines'),
       counted('seoTitle', 'SEO title', SEO_TITLE_MAX, 'What a search result shows as the link. Lead with the words people would search for.'),
       counted('seoDescription', 'SEO description', SEO_DESCRIPTION_MAX, 'The line under the link in search results. Leave empty to use the standfirst.', true),

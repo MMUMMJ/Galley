@@ -39,6 +39,12 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   const labelOf = (id) => blockLabel(blocks()[indexOf(id)]?.type);
   const focusKey = (key) => list.querySelector(`[data-focus="${CSS.escape(key)}"]`)?.focus();
 
+  // A small swatch when the block has a background band.
+  function bandBadge(b) {
+    const colour = b.background && window.Illuminate ? window.Illuminate.bandColour(b.background, store.story.meta.theme) : '';
+    return colour ? ` <span class="badge badge-band"><span class="badge-dot" style="background:${colour}" aria-hidden="true"></span>Band</span>` : '';
+  }
+
   function renderDetails() {
     const m = store.story.meta;
     const on = store.selected === STORY_DETAILS;
@@ -64,6 +70,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
     packInfo.hidden = !pack.path;
     if (!pack.path) return;
     const rules = [
+      pack.scheme && window.Illuminate ? `House style: ${window.Illuminate.SCHEMES[pack.scheme].name} colour scheme` : null,
       pack.includeNotes ? 'Maker\'s notes on every block' : null,
       pack.effectNotes === 'required' ? 'Every effect needs a note' : null,
       { inline: 'Source claims with links in the text', references: 'Source claims with a reference list', both: 'Source claims with links and a reference list' }[pack.sourcing],
@@ -102,7 +109,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
         <button type="button" class="block-select" data-act="select" data-focus="sel:${esc(b.id)}" tabindex="${tab}"
           aria-current="${isSel ? 'true' : 'false'}">
           <span class="block-num">${i + 1}</span>
-          <span class="block-text"><span class="block-type">${esc(label)}${badge ? ` <span class="badge">${esc(badge)}</span>` : ''}${effectBadge(b.effect) ? ` <span class="badge badge-fx" title="Movement">↯ ${esc(effectBadge(b.effect))}</span>` : ''}</span>
+          <span class="block-text"><span class="block-type">${esc(label)}${badge ? ` <span class="badge">${esc(badge)}</span>` : ''}${effectBadge(b.effect) ? ` <span class="badge badge-fx" title="Movement">↯ ${esc(effectBadge(b.effect))}</span>` : ''}${bandBadge(b)}</span>
           <span class="block-summary">${esc(String(summary).slice(0, 80))}</span></span>
         </button>
         <span class="block-actions">

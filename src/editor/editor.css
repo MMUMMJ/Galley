@@ -118,6 +118,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .panel-preview { grid-area: preview; display: flex; flex-direction: column; }
 
 .panel {
+  /* position: relative keeps visually hidden controls (radio buttons, file inputs) inside the
+     panel. Without it they sit relative to the whole page, make it taller than the window,
+     and clicking a colour or scheme choice scrolls the editor away. */
+  position: relative;
   min-width: 0; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch;
   padding: var(--gap); background: var(--surface);
   border: 1px solid var(--border); border-radius: var(--radius);
@@ -140,7 +144,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 /* Narrow screens (iPad portrait, phones): one column, the page scrolls. */
 @media (max-width: 760px) {
-  .app-main { display: flex; flex-direction: column; }
+  /* Panels take their full height and the page scrolls, instead of squeezing into the window. */
+  .app-main { display: flex; flex-direction: column; flex: none; }
+  .app-main > .panel { flex: none; }
   .panel, .panel-blocks { overflow: visible; max-height: none; }
   .preview-frame { height: 80vh; flex: none; }
 }
@@ -199,6 +205,34 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-size: 0.75rem; font-weight: 600; vertical-align: 1px;
 }
 
+.badge-band { display: inline-flex; align-items: center; gap: 4px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+.badge-dot { width: 10px; height: 10px; border-radius: 2px; border: 1px solid rgb(0 0 0 / 0.25); }
+.scheme-options { display: grid; gap: 6px; }
+.scheme-option, .swatch-option { position: relative; }
+.scheme-option input, .swatch-option input { position: absolute; top: 0; left: 0; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.scheme-option label {
+  display: flex; align-items: center; gap: 10px; min-height: var(--tap); padding: 8px 10px; cursor: pointer;
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+}
+.scheme-option input:checked + label, .swatch-option input:checked + label { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.scheme-option input:focus-visible + label, .swatch-option input:focus-visible + label { outline: 3px solid var(--focus); outline-offset: 2px; }
+.scheme-text { display: flex; flex-direction: column; font-size: 0.875rem; color: var(--muted); }
+.scheme-text strong { color: var(--text); font-size: 1rem; }
+.scheme-swatch { display: inline-flex; flex: none; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+.scheme-swatch span { width: 12px; height: 32px; }
+.scheme-locked { display: flex; align-items: center; gap: 10px; margin: 0; }
+.swatch-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.swatch-option label {
+  display: inline-flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 6px 12px; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 999px; background: var(--surface);
+}
+.swatch { width: 20px; height: 20px; border-radius: 4px; border: 1px solid rgb(0 0 0 / 0.25); }
+.swatch-none { background: repeating-linear-gradient(45deg, transparent 0 4px, var(--border) 4px 6px); }
+.custom-colour { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 10px; font-weight: 600; }
+.custom-colour input[type="color"] { width: 52px; height: var(--tap); padding: 0; border: 1px solid var(--border); border-radius: 6px; background: none; cursor: pointer; }
+.custom-colour .field-hint { margin: 0; font-weight: 400; }
+.band-verdict { margin-top: 8px; }
+.background { margin-top: 14px; }
 .badge-fx { background: var(--accent-soft); color: var(--text); border: 1px solid var(--accent); }
 .pack-details { margin-bottom: 10px; padding: 6px 10px; border-radius: var(--radius); background: var(--surface-2); font-size: 0.875rem; }
 .pack-details summary { min-height: 32px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
@@ -286,6 +320,13 @@ fieldset.field legend { padding: 0 4px; }
 .thumb-icon { display: inline-flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--muted); }
 .asset-details { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
 
+.inline-images { margin: -6px 0 14px; }
+.inline-existing { display: inline-flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--muted); }
+.inline-existing select { min-height: var(--tap); padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 1rem; }
+.inline-list { margin-top: 10px; }
+.inline-list ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.inline-item { display: grid; gap: 8px; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); }
+.inline-item .field { margin: 0; }
 .gallery-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .gallery-item { padding: 6px; border: 1px solid var(--border); border-radius: var(--radius); }
 .gallery-item-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }

@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "runtimeVersion": "1.6.0",
+ "runtimeVersion": "1.7.0",
  "meta": {
   "title": "Flawed story: every check should fire",
   "standfirst": "",
@@ -38,7 +38,8 @@
    "note": "",
    "data": {
     "body": "Around 45% of volunteers are retired.\nThe canal carries 3 million litres a day.\nI found the history [on Google](https://www.google.com/search?q=rochdale+canal) and [on Bing](https://www.bing.com/search?q=canal).\nOne study disagrees (Smith 2021), and so do others (Lee and Park, 2020, p.4).\nHughes (2021) describes how the group began."
-   }
+   },
+   "background": "tint"
   },
   {
    "id": "b_long",
@@ -86,7 +87,8 @@
     "context": "pulled out since 2019.",
     "sourceName": "",
     "sourceRef": ""
-   }
+   },
+   "background": "tint"
   },
   {
    "id": "b_cmp",

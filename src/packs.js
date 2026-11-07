@@ -2,7 +2,7 @@
 // Every key is optional. A pack can limit the block menu, replace craft prompts, set
 // reflection questions, switch maker's notes on or off, require effect notes, and give
 // an empty story a skeleton to start from.
-import { BLOCK_TYPES, createStory, createBlock } from './model.js';
+import { BLOCK_TYPES, SCHEME_IDS, createStory, createBlock } from './model.js';
 import { BLOCKS } from './blocks/index.js';
 
 const PACK_PATH = /^packs\/[A-Za-z0-9_-]+\.json$/; // packs live in this site's packs/ folder only
@@ -11,7 +11,7 @@ const SOURCING = ['inline', 'references', 'both'];
 
 const DEFAULT_PACK = Object.freeze({
   path: null, name: '', blocks: BLOCK_TYPES, prompts: {}, reflection: [], includeNotes: true,
-  skeleton: [], effectNotes: 'optional', sourcing: 'both', requireShowpiece: 0, maxExportMB: 100,
+  skeleton: [], effectNotes: 'optional', sourcing: 'both', requireShowpiece: 0, maxExportMB: 100, scheme: null,
 });
 
 let current = DEFAULT_PACK;
@@ -49,6 +49,7 @@ export function normalisePack(raw, path = null) {
     sourcing: SOURCING.includes(r.sourcing) ? r.sourcing : 'both',
     requireShowpiece: Math.floor(num(r.requireShowpiece, 0)),
     maxExportMB: num(r.maxExportMB, 100),
+    scheme: SCHEME_IDS.includes(r.scheme) ? r.scheme : null, // locks the colour scheme as a house style
   });
 }
 
@@ -94,6 +95,7 @@ export function withReflection(story, pack = current) {
 // questions, and fills in the skeleton only if the story has no blocks.
 export function applyPack(story, pack = current) {
   story.meta.pack = pack.path;
+  if (pack.scheme) story.meta.theme = pack.scheme;
   if (!story.blocks.length && pack.skeleton.length) story.blocks = pack.skeleton.map(skeletonBlock);
   return withReflection(story, pack);
 }

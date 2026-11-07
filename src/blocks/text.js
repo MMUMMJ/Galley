@@ -1,5 +1,6 @@
 import { blockDefaults } from '../model.js';
 import { textArea } from '../editor/fields.js';
+import { inlineImages } from '../editor/inline-images.js';
 
 export default {
   type: 'text',
@@ -9,12 +10,13 @@ export default {
   prompt: "Lead with what's new. One idea per paragraph, kept short for screens. Where does each claim come from?",
   summary: (d) => (d.body || '').split('\n').find((l) => l.trim()) || '(empty)',
   editorUI(el, ctx) {
-    el.append(textArea(ctx, 'body', {
+    const area = textArea(ctx, 'body', {
       label: 'Text',
       rows: 14,
       hint: 'Each line is a paragraph. ## starts a subheading (### a smaller one). "- " or "1. " starts a list item. '
-        + '**bold**, *italic*, [link text](https://…).',
-    }));
+        + '**bold**, *italic*, [link text](https://…). Insert image adds a picture on its own line.',
+    });
+    el.append(area, inlineImages(ctx, 'body', () => area.querySelector('textarea')));
   },
   validate: (d) => ((d.body || '').trim() ? [] : ['This text block is empty.']),
 };

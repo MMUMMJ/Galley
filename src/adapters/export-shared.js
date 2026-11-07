@@ -45,6 +45,7 @@ export function countWords(story) {
     if (b.type === 'quote') parts.push(d.text);
   }
   const text = parts.filter(Boolean).join('\n')
+    .replace(/^\s*!\[[^\]]*\]\(asset:[^)]*\)\s*$/gm, ' ') // inline images aren't words
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')   // [text](url) -> text
     .replace(/https?:\/\/\S+/g, ' ')
     .replace(/^\s*(#{1,6}|[-*\u2022]|\d+[.)])\s*/gm, ' ')

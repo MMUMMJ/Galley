@@ -23,6 +23,10 @@ export function mountPreview(iframe, store, { assetUrl }) {
     source.set(el, el.outerHTML);
     if (isPart(el)) Array.from(el.children).forEach(remember);
   }
+  function syncAttributes(live, next) {
+    for (const { name } of Array.from(live.attributes)) if (!next.hasAttribute(name)) live.removeAttribute(name);
+    for (const { name, value } of Array.from(next.attributes)) if (live.getAttribute(name) !== value) live.setAttribute(name, value);
+  }
   function patch(liveParent, nextParent) {
     const live = Array.from(liveParent.children);
     const next = Array.from(nextParent.children);
@@ -63,8 +67,12 @@ export function mountPreview(iframe, store, { assetUrl }) {
       fresh.innerHTML = html;
       const next = fresh.content.firstElementChild;
       const live = root.firstElementChild;
-      if (live && next) patch(live, next);
-      else { root.replaceChildren(next); remember(next); }
+      if (live && next) {
+        syncAttributes(live, next); // the colour scheme lives on the article itself
+        patch(live, next);
+      } else { root.replaceChildren(next); remember(next); }
+      const scheme = win.Illuminate.SCHEMES[store.story.meta.theme];
+      doc.body.style.background = scheme ? scheme.bg : '';
       lastHtml = html;
       win.Illuminate.enhance(root);
     }

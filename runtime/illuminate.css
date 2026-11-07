@@ -10,6 +10,13 @@
   --il-accent: #8a1c3c;
   --il-link: #0b5394;
   --il-focus: #1a5fb4;
+  --il-surface: #ffffff; /* cards and buttons; set per colour scheme */
+  /* The scheme's own colours, kept so cards inside a coloured band can return to them. */
+  --il-base-text: var(--il-text);
+  --il-base-link: var(--il-link);
+  --il-base-muted: var(--il-muted);
+  --il-base-accent: var(--il-accent);
+  --il-base-rule: var(--il-rule);
   --il-serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
   --il-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --il-measure: 40rem;
@@ -119,6 +126,18 @@
 .il-text li + li { margin-top: 0.35em; }
 .il-text > :last-child { margin-bottom: 0; }
 
+/* ---------- images inside running text (text blocks and scroll steps) */
+.il-inline-img { margin: 1.5rem 0; }
+.il-inline-img img { width: 100%; }
+.il-inline-img--left, .il-inline-img--right { width: min(45%, 17rem); margin-block: 0.35rem 1rem; }
+.il-inline-img--left { float: left; margin-right: 1.25rem; }
+.il-inline-img--right { float: right; margin-left: 1.25rem; }
+.il-text::after, .il-scrolly__card::after { content: ""; display: block; clear: both; }
+@media (max-width: 599px) {
+  /* Phones: no room for text to wrap round an image. */
+  .il-inline-img--left, .il-inline-img--right { float: none; width: auto; margin: 1.25rem 0; }
+}
+
 /* ---------- quote */
 .il-quote blockquote {
   margin: 0;
@@ -159,7 +178,7 @@ button.il-gallery__link { width: 100%; padding: 0; border: 0; background: none; 
   border: 1px solid var(--il-rule);
   border-radius: 6px;
   overflow: hidden;
-  background: #fff;
+  background: var(--il-surface);
   color: inherit;
   text-decoration: none;
 }
@@ -190,12 +209,12 @@ button.il-gallery__link { width: 100%; padding: 0; border: 0; background: none; 
   padding: 0.5rem 1rem;
   border: 2px solid currentColor;
   border-radius: 6px;
-  background: #fff;
-  color: #1a1a1a;
+  background: var(--il-surface, #fff);
+  color: var(--il-text, #1a1a1a);
   font: 600 0.9375rem/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   cursor: pointer;
 }
-.il-btn:hover { background: #f0eee9; }
+.il-btn:hover { background: var(--il-rule, #f0eee9); }
 .il-btn:focus-visible { outline: 3px solid #1a5fb4; outline-offset: 2px; }
 
 /* ---------- divider */
@@ -266,16 +285,55 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
 .il-scrolly.is-enhanced .il-scrolly__steps { gap: 0; }
 .il-scrolly.is-enhanced .il-scrolly__step { display: flex; align-items: center; min-height: 85vh; min-height: 85svh; }
 .il-scrolly.is-enhanced .il-scrolly__card {
-  padding: 1.25rem 1.5rem; border-radius: 6px; background: rgb(255 255 255 / 0.95); color: var(--il-text);
+  padding: 1.25rem 1.5rem; border-radius: 6px; background: var(--il-surface); color: var(--il-text);
   box-shadow: 0 4px 24px rgb(0 0 0 / 0.18);
 }
 /* Overlay (and side-by-side on narrow screens): text cards scroll over the full-bleed image. */
 .il-scrolly--overlay.is-enhanced .il-scrolly__steps {
   position: relative; z-index: 1; margin-top: -100vh; margin-top: -100svh; padding-block: 40svh 20svh;
 }
+/* Text column: one continuous column of text scrolls over full-screen images, which
+   crossfade as each section reaches the middle of the screen. The column has a solid
+   background in the scheme's colours, so the text reads over any photograph. */
+.il-scrolly--column.is-enhanced .il-scrolly__steps {
+  position: relative; z-index: 1; margin-top: -100vh; margin-top: -100svh; padding-block: 70svh 40svh;
+}
+.il-scrolly--column.is-enhanced .il-scrolly__step {
+  display: block; min-height: 40vh; min-height: 40svh; padding: 1.75rem 2rem 0;
+  background: color-mix(in srgb, var(--il-surface) 95%, transparent); color: var(--il-text);
+}
+.il-scrolly--column.is-enhanced .il-scrolly__step:first-child { border-radius: 6px 6px 0 0; padding-top: 2.25rem; }
+.il-scrolly--column.is-enhanced .il-scrolly__step:last-child { min-height: 0; padding-bottom: 2.25rem; border-radius: 0 0 6px 6px; }
+.il-scrolly--column.is-enhanced .il-scrolly__card { padding: 0; background: none; box-shadow: none; border-radius: 0; }
+.il-scrolly--column.il-scrolly--align-left.is-enhanced .il-scrolly__step,
+.il-scrolly--column.il-scrolly--align-right.is-enhanced .il-scrolly__step { width: min(30rem, 100% - 2 * var(--il-gutter)); }
+
+/* Overlay cards on the left or right: narrower, so the image shows beside them. */
+.il-scrolly--align-left.is-enhanced .il-scrolly__step,
+.il-scrolly--align-right.is-enhanced .il-scrolly__step { width: min(28rem, 100% - 2 * var(--il-gutter)); }
+.il-scrolly--align-left.is-enhanced .il-scrolly__step { margin-left: max(var(--il-gutter), 6vw); margin-right: auto; }
+.il-scrolly--align-right.is-enhanced .il-scrolly__step { margin-left: auto; margin-right: max(var(--il-gutter), 6vw); justify-content: flex-end; }
+/* Cards fit their text; centre them (overlay default), or hug the chosen side. */
+.il-scrolly--overlay.is-enhanced .il-scrolly__step { justify-content: center; }
+.il-scrolly--overlay.il-scrolly--align-left.is-enhanced .il-scrolly__step { justify-content: flex-start; }
+.il-scrolly--overlay.il-scrolly--align-right.is-enhanced .il-scrolly__step { justify-content: flex-end; }
+@media (max-width: 599px) {
+  /* Phones: no room to offset the cards, so they sit centred whatever the setting. */
+  .il-scrolly--align-left.is-enhanced .il-scrolly__step,
+  .il-scrolly--align-right.is-enhanced .il-scrolly__step {
+    width: min(var(--il-measure), 100% - 2 * var(--il-gutter)); margin-inline: auto; justify-content: center;
+  }
+}
 @media (min-width: 800px) {
   .il-scrolly--side.is-enhanced { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  /* Text on the left: the image panel moves to the right. Only the look changes;
+     screen readers still read each step's image, then its text. */
+  .il-scrolly--side.il-scrolly--text-left.is-enhanced { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+  .il-scrolly--side.il-scrolly--text-left.is-enhanced .il-scrolly__panel { order: 2; }
+  .il-scrolly--side.il-scrolly--text-left.is-enhanced .il-scrolly__frame { padding: 1.5rem var(--il-gutter) 1.5rem 0; }
   .il-scrolly--side.is-enhanced .il-scrolly__panel { background: var(--il-bg); }
+  /* On a coloured band, the band shows behind the image too (and its credit reads on it). */
+  .il-scrolly--side.is-enhanced[data-il-band] .il-scrolly__panel { background: transparent; }
   .il-scrolly--side.is-enhanced .il-scrolly__frame {
     display: flex; flex-direction: column; justify-content: center; padding: 1.5rem 0 1.5rem var(--il-gutter);
   }
@@ -285,7 +343,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   }
   .il-scrolly--side.is-enhanced .il-scrolly__steps { padding: 30svh var(--il-gutter) 30svh; }
   .il-scrolly--side.is-enhanced .il-scrolly__step { width: auto; max-width: 30rem; }
-  .il-scrolly--side.is-enhanced .il-scrolly__card { background: #fff; border: 1px solid var(--il-rule); box-shadow: none; }
+  .il-scrolly--side.is-enhanced .il-scrolly__card { background: var(--il-surface); border: 1px solid var(--il-rule); box-shadow: none; }
   .il-scrolly--side.is-enhanced .il-scrolly__step.is-active .il-scrolly__card { border-color: var(--il-accent); }
 }
 @media (max-width: 799px) {
@@ -335,7 +393,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
 /* ---------- maker's notes appendix */
 .il-appendix {
   margin-top: 4rem; padding: 1.5rem 1.25rem; border: 1px dashed var(--il-muted); border-radius: 6px;
-  background: #f6f4ef; font: 1rem/1.55 var(--il-sans);
+  background: var(--il-surface); font: 1rem/1.55 var(--il-sans);
 }
 .il-appendix h2 { margin: 0; font-size: 1.35rem; }
 .il-appendix h3 { margin: 1.5rem 0 0.5rem; font-size: 1.05rem; }
@@ -347,6 +405,33 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
 .il-appendix__reflection dt { margin-top: 0.9rem; font-weight: 700; }
 .il-appendix__reflection dd { margin: 0.25rem 0 0; }
 .il-appendix__reflection dd p { margin: 0 0 0.5em; }
+
+/* ---------- block background band: a full-bleed colour behind one block.
+   The runtime sets --il-band and an --il-band-ink (black or white) that always reads on it. */
+.il-story > [data-il-band], .il-part > [data-il-band] {
+  /* One painted area that reaches the screen edges (the story clips the sides), with no seams. */
+  background-color: var(--il-band); /* the block itself: what accessibility checkers measure */
+  border-image: conic-gradient(var(--il-band) 0 0) fill 0 / / 0 100vmax;
+  padding-block: 2.25rem;
+  color: var(--il-band-ink);
+  --il-text: var(--il-band-ink);
+  --il-link: var(--il-band-ink);
+  --il-muted: var(--il-band-ink);
+  --il-accent: var(--il-band-ink);
+  --il-rule: var(--il-band-ink);
+}
+.il-story > [data-il-band] + *, .il-part > [data-il-band] + * { margin-top: 2.25rem; }
+/* Cards have their own background (the scheme's surface), so their text keeps the scheme's
+   colours rather than the band's black or white. */
+[data-il-band] .il-card, [data-il-band] .il-btn, [data-il-band].il-scrolly.is-enhanced .il-scrolly__card,
+[data-il-band].il-scrolly--column.is-enhanced .il-scrolly__step {
+  --il-text: var(--il-base-text);
+  --il-link: var(--il-base-link);
+  --il-muted: var(--il-base-muted);
+  --il-accent: var(--il-base-accent);
+  --il-rule: var(--il-base-rule);
+  color: var(--il-text);
+}
 
 /* ---------- editor preview only */
 .il-placeholder {
@@ -389,6 +474,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   .il-fx[data-il-effect="zoom"]:not(.is-in) { transform: scale(0.94); }
   .il-references summary::before { transition: transform 0.15s ease; }
   .il-scrolly__frame { transition: opacity 0.45s ease; }
+  .il-scrolly--column .il-scrolly__frame { transition-duration: 0.9s; } /* a slower crossfade behind the column */
   .il-lightbox[open] { animation: il-fade 0.18s ease-out; }
   @keyframes il-fade { from { opacity: 0; } to { opacity: 1; } }
 }
@@ -427,6 +513,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   h2, h3, h4, summary { break-after: avoid; }
   figure, blockquote, img, li { break-inside: avoid; }
   .il-story img { max-height: 12cm; width: auto; }
+  .il-inline-img--left, .il-inline-img--right { width: 40%; }
   .il-gallery__grid { grid-template-columns: repeat(3, 1fr); }
   .il-gallery__link img { width: 100%; }
 
@@ -459,6 +546,16 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   .il-compare__pair { grid-template-columns: 1fr 1fr; }
   .il-number__figure { font-size: 36pt; }
   .il-fx { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .il-story > [data-il-band], .il-part > [data-il-band] {
+    background-color: transparent; border-image: none; padding-block: 0; color: #000;
+    --il-text: #000; --il-link: #000; --il-muted: #444; --il-accent: #000; --il-rule: #999;
+  }
+  .il-page { background: #fff !important; }
+  /* Colour schemes set their colours inline; print always uses ink on white paper. */
+  .il-story {
+    --il-bg: #fff !important; --il-text: #000 !important; --il-muted: #444 !important; --il-accent: #000 !important;
+    --il-link: #000 !important; --il-rule: #999 !important; --il-surface: #fff !important;
+  }
   .il-appendix { break-before: page; background: none; border-color: #999; }
   .il-references summary { min-height: 0; }
   .il-references summary::before { content: none; }

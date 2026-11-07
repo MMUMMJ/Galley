@@ -30,8 +30,10 @@ export function preserveFocus(container, render, fallback) {
   const caret = key && typeof active.selectionStart === 'number'
     ? [active.selectionStart, active.selectionEnd] : null;
   const scroll = container.scrollTop;
+  const page = window.scrollY; // on phones the page scrolls, not the panel
   render();
   container.scrollTop = scroll;
+  if (window.scrollY !== page) window.scrollTo(window.scrollX, page);
   if (!key) return;
   const next = container.querySelector(`[data-focus="${CSS.escape(key)}"]`);
   if (next && !next.disabled) {

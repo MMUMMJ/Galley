@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.6.0';
+  const RUNTIME_VERSION = '1.10.0';
 
   // ------------------------------------------------------------ helpers
 
@@ -14,6 +14,58 @@
   const str = (v) => (typeof v === 'string' ? v : '');
   const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
   const WIDTHS = ['column', 'wide', 'full'];
+
+  // ------------------------------------------------------------ colour schemes and bands
+  // Every scheme passes 4.5:1 contrast for body text, muted text, accent and links.
+  // The colours are written into the page as inline CSS variables, so this is the only copy.
+  const SCHEMES = {
+    house: { name: 'House', dark: false, mood: 'Warm paper, ink, a deep claret accent.',
+      bg: '#fdfcfa', text: '#1a1a1a', muted: '#575757', accent: '#8a1c3c', link: '#0b5394', rule: '#d9d5cc', surface: '#ffffff' },
+    wire: { name: 'Wire', dark: false, mood: 'Crisp white, slate type, a signal-orange accent.',
+      bg: '#ffffff', text: '#1b2330', muted: '#55606f', accent: '#b93d0c', link: '#1d4fd0', rule: '#dde2ea', surface: '#f5f7fa' },
+    longread: { name: 'Long read', dark: false, mood: 'Soft green-grey paper, a forest accent.',
+      bg: '#f2f5f0', text: '#1c2420', muted: '#525d56', accent: '#2c6a4d', link: '#1d5a8c', rule: '#d0d9d0', surface: '#fbfcfa' },
+    magazine: { name: 'Magazine', dark: false, mood: 'Pure white, black type, a red that shouts once.',
+      bg: '#ffffff', text: '#111111', muted: '#545454', accent: '#c4161c', link: '#b0151a', rule: '#e2e2e2', surface: '#f6f6f6' },
+    nightdesk: { name: 'Night desk', dark: true, mood: 'Charcoal, warm off-white, an amber lamp.',
+      bg: '#15181d', text: '#ece8e1', muted: '#aab0b8', accent: '#f0b429', link: '#8db9ff', rule: '#353b45', surface: '#1e2229' },
+    investigation: { name: 'Investigation', dark: true, mood: 'Deep navy, cool type, a coral alarm.',
+      bg: '#0f1a2b', text: '#e7edf6', muted: '#a6b3c6', accent: '#ff7a6b', link: '#9fc6ff', rule: '#2a3a55', surface: '#16243a' },
+  };
+  const schemeOf = (meta) => (isObj(meta) && Object.prototype.hasOwnProperty.call(SCHEMES, meta.theme) ? meta.theme : 'house');
+  const schemeVars = (id) => {
+    const c = SCHEMES[id];
+    return `--il-bg:${c.bg};--il-text:${c.text};--il-muted:${c.muted};--il-accent:${c.accent};`
+      + `--il-link:${c.link};--il-rule:${c.rule};--il-surface:${c.surface}`;
+  };
+
+  const isHex = (v) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
+  const channel = (c) => { const v = c / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  function luminance(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    return 0.2126 * channel(n >> 16) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
+  }
+  function contrast(a, b) {
+    const x = luminance(a);
+    const y = luminance(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  // Black or white, whichever reads better. Every colour gets at least 4.5:1 this way.
+  const inkFor = (bg) => (contrast(bg, '#000000') >= contrast(bg, '#ffffff') ? '#000000' : '#ffffff');
+  function mixHex(a, b, t) {
+    const pa = parseInt(a.slice(1), 16);
+    const pb = parseInt(b.slice(1), 16);
+    return '#' + [16, 8, 0].map((sh) => Math.round(((pa >> sh) & 255) * t + ((pb >> sh) & 255) * (1 - t))
+      .toString(16).padStart(2, '0')).join('');
+  }
+  // A block's background: 'tint', 'ink' or 'accent' follow the scheme; '#rrggbb' is any colour.
+  function bandColour(value, schemeId) {
+    const c = SCHEMES[schemeId] || SCHEMES.house;
+    if (value === 'tint') return mixHex(c.accent, c.bg, 0.14);
+    if (value === 'ink') return c.text;
+    if (value === 'accent') return c.accent;
+    return isHex(value) ? value.toLowerCase() : '';
+  }
   const EFFECTS = ['fade', 'rise', 'slide', 'zoom'];
   const widthClass = (w, fallback) => 'il-w-' + (WIDTHS.includes(w) ? w : fallback || 'column');
 
@@ -85,7 +137,11 @@
   }
 
   // level: the heading level that "##" maps to.
-  function markdown(text, level) {
+  // An image on its own line: ![file name](asset:<id>) or ![file name](asset:<id> "left"|"right").
+  const IMAGE_LINE = /^!\[([^\]]*)\]\(asset:([A-Za-z0-9_-]+)(?:\s+"(left|right)")?\)$/;
+
+  // image(id, position): renders an inline image line; without it, image lines are left out.
+  function markdown(text, level, image) {
     const base = level || 2;
     const out = [];
     let list = null;
@@ -103,6 +159,10 @@
       const line = raw.trim();
       let m;
       if (!line) closeList();
+      else if ((m = line.match(IMAGE_LINE))) {
+        closeList();
+        if (image) out.push(image(m[2], m[3] || ''));
+      }
       // "## Heading" or "##Heading". A single "#" needs a space, so "#hashtag" and "#1" stay text.
       else if ((m = line.match(/^(#{2,6})\s*([^#\s].*)$/) || line.match(/^(#)\s+(.+)$/))) {
         closeList();
@@ -165,6 +225,18 @@
       + `${caption && credit ? ' ' : ''}${credit ? `<span class="il-credit">${esc(credit)}</span>` : ''}</figcaption>`;
   }
 
+  // An image placed inside running text (text blocks and scroll steps): full width,
+  // or floated left or right with the text wrapping round it. Alt text, caption and
+  // credit come from the file, as everywhere else.
+  function inlineImage(ctx) {
+    return (id, position) => {
+      const a = ctx.asset(id);
+      if (!a || kindOf(a) !== 'image') return ctx.preview ? '<p class="il-placeholder">Missing image</p>' : '';
+      return `<figure class="il-inline-img${position ? ' il-inline-img--' + position : ''}">`
+        + `<img src="${esc(ctx.url(id))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(id)}>${figcaption(a)}</figure>`;
+    };
+  }
+
   function placeholder(b, ctx, message) {
     return ctx.preview ? `<div class="il-placeholder" id="${esc(b.id)}" role="note">${esc(message)}</div>` : '';
   }
@@ -196,7 +268,7 @@
     },
 
     text(b, d, ctx) {
-      const html = markdown(d.body, 2 + ctx.offset);
+      const html = markdown(d.body, 2 + ctx.offset, inlineImage(ctx));
       return html ? `<div class="il-text" id="${esc(b.id)}">${html}</div>` : placeholder(b, ctx, 'Empty text block');
     },
 
@@ -291,16 +363,22 @@
     scrolly(b, d, ctx) {
       const steps = (Array.isArray(d.steps) ? d.steps : []).filter(isObj);
       if (!steps.some((st) => str(st.text).trim() || ctx.asset(st.media))) return placeholder(b, ctx, 'Add steps to this scroll sequence');
-      const layout = d.layout === 'overlay' ? 'overlay' : 'side';
+      // side: image beside the text; overlay: text cards over a full-screen image;
+      // column: one continuous column of text over full-screen images that crossfade.
+      const layout = d.layout === 'overlay' || d.layout === 'column' ? d.layout : 'side';
       const html = steps.map((st, i) => {
         const a = ctx.asset(st.media);
         const fig = a && kindOf(a) === 'image'
           ? `<figure class="il-scrolly__media"><img src="${esc(ctx.url(st.media))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(st.media)}>${figcaption(a)}</figure>`
           : '';
-        const text = markdown(st.text, 2 + ctx.offset);
+        const text = markdown(st.text, 2 + ctx.offset, inlineImage(ctx));
         return `<div class="il-scrolly__step" data-il-step="${i}">${fig}<div class="il-scrolly__card">${text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '')}</div></div>`;
       }).join('');
-      return `<section class="il-scrolly il-scrolly--${layout}" id="${esc(b.id)}" data-il-scrolly aria-label="Scroll sequence">`
+      // Overlay: cards on the left, centre or right. Side by side: text on the right (default) or left.
+      const position = layout !== 'side'
+        ? (d.align === 'left' || d.align === 'right' ? ` il-scrolly--align-${d.align}` : '')
+        : (d.textSide === 'left' ? ' il-scrolly--text-left' : '');
+      return `<section class="il-scrolly il-scrolly--${layout}${position}" id="${esc(b.id)}" data-il-scrolly aria-label="Scroll sequence">`
         + `<div class="il-scrolly__steps">${html}</div></section>`;
     },
 
@@ -356,6 +434,7 @@
     const assets = isObj(s.assets) ? s.assets : {};
     const ctx = {
       meta: isObj(s.meta) ? s.meta : {},
+      scheme: schemeOf(s.meta),
       preview: o.mode === 'preview',
       inline: o.inline === true, // single-file export: assets are data: URLs
       headers: 0,
@@ -384,11 +463,17 @@
       if (html && EFFECTS.includes(b.effect)) {
         html = html.replace(` id="${esc(b.id)}"`, ` id="${esc(b.id)}" data-il-effect="${b.effect}"`);
       }
+      // A coloured band behind the block. Full-screen headers keep their own dark background.
+      const band = b.type === 'header' && d.variant !== 'compact' ? '' : bandColour(b.background, ctx.scheme);
+      if (html && band) {
+        html = html.replace(` id="${esc(b.id)}"`, ` id="${esc(b.id)}" data-il-band style="--il-band:${band};--il-band-ink:${inkFor(band)}"`);
+      }
       out.push(html);
     }
     if (inPart) out.push('</section>');
     if (isObj(ctx.meta) && ctx.meta.appendix === true) out.push(appendix(blocks, s.reflection));
-    return `<article class="il-story">\n${out.filter(Boolean).join('\n')}\n</article>`;
+    const scheme = ctx.scheme === 'house' ? '' : ` data-il-scheme="${ctx.scheme}" style="${schemeVars(ctx.scheme)}"`;
+    return `<article class="il-story"${scheme}>\n${out.filter(Boolean).join('\n')}\n</article>`;
   }
 
   // The maker's notes appendix (Phase 7): the student's notes on blocks and effects, and
@@ -471,7 +556,7 @@
       + `<title>${esc(title)}</title>\n`
       + headTags(story, o, title)
       + `<meta name="generator" content="Illuminate ${RUNTIME_VERSION}">\n${css}\n</head>\n`
-      + `<body class="il-page">\n<main>\n${renderArticle(story, o)}\n</main>\n`
+      + `<body class="il-page"${schemeOf(m) === 'house' ? '' : ` style="background:${SCHEMES[schemeOf(m)].bg}"`}>\n<main>\n${renderArticle(story, o)}\n</main>\n`
       + `<script type="application/json" id="illuminate-source">${json}</` + 'script>\n'
       + (o.bodyEnd ? o.bodyEnd + '\n' : '')
       + `${js}\n</body>\n</html>\n`;
@@ -793,6 +878,7 @@
 
   const api = Object.freeze({
     RUNTIME_VERSION, renderArticle, renderDocument, enhance, embedInfo, markdown, inline, assetPath,
+    SCHEMES, bandColour, inkFor, contrast,
   });
   if (typeof module === 'object' && module && module.exports) module.exports = api;
   root.Illuminate = api;
