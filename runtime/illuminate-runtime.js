@@ -389,7 +389,11 @@
           ? (st.align === 'left' || st.align === 'center' || st.align === 'right' ? st.align : fallbackAlign)
           : '';
         const stepCls = stAlign && stAlign !== 'center' ? ` il-scrolly__step--${stAlign}` : '';
-        return `<div class="il-scrolly__step${stepCls}" data-il-step="${i}">${fig}<div class="il-scrolly__card">${text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '')}</div></div>`;
+        // An empty step draws no card (an empty card is a stray box over the image). With no
+        // image either, the step is left out of the page; the editor preview still flags it.
+        const card = text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '');
+        if (!fig && !card) return '';
+        return `<div class="il-scrolly__step${stepCls}" data-il-step="${i}">${fig}${card ? `<div class="il-scrolly__card">${card}</div>` : ''}</div>`;
       }).join('');
       // Overlay: each step's card can sit on the left, centre or right.
       // Text column: the column sits on the left, centre or right. Side by side: text on the right (default) or left.
@@ -423,7 +427,10 @@
         const focusAttr = st.focus
           ? ` data-il-focus="${clampNum(st.x, 0, 100, 40)},${clampNum(st.y, 0, 100, 40)},${clampNum(st.w, 5, 100, 30)},${clampNum(st.h, 5, 100, 30)}"`
           : '';
-        return `<div class="il-scrolly__step il-scrollpoints__step${stepCls}" data-il-step="${i}"${focusAttr}><div class="il-scrolly__card">${text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '')}</div></div>`;
+        // As in scroll sequences: no card for an empty step, and no step at all if it doesn't zoom either.
+        const card = text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '');
+        if (!focusAttr && !card) return '';
+        return `<div class="il-scrolly__step il-scrollpoints__step${stepCls}" data-il-step="${i}"${focusAttr}>${card ? `<div class="il-scrolly__card">${card}</div>` : ''}</div>`;
       }).join('');
       return `<section class="il-scrolly il-scrolly--overlay il-scrollpoints" id="${esc(b.id)}" data-il-scrollpoints aria-label="Scrollpoints">`
         + `${fig}<div class="il-scrolly__steps">${html}</div></section>`;
@@ -794,6 +801,10 @@
         }
       });
       steps.forEach((st, j) => st.classList.toggle('is-active', j === i));
+      // Which side the step on screen sits: an overlay's vignette darkens that side of the image.
+      const cls = steps[i] ? steps[i].classList : null;
+      section.setAttribute('data-il-side', cls && cls.contains('il-scrolly__step--left') ? 'left'
+        : cls && cls.contains('il-scrolly__step--right') ? 'right' : 'center');
     };
     show(0);
     const io = new win.IntersectionObserver((entries) => {

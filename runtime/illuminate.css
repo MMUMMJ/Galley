@@ -355,11 +355,26 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
 .il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--right .il-scrolly__card {
   background: none; padding: 1.5rem 0;
 }
-.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--left {
+/* Left and right steps: the vignette is on the image, not the step, so no dark band scrolls
+   with the text. Its dark side follows the step on screen (data-il-side, set by the runtime)
+   and crossfades when the next step sits on the other side. */
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::before,
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0;
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::before {
   background: linear-gradient(90deg, rgb(0 0 0 / 0.85) 0%, rgb(0 0 0 / 0.68) 36%, rgb(0 0 0 / 0.2) 65%, transparent 88%);
 }
-.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--right {
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::after {
   background: linear-gradient(270deg, rgb(0 0 0 / 0.85) 0%, rgb(0 0 0 / 0.68) 36%, rgb(0 0 0 / 0.2) 65%, transparent 88%);
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced[data-il-side="left"] .il-scrolly__panel::before,
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced[data-il-side="right"] .il-scrolly__panel::after { opacity: 1; }
+@media (max-width: 479px) {
+  /* Narrow phones centre every step, so darken the whole image evenly instead of one side. */
+  .il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::before { background: rgb(0 0 0 / 0.55); }
+  .il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced[data-il-side="right"] .il-scrolly__panel::before { opacity: 1; }
+  .il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced[data-il-side="right"] .il-scrolly__panel::after { opacity: 0; }
 }
 
 /* Overlay cards on the left or right: narrower, so the image shows beside them. */
@@ -565,6 +580,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   .il-fx[data-il-effect="zoom"]:not(.is-in) { transform: scale(0.94); }
   .il-references summary::before { transition: transform 0.15s ease; }
   .il-scrolly__frame { transition: opacity 0.45s ease; }
+  .il-scrolly__panel::before, .il-scrolly__panel::after { transition: opacity 0.6s ease; }
   .il-scrolly--column .il-scrolly__frame { transition-duration: 0.9s; } /* a slower crossfade behind the column */
   .il-scrollpoints__stage { transition: transform 0.75s cubic-bezier(0.22, 0.68, 0.2, 1); }
   .il-scrollpoints__box { transition: left 0.6s ease, top 0.6s ease, width 0.6s ease, height 0.6s ease, opacity 0.35s ease; }
