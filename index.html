@@ -17,7 +17,7 @@
     <h1 class="app-title">Illuminate</h1>
     <div class="toolbar">
       <div class="menu-wrap">
-        <button type="button" class="btn btn-quiet" id="file" aria-expanded="false" aria-controls="file-menu">File <span aria-hidden="true">▾</span></button>
+        <button type="button" class="btn" id="file" aria-expanded="false" aria-controls="file-menu">File &amp; Export <span aria-hidden="true">▾</span></button>
         <ul class="menu" id="file-menu" hidden>
           <li><button type="button" class="menu-option" id="new-story"><strong>New story</strong></button></li>
           <li><button type="button" class="menu-option" id="open"><strong>Open…</strong><span>A ZIP or web page exported from Illuminate</span></button></li>
@@ -28,6 +28,7 @@
       <button type="button" class="btn btn-quiet btn-icon" id="redo" aria-label="Redo" title="Redo (Ctrl/Cmd+Shift+Z)" aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y" disabled><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
       <span class="toolbar-sep" aria-hidden="true"></span>
       <button type="button" class="btn" id="checks" aria-expanded="false" aria-controls="checks-panel">Checks <span class="count"></span></button>
+      <button type="button" class="btn" id="preview-show" hidden>Show preview</button>
     </div>
     <div class="status-lines">
       <p class="app-status" id="app-status">Loading editor…</p>
@@ -55,9 +56,21 @@
       <h2 id="inspector-heading" class="panel-heading">Inspector</h2>
     </section>
 
-    <section class="panel panel-preview" aria-labelledby="preview-heading">
-      <h2 id="preview-heading" class="panel-heading">Preview</h2>
-      <iframe id="preview-frame" class="preview-frame" title="Preview of your story"></iframe>
+    <section class="panel panel-preview" id="preview-panel" aria-labelledby="preview-heading">
+      <div class="preview-bar">
+        <h2 id="preview-heading" class="panel-heading">Preview</h2>
+        <div class="preview-controls">
+          <div class="preview-widths" role="group" aria-label="Preview width">
+            <button type="button" class="btn-slim" data-preview-width="desktop" aria-pressed="true">Desktop</button>
+            <button type="button" class="btn-slim" data-preview-width="phone" aria-pressed="false">Phone</button>
+          </div>
+          <button type="button" class="btn-slim" id="preview-popout" title="Open live preview in a new tab">New tab <span aria-hidden="true">↗</span></button>
+          <button type="button" class="btn-slim" id="preview-hide" aria-controls="preview-panel" title="Hide inline preview to widen the editor">Hide</button>
+        </div>
+      </div>
+      <div class="preview-stage">
+        <iframe id="preview-frame" class="preview-frame" title="Preview of your story"></iframe>
+      </div>
     </section>
 
     <aside class="panel checks-panel" id="checks-panel" tabindex="-1" aria-labelledby="checks-heading" hidden></aside>

@@ -36,9 +36,9 @@ export function textArea(ctx, key, { label, hint, rows = 4, placeholder, lines =
   return wrap(id, label, hint, area);
 }
 
-export function selectInput(ctx, key, { label, hint, options }) {
+export function selectInput(ctx, key, { label, hint, options, fallback }) {
   const id = nextId(key);
-  const current = ctx.block.data[key];
+  const current = ctx.block.data[key] ?? fallback;
   const select = h('select', {
     id, 'data-focus': `${ctx.block.id}:${key}`,
     onchange: (e) => ctx.set(key, e.target.value, { rerender: true }),
@@ -80,6 +80,7 @@ export function fileButton(ctx, { label, accept, multiple = false, focusKey, onF
 
 export const ACCEPT = {
   image: 'image/*',
+  imageVideo: 'image/*,video/*,.mov',
   media: 'image/*,video/*,audio/*,.mov,.m4a,.mp3,.wav',
 };
 
@@ -96,6 +97,31 @@ export function thumb(ctx, assetId) {
   return h('span', { class: 'thumb thumb-icon', 'aria-hidden': 'true' }, kind === 'video' ? '▶' : kind === 'audio' ? '♪' : '?');
 }
 
+// A grid of compact thumbnail cards for choosing a file already in the story.
+export function assetBrowser(ctx, entries, { label, focusKey, onPick }) {
+  if (!entries.length) return null;
+  const labelId = nextId('asset-browser');
+  const grid = h('div', { class: 'rte-pick', role: 'group', 'aria-labelledby': label ? labelId : null },
+    entries.map(([id, a]) => h('button', {
+      type: 'button',
+      'data-focus': `${focusKey}:${id}`,
+      title: a.name || id,
+      onclick: () => onPick(id, a),
+    }, thumb(ctx, id), h('span', {}, a.name || id))));
+  grid.addEventListener('keydown', (e) => {
+    const cards = [...grid.querySelectorAll('button')];
+    const i = cards.indexOf(document.activeElement);
+    if (i < 0) return;
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (step) { e.preventDefault(); cards[(i + step + cards.length) % cards.length].focus(); }
+    else if (e.key === 'Home') { e.preventDefault(); cards[0].focus(); }
+    else if (e.key === 'End') { e.preventDefault(); cards[cards.length - 1].focus(); }
+  });
+  return h('div', { class: 'field asset-browser' },
+    label ? h('p', { class: 'field-hint asset-browser-label', id: labelId }, label) : null,
+    grid);
+}
+
 // Pick a file for data[key]: import a new one, or reuse one already in the story.
 // kinds: which asset kinds are allowed, e.g. ['image'].
 // onSet(data, asset): optional extra changes when a file is chosen.
@@ -110,9 +136,13 @@ export function assetPicker(ctx, key, { label, kinds = ['image'], onSet } = {}) 
     if (onSet && asset2) onSet(data, asset2);
   }, { rerender: true });
 
-  const selectId = nextId(`${key}-existing`);
   const others = Object.entries(ctx.story.assets).filter(([id, a]) => id !== current && fit(a));
-  const kindsText = kinds.length === 1 ? `an ${kinds[0]}` : 'an image, video or audio file';
+  const kindsText = kinds.length === 1 ? `an ${kinds[0]}`
+    : kinds.length === 2 && kinds.includes('image') && kinds.includes('video') ? 'an image or video file'
+      : 'an image, video or audio file';
+  const accept = kinds.length === 1 && kinds[0] === 'image' ? ACCEPT.image
+    : kinds.length === 2 && kinds.includes('image') && kinds.includes('video') ? ACCEPT.imageVideo
+      : ACCEPT.media;
 
   return h('fieldset', { class: 'field asset-picker' },
     h('legend', {}, label),
@@ -123,7 +153,7 @@ export function assetPicker(ctx, key, { label, kinds = ['image'], onSet } = {}) 
     h('div', { class: 'button-row' },
       fileButton(ctx, {
         label: asset ? 'Replace with a new file…' : 'Import a file…',
-        accept: kinds.length === 1 && kinds[0] === 'image' ? ACCEPT.image : ACCEPT.media,
+        accept,
         focusKey: `${ctx.block.id}:${key}:import`,
         onFiles: async (files) => {
           const [added] = await ctx.importFiles(files.slice(0, 1), kinds);
@@ -134,12 +164,11 @@ export function assetPicker(ctx, key, { label, kinds = ['image'], onSet } = {}) 
         type: 'button', class: 'btn', 'data-focus': `${ctx.block.id}:${key}:remove`,
         onclick: () => { choose(null); ctx.announce('File removed from this block. It stays in your story\'s files.'); },
       }, 'Remove file') : null),
-    others.length ? h('div', { class: 'field' },
-      h('label', { for: selectId }, 'Or use a file already in this story'),
-      h('select', {
-        id: selectId, 'data-focus': `${ctx.block.id}:${key}:existing`,
-        onchange: (e) => { if (e.target.value) choose(e.target.value, ctx.story.assets[e.target.value]); },
-      }, h('option', { value: '' }, 'Choose…'), others.map(([id, a]) => h('option', { value: id }, a.name || id)))) : null,
+    assetBrowser(ctx, others, {
+      label: 'Or use a file already in this story:',
+      focusKey: `${ctx.block.id}:${key}:existing`,
+      onPick: (id, a) => { choose(id, a); ctx.announce(`${a.name || 'File'} chosen.`); },
+    }),
     asset ? assetDetails(ctx, current) : null);
 }
 

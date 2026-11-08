@@ -29,7 +29,7 @@ export default {
       });
     }
     finish();
-    for (const b of story.blocks.filter((x) => x.type === 'scrolly')) {
+    for (const b of story.blocks.filter((x) => x.type === 'scrolly' || x.type === 'scrollpoints')) {
       (b.data.steps || []).forEach((st, i) => {
         const n = wordCount(st && st.text);
         if (n > STEP_WORDS) out.push({ blockId: b.id, message: `Step ${i + 1} is ${n} words. Scroll steps work best short, about ${STEP_WORDS} at most: could it be split or trimmed?` });

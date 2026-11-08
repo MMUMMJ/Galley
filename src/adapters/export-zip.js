@@ -22,7 +22,7 @@ function readme(story, assetCount, assetBytes) {
     'Open Illuminate, choose Open, and pick this ZIP file.',
     '',
     'CONTENTS',
-    `Words: ${countWords(story)} (text, headers and quotes; not references or captions)`,
+    `Words: ${countWords(story)} (text, headers, quotes and scroll steps; not references or captions)`,
     `Media files in assets/: ${assetCount} (${formatMB(assetBytes)})`,
     '',
   ].join('\r\n');

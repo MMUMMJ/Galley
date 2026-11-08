@@ -49,24 +49,39 @@ export function preserveFocus(container, render, fallback) {
 }
 
 // The cursor's position in a formatted text editor, as a count of characters.
+// Only typed text counts: text inside locked parts (an image's caption and buttons) is skipped.
+const typedText = (root) => document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+  acceptNode: (n) => (n.parentElement && n.parentElement.closest('[contenteditable="false"]') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+});
 function textOffset(root) {
   const s = getSelection();
   if (!s.rangeCount || !root.contains(s.anchorNode)) return null;
-  const r = document.createRange();
-  r.selectNodeContents(root);
-  r.setEnd(s.anchorNode, s.anchorOffset);
-  return r.toString().length;
+  let count = 0;
+  const walker = typedText(root);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (n === s.anchorNode) return count + s.anchorOffset;
+    if (s.anchorNode.nodeType === 1 && s.anchorNode.contains(n) && [...s.anchorNode.childNodes].indexOf(n) >= s.anchorOffset) return count;
+    count += n.data.length;
+  }
+  return count;
 }
 function setTextOffset(root, offset) {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const walker = typedText(root);
   let left = offset;
+  let last = null;
   for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    last = n;
     if (left <= n.data.length) {
       const r = document.createRange(); r.setStart(n, left); r.collapse(true);
       getSelection().removeAllRanges(); getSelection().addRange(r);
       return;
     }
     left -= n.data.length;
+  }
+  // The text got shorter (an undo, say): put the cursor at the end of what's there.
+  if (last) {
+    const r = document.createRange(); r.setStart(last, last.data.length); r.collapse(true);
+    getSelection().removeAllRanges(); getSelection().addRange(r);
   }
 }
 

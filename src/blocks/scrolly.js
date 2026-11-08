@@ -11,9 +11,11 @@ export default {
   defaults: () => blockDefaults('scrolly'),
   prompt: 'A scroll sequence controls the reader\'s pace. Each step should reveal one new thing. '
     + 'If a single image and a paragraph would do the job, use those instead.',
-  summary: (d) => `${(d.steps || []).length} steps · ${d.layout === 'overlay' || d.layout === 'column'
-    ? `${d.layout === 'column' ? 'text column' : 'overlay'}${d.align && d.align !== 'center' ? `, text ${d.align}` : ''}`
-    : `side by side${d.textSide === 'left' ? ', text left' : ''}`}`,
+  summary: (d) => `${(d.steps || []).length} steps · ${d.layout === 'column'
+    ? `text column${d.backdrop === 'vignette' ? ' (vignette)' : d.backdrop === 'none' ? ' (no box)' : ''}${d.align && d.align !== 'center' ? `, text ${d.align}` : ''}`
+    : d.layout === 'overlay'
+      ? `overlay${d.backdrop === 'vignette' ? ' (vignette)' : d.backdrop === 'none' ? ' (no box)' : ''}`
+      : `side by side${d.textSide === 'left' ? ', text left' : ''}`}`,
   editorUI(el, ctx) {
     const steps = ctx.block.data.steps || [];
     const bid = ctx.block.id;
@@ -45,19 +47,33 @@ export default {
           ['column', 'Text column: one column of text scrolls while images crossfade behind'],
         ],
       }),
-      ctx.block.data.layout === 'overlay' || ctx.block.data.layout === 'column'
+      ctx.block.data.layout === 'column'
         ? selectInput(ctx, 'align', {
           label: 'Text position',
-          hint: ctx.block.data.layout === 'column'
-            ? 'Where the column of text sits over the images. On phones it always fills the width.'
-            : 'Where the text boxes sit over the image. On phones they always fill the width.',
+          hint: 'Where the column of text sits over the images. On phones it always fills the width.',
           options: [['left', 'Left'], ['center', 'Centre'], ['right', 'Right']],
         })
-        : selectInput(ctx, 'textSide', {
-          label: 'Text position',
-          hint: 'Which side of the screen the text is on. On phones the text scrolls over the image instead.',
-          options: [['right', 'Text on the right, images on the left'], ['left', 'Text on the left, images on the right']],
-        }),
+        : ctx.block.data.layout === 'side'
+          ? selectInput(ctx, 'textSide', {
+            label: 'Text position',
+            hint: 'Which side of the screen the text is on. On phones the text scrolls over the image instead.',
+            options: [['right', 'Text on the right, images on the left'], ['left', 'Text on the left, images on the right']],
+          })
+          : null,
+      ctx.block.data.layout === 'overlay' || ctx.block.data.layout === 'column'
+        ? selectInput(ctx, 'backdrop', {
+          label: 'Text backdrop',
+          fallback: 'solid',
+          hint: ctx.block.data.layout === 'column'
+            ? 'Vignette fades softly from the edge behind the column into the image, like Shorthand.'
+            : 'Vignette puts a soft shaded gradient behind each step instead of a solid box.',
+          options: [
+            ['solid', ctx.block.data.layout === 'column' ? 'Solid column' : 'Solid card'],
+            ['vignette', 'Soft vignette (gradient fade)'],
+            ['none', 'No box (text shadow only)'],
+          ],
+        })
+        : null,
       h('ol', { class: 'step-list' }, steps.map((st, i) => {
         const sub = nested(ctx, (d) => d.steps[i], `step${i}`);
         return h('li', {},
@@ -65,12 +81,23 @@ export default {
             h('legend', {}, `Step ${i + 1}`),
             // Two kinds of image in a step: one inside the text, and the one behind or beside it.
             richText(sub, 'text', {
-              label: `Step ${i + 1} text (required)`, mode: 'blocks', images: true, imageLabel: 'Image in text', rows: 4,
+              label: `Step ${i + 1} text (required)`, mode: 'blocks', images: true, imageLabel: 'Image', imageName: 'Image in the text', rows: 4,
               hint: i === 0 ? 'What should the reader notice first? Keep each step short.' : null,
             }),
             imageDetails(sub, 'text'),
-            assetPicker(sub, 'media', { label: i === 0 ? 'Image behind or beside the text' : 'New image behind or beside the text (optional)', kinds: ['image'] }),
-            i > 0 && !st.media ? help('No new image: the previous one stays on screen for this step.') : null,
+            ctx.block.data.layout === 'overlay'
+              ? selectInput(sub, 'align', {
+                label: 'Box position',
+                fallback: ctx.block.data.align || 'center',
+                hint: i === 0 ? 'Where this step\'s text box sits over the image. On phones it always fills the width.' : null,
+                options: [['left', 'Left'], ['center', 'Centre'], ['right', 'Right']],
+              })
+              : null,
+            assetPicker(sub, 'media', {
+              label: i === 0 ? 'Image or video behind or beside the text' : 'New image or video behind or beside the text (optional)',
+              kinds: ['image', 'video'],
+            }),
+            i > 0 && !st.media ? help('No new file: the previous image or video stays on screen for this step.') : null,
             h('div', { class: 'button-row' },
               h('button', { type: 'button', class: 'btn', disabled: i === 0, 'data-focus': `${bid}:st-up:${i}`, onclick: () => moveAndFollow(i, -1) }, `Move step ${i + 1} up`),
               h('button', { type: 'button', class: 'btn', disabled: i === steps.length - 1, 'data-focus': `${bid}:st-down:${i}`, onclick: () => moveAndFollow(i, 1) }, 'Move down'),
@@ -81,7 +108,7 @@ export default {
       })),
       h('button', {
         type: 'button', class: 'btn', 'data-focus': `${bid}:st-add`,
-        onclick: () => changeSteps((next) => [...next, { media: null, text: '' }], `Step ${steps.length + 1} added.`),
+        onclick: () => changeSteps((next) => [...next, { media: null, text: '', align: 'center' }], `Step ${steps.length + 1} added.`),
       }, 'Add a step'),
     );
   },
@@ -90,7 +117,7 @@ export default {
     const issues = [];
     if (steps.length < 2) issues.push('A scroll sequence needs at least two steps.');
     steps.forEach((st, i) => { if (!plainText(st.text).trim()) issues.push(`Step ${i + 1} has no text. Every step needs some.`); });
-    if (!steps.some((st) => st.media)) issues.push('Add an image: start with step 1.');
+    if (!steps.some((st) => st.media)) issues.push('Add an image or video: start with step 1.');
     return issues;
   },
 };

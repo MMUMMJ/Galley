@@ -18,7 +18,7 @@ The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
 - Colour schemes and block backgrounds: six ready-made colour schemes (House, Wire, Long read, Magazine, Night desk, Investigation), all checked for 4.5:1 contrast, chosen in Story details; a pack can lock one as its house style. Any block can sit on a full-width coloured band, from the scheme's colours or any colour; Illuminate picks black or white text for it. Print always uses black on white.
 - Scroll sequence layouts: side by side (text left or right), overlay (text boxes left, centre or right), and text column (one continuous column of text, left, centre or right, while full-screen images crossfade behind).
 - Inline images: Text blocks and scroll steps can hold images inside the text, full width or floated left or right with the text wrapping round.
-- Editor redesign: a File menu (New story, Open…, Export) with Undo, Redo and Checks; compact one-line block cards whose actions show only on the selected block; Write / Look / Notes tabs in the inspector; and a formatted text editor (bold, italics, links, subheadings, lists, images) so students never type Markdown. Pasting from Word or the web keeps only that formatting.
+- Editor redesign: a File menu (New story, Open…, Export) with Undo, Redo and Checks; compact one-line block cards whose actions show only on the selected block; Write / Look / Notes tabs in the inspector; and a formatted text editor (bold, italics, links, subheadings, lists, images) so students never type Markdown. Pasting from Word or the web keeps only that formatting. **+ Add block** opens a picker with a card and a small animation for each block type the pack allows (still pictures under reduced motion).
 
 ## Prompt packs
 

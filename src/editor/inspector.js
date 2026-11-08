@@ -137,13 +137,13 @@ export function mountInspector(panel, store, deps) {
     }
     const mod = BLOCKS[block.type];
     const pos = store.story.blocks.indexOf(block) + 1;
-    body.append(h('h3', { class: 'inspector-title' },
-      `${blockLabel(block.type)} block `, h('span', { class: 'inspector-pos' }, `${pos} of ${store.story.blocks.length}`)));
+    const titleEl = h('h3', { class: 'inspector-title' },
+      `${blockLabel(block.type)} block `, h('span', { class: 'inspector-pos' }, `${pos} of ${store.story.blocks.length}`));
     if (!mod) {
-      body.append(h('p', {}, `This version of Illuminate can't edit "${block.type}" blocks. The block is kept so nothing is lost.`));
+      body.append(titleEl, h('p', {}, `This version of Illuminate can't edit "${block.type}" blocks. The block is kept so nothing is lost.`));
       return;
     }
-    body.append(tabList(block));
+    body.append(h('div', { class: 'inspector-head' }, titleEl, tabList(block)));
     const panelEl = h('div', { class: 'tabpanel', role: 'tabpanel', id: 'inspector-tabpanel', 'aria-labelledby': `tab-${tab}` });
     body.append(panelEl);
     if (tab === 'write') {
@@ -155,6 +155,9 @@ export function mountInspector(panel, store, deps) {
       panelEl.append(issuesEl);
       renderIssues();
       const fields = h('div', { class: 'inspector-fields' });
+      // Blocks may pass null for a field they leave out; the DOM's append() would print "null".
+      const append = fields.append.bind(fields);
+      fields.append = (...items) => append(...items.filter((x) => x !== null && x !== undefined && x !== false));
       panelEl.append(fields);
       try {
         mod.editorUI(fields, makeCtx(block));

@@ -1,6 +1,6 @@
 {
   "name": "Advanced Storytelling",
-  "blocks": ["header", "text", "quote", "media", "gallery", "embed", "divider", "references", "scrolly", "compare", "number"],
+  "blocks": ["header", "text", "quote", "media", "gallery", "embed", "divider", "references", "scrolly", "scrollpoints", "compare", "number"],
   "prompts": {
     "header": "Each part of your portfolio starts with a compact header. Name the stage plainly, so a marker can find it at a glance.",
     "text": "Show your process, not just the result. What did you try, what did you learn, and what evidence (sketches, drafts, data) shows it? Cite sources as (Author Year).",

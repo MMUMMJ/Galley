@@ -11,11 +11,17 @@ function toBlob(record) {
   return null;
 }
 
+function setCache(id, blob) {
+  const prev = cache.get(id);
+  if (prev && prev.url) URL.revokeObjectURL(prev.url);
+  cache.set(id, { blob, url: null });
+}
+
 export async function loadAssets(ids) {
   for (const id of ids) {
     try {
       const blob = toBlob(await idb.get('assets', id));
-      if (blob) cache.set(id, { blob, url: null });
+      if (blob) setCache(id, blob);
     } catch {
       persistent = false;
     }
@@ -24,7 +30,7 @@ export async function loadAssets(ids) {
 
 // Stores a file. Returns false if it could only be kept in memory for this session.
 export async function putAsset(id, blob) {
-  cache.set(id, { blob, url: null });
+  setCache(id, blob);
   try {
     await idb.put('assets', id, blob);
     return true;

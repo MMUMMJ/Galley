@@ -1,1 +1,6 @@
 .DS_Store
+
+# Local demo exports, not part of Illuminate
+shdemo/
+SHdemo-illuminate/
+SHdemo-illuminate.zip

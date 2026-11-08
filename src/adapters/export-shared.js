@@ -6,7 +6,7 @@ let runtimeText = null;
 export async function runtimeFiles() {
   if (!runtimeText) {
     const get = async (path) => {
-      const res = await fetch(new URL(path, document.baseURI));
+      const res = await fetch(new URL(path, document.baseURI), { cache: 'no-cache' });
       if (!res.ok) throw new Error(`Couldn't load ${path} (HTTP ${res.status}).`);
       return res.text();
     };
@@ -34,7 +34,7 @@ function firstHeaderTitle(story) {
   return story.blocks.find((b) => b.type === 'header' && b.data.title)?.data.title || '';
 }
 
-// Words a reader reads in the body: text blocks, headers and quotes.
+// Words a reader reads in the body: text blocks, headers, quotes and scroll steps.
 // Not counted: references, captions, credits, alt text.
 export function countWords(story) {
   const parts = [];
@@ -43,6 +43,7 @@ export function countWords(story) {
     if (b.type === 'text') parts.push(d.body);
     if (b.type === 'header') parts.push(d.kicker, d.title, d.standfirst);
     if (b.type === 'quote') parts.push(d.text);
+    if (b.type === 'scrolly' || b.type === 'scrollpoints') (d.steps || []).forEach((st) => parts.push(st && st.text));
   }
   const text = parts.filter(Boolean).join('\n')
     .replace(/^\s*!\[[^\]]*\]\(asset:[^)]*\)\s*$/gm, ' ') // inline images aren't words

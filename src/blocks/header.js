@@ -23,7 +23,7 @@ export default {
         : { label: 'Title', hint: 'The heading for this part.' }),
       richText(ctx, 'standfirst', { label: 'Standfirst', mode: 'inline', hint: 'One or two sentences that sell the story.' }),
       textInput(ctx, 'byline', { label: 'Byline', placeholder: 'By …' }),
-      assetPicker(ctx, 'media', { label: 'Header image', kinds: ['image'] }),
+      assetPicker(ctx, 'media', { label: 'Header image or background video', kinds: ['image', 'video'] }),
       first ? null : help('This is not the first header, so it starts a new part of the page.'),
     );
   },

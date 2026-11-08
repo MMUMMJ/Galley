@@ -1,6 +1,6 @@
 import { blockDefaults } from '../model.js';
 import { h } from '../editor/dom.js';
-import { textArea, selectInput, fileButton, assetDetails, thumb, assetKind, ACCEPT } from '../editor/fields.js';
+import { textArea, selectInput, fileButton, assetDetails, assetBrowser, thumb, assetKind, ACCEPT } from '../editor/fields.js';
 
 export default {
   type: 'gallery',
@@ -54,7 +54,6 @@ export default {
     }));
 
     const others = Object.entries(ctx.story.assets).filter(([id, a]) => !items.includes(id) && assetKind(a) === 'image');
-    const existingId = `${bid}-gallery-existing`;
 
     el.append(
       h('fieldset', { class: 'field' },
@@ -73,12 +72,11 @@ export default {
               ctx.announce(`${added.length} image${added.length === 1 ? '' : 's'} added to the gallery.`);
             },
           })),
-        others.length ? h('div', { class: 'field' },
-          h('label', { for: existingId }, 'Or add an image already in this story'),
-          h('select', {
-            id: existingId, 'data-focus': `${bid}:g-existing`,
-            onchange: (e) => { const id = e.target.value; if (id) changeItems((next) => [...next, id], 'Image added to the gallery.'); },
-          }, h('option', { value: '' }, 'Choose…'), others.map(([id, a]) => h('option', { value: id }, a.name || id)))) : null),
+        assetBrowser(ctx, others, {
+          label: 'Or add an image already in this story:',
+          focusKey: `${bid}:g-existing`,
+          onPick: (id) => changeItems((next) => [...next, id], 'Image added to the gallery.'),
+        })),
       textArea(ctx, 'caption', { label: 'Gallery caption', rows: 2 }),
       selectInput(ctx, 'width', { label: 'Width', options: [['column', 'Column'], ['wide', 'Wide'], ['full', 'Full width']] }),
     );

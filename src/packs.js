@@ -17,7 +17,7 @@ const DEFAULT_PACK = Object.freeze({
 let current = DEFAULT_PACK;
 
 export const getPack = () => current;
-export const SHOWPIECES = ['scrolly', 'compare', 'number'];
+export const SHOWPIECES = ['scrolly', 'scrollpoints', 'compare', 'number'];
 
 export function isPackPath(path) {
   return typeof path === 'string' && PACK_PATH.test(path);
@@ -102,6 +102,21 @@ export function applyPack(story, pack = current) {
 
 export function startStory(pack = current) {
   return applyPack(createStory(), pack);
+}
+
+// Loads and applies the pack for an opened story (or the URL's ?pack=),
+// or resets to the default pack if neither is set.
+export async function syncStoryPack(story) {
+  const packPath = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('pack'))
+    || story?.meta?.pack || null;
+  if (!packPath) {
+    setPack(null);
+    return null;
+  }
+  const pack = await loadPack(packPath);
+  setPack(pack);
+  if (story) applyPack(story, pack);
+  return pack;
 }
 
 export const showpieceCount = (story) => story.blocks.filter((b) => SHOWPIECES.includes(b.type)).length;

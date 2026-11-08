@@ -3,6 +3,7 @@ import { ADAPTERS } from '../adapters/registry.js';
 import { formatMB } from '../adapters/export-shared.js';
 import { openFile } from '../open.js';
 import { putAsset } from '../assets.js';
+import { syncStoryPack } from '../packs.js';
 import { h } from './dom.js';
 
 function download(blob, filename) {
@@ -93,6 +94,11 @@ export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, getBlo
     setStatus(`Opening ${file.name}…`);
     try {
       const { story, blobs, missing } = await openFile(file);
+      try {
+        await syncStoryPack(story);
+      } catch (err) {
+        toast(`${err.message} Carrying on without a pack.`, { tone: 'warning' });
+      }
       for (const [id, blob] of blobs) await putAsset(id, blob);
       store.update(() => story, { select: story.blocks[0]?.id ?? null, from: 'open', keepModified: true });
       const title = story.meta.title || story.blocks.find((b) => b.type === 'header')?.data.title || file.name;

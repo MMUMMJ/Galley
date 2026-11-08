@@ -2,7 +2,7 @@
 // Title, standfirst and byline appear on the page; the search and sharing fields
 // go into the exported page's <head> for search engines and social media.
 import { h } from './dom.js';
-import { textInput, textArea, thumb, assetKind } from './fields.js';
+import { textInput, textArea, thumb, assetBrowser, assetKind } from './fields.js';
 import { renderSchemePicker } from './scheme-picker.js';
 import { richText } from './rich-text.js';
 
@@ -56,21 +56,27 @@ export function renderMetadata(el, ctx) {
 
   // Share image: chosen from the story's own images.
   const images = Object.entries(story.assets).filter(([, a]) => assetKind(a) === 'image');
-  const shareId = 'meta-share-image';
   const current = story.meta.shareImage;
   const shareAsset = current ? story.assets[current] : null;
+  const otherImages = images.filter(([id]) => id !== current);
   const shareImage = h('div', { class: 'field' },
-    h('label', { for: shareId }, 'Share image'),
-    h('p', { class: 'field-hint', id: `${shareId}-hint` }, images.length
+    h('p', { class: 'field-label' }, 'Share image'),
+    h('p', { class: 'field-hint' }, images.length
       ? 'Shown when the story is shared on social media. Choose from your story\'s images.'
       : 'Import images into your blocks first; then choose one here.'),
-    h('select', {
-      id: shareId, 'data-focus': 'meta:shareImage', 'aria-describedby': `${shareId}-hint`, disabled: !images.length,
-      onchange: (e) => ctx.set('shareImage', e.target.value || null, { rerender: true }),
-    }, h('option', { value: '' }, 'None'),
-    images.map(([id, a]) => h('option', { value: id, selected: id === current }, a.name || id))),
     shareAsset ? h('div', { class: 'asset-current' }, thumb(ctx, current),
-      h('span', {}, shareAsset.alt ? `Alt text: ${shareAsset.alt}` : h('span', { class: 'badge' }, 'This image has no alt text yet'))) : null);
+      h('span', {},
+        h('strong', {}, shareAsset.name || 'Untitled image'), h('br'),
+        shareAsset.alt ? `Alt text: ${shareAsset.alt}` : h('span', { class: 'badge' }, 'This image has no alt text yet')),
+      h('button', {
+        type: 'button', class: 'btn', 'data-focus': 'meta:shareImage:remove',
+        onclick: () => { ctx.set('shareImage', null, { rerender: true }); ctx.announce('Share image removed.'); },
+      }, 'Remove')) : null,
+    assetBrowser(ctx, otherImages, {
+      label: shareAsset ? 'Or use another image in this story:' : null,
+      focusKey: 'meta:shareImage',
+      onPick: (id, a) => { ctx.set('shareImage', id, { rerender: true }); ctx.announce(`${a.name || 'Share image'} chosen.`); },
+    }));
 
   // Previews: generic, not any one platform's design.
   const searchTitle = h('span', { class: 'serp-title' });

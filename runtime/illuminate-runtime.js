@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.11.0';
+  const RUNTIME_VERSION = '1.13.0';
 
   // ------------------------------------------------------------ helpers
 
@@ -256,10 +256,15 @@
       const standfirst = str(d.standfirst) || (first ? str(m.standfirst) : '');
       const byline = str(d.byline) || (first ? str(m.byline) : '');
       const a = ctx.asset(d.media);
-      const img = a && kindOf(a) === 'image'
-        ? `<div class="il-header__media"><img src="${esc(ctx.url(d.media))}" alt="${esc(a.alt)}"${dims(a)}${mark(d.media)}></div>` : '';
-      const credit = a && img ? [str(a.credit), str(a.licence)].filter(Boolean).join(' · ') : '';
-      return `<header class="il-header il-header--${variant}${img ? ' il-header--media' : ''}" id="${esc(b.id)}">${img}`
+      const kind = a ? kindOf(a) : '';
+      const label = a && str(a.alt) ? ` aria-label="${esc(a.alt)}"` : '';
+      const media = a && kind === 'image'
+        ? `<div class="il-header__media"><img src="${esc(ctx.url(d.media))}" alt="${esc(a.alt)}"${dims(a)}${mark(d.media)}></div>`
+        : a && kind === 'video'
+          ? `<div class="il-header__media"><video muted loop playsinline preload="metadata" data-il-bg-video src="${esc(ctx.url(d.media))}"${label}${dims(a)}${mark(d.media)}></video></div>`
+          : '';
+      const credit = a && media ? [str(a.credit), str(a.licence)].filter(Boolean).join(' · ') : '';
+      return `<header class="il-header il-header--${variant}${media ? ' il-header--media' : ''}" id="${esc(b.id)}">${media}`
         + '<div class="il-header__text">'
         + (str(d.kicker) ? `<p class="il-kicker">${esc(d.kicker)}</p>` : '')
         + (title ? `<h${lvl} class="il-title" id="${esc(b.id)}-title">${esc(title)}</h${lvl}>` : '')
@@ -369,20 +374,59 @@
       // side: image beside the text; overlay: text cards over a full-screen image;
       // column: one continuous column of text over full-screen images that crossfade.
       const layout = d.layout === 'overlay' || d.layout === 'column' ? d.layout : 'side';
+      const fallbackAlign = d.align === 'left' || d.align === 'right' ? d.align : 'center';
       const html = steps.map((st, i) => {
         const a = ctx.asset(st.media);
-        const fig = a && kindOf(a) === 'image'
+        const kind = a ? kindOf(a) : '';
+        const label = a && str(a.alt) ? ` aria-label="${esc(a.alt)}"` : '';
+        const fig = a && kind === 'image'
           ? `<figure class="il-scrolly__media"><img src="${esc(ctx.url(st.media))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(st.media)}>${figcaption(a)}</figure>`
-          : '';
+          : a && kind === 'video'
+            ? `<figure class="il-scrolly__media"><video muted loop playsinline preload="metadata" data-il-bg-video src="${esc(ctx.url(st.media))}"${label}${dims(a)}${mark(st.media)}></video>${figcaption(a)}</figure>`
+            : '';
         const text = markdown(st.text, 2 + ctx.offset, inlineImage(ctx));
-        return `<div class="il-scrolly__step" data-il-step="${i}">${fig}<div class="il-scrolly__card">${text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '')}</div></div>`;
+        const stAlign = layout === 'overlay'
+          ? (st.align === 'left' || st.align === 'center' || st.align === 'right' ? st.align : fallbackAlign)
+          : '';
+        const stepCls = stAlign && stAlign !== 'center' ? ` il-scrolly__step--${stAlign}` : '';
+        return `<div class="il-scrolly__step${stepCls}" data-il-step="${i}">${fig}<div class="il-scrolly__card">${text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '')}</div></div>`;
       }).join('');
-      // Overlay: cards on the left, centre or right. Side by side: text on the right (default) or left.
-      const position = layout !== 'side'
+      // Overlay: each step's card can sit on the left, centre or right.
+      // Text column: the column sits on the left, centre or right. Side by side: text on the right (default) or left.
+      const position = layout === 'column'
         ? (d.align === 'left' || d.align === 'right' ? ` il-scrolly--align-${d.align}` : '')
-        : (d.textSide === 'left' ? ' il-scrolly--text-left' : '');
-      return `<section class="il-scrolly il-scrolly--${layout}${position}" id="${esc(b.id)}" data-il-scrolly aria-label="Scroll sequence">`
+        : layout === 'side'
+          ? (d.textSide === 'left' ? ' il-scrolly--text-left' : '')
+          : '';
+      const backdrop = (layout === 'overlay' || layout === 'column') && (d.backdrop === 'vignette' || d.backdrop === 'none')
+        ? ` il-scrolly--backdrop-${d.backdrop}`
+        : '';
+      return `<section class="il-scrolly il-scrolly--${layout}${position}${backdrop}" id="${esc(b.id)}" data-il-scrolly aria-label="Scroll sequence">`
         + `<div class="il-scrolly__steps">${html}</div></section>`;
+    },
+
+    // Scrollpoints: one image stays on screen and zooms/pans to highlighted regions as steps scroll past.
+    scrollpoints(b, d, ctx) {
+      const a = ctx.asset(d.asset);
+      const steps = (Array.isArray(d.steps) ? d.steps : []).filter(isObj);
+      if ((!a || kindOf(a) !== 'image') && !steps.some((st) => str(st.text).trim())) {
+        return placeholder(b, ctx, 'Choose an image and add steps to these scrollpoints');
+      }
+      const fig = a && kindOf(a) === 'image'
+        ? `<figure class="il-scrollpoints__media"><img src="${esc(ctx.url(d.asset))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(d.asset)}>${figcaption(a)}</figure>`
+        : (ctx.preview ? '<div class="il-placeholder">Choose an image to explore</div>' : '');
+      const clampNum = (v, min, max, fb) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(min, Math.min(max, v)) : fb);
+      const html = steps.map((st, i) => {
+        const text = markdown(st.text, 2 + ctx.offset, inlineImage(ctx));
+        const stAlign = st.align === 'left' || st.align === 'right' ? st.align : 'center';
+        const stepCls = stAlign !== 'center' ? ` il-scrolly__step--${stAlign}` : '';
+        const focusAttr = st.focus
+          ? ` data-il-focus="${clampNum(st.x, 0, 100, 40)},${clampNum(st.y, 0, 100, 40)},${clampNum(st.w, 5, 100, 30)},${clampNum(st.h, 5, 100, 30)}"`
+          : '';
+        return `<div class="il-scrolly__step il-scrollpoints__step${stepCls}" data-il-step="${i}"${focusAttr}><div class="il-scrolly__card">${text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '')}</div></div>`;
+      }).join('');
+      return `<section class="il-scrolly il-scrolly--overlay il-scrollpoints" id="${esc(b.id)}" data-il-scrollpoints aria-label="Scrollpoints">`
+        + `${fig}<div class="il-scrolly__steps">${html}</div></section>`;
     },
 
     // Before/after: two labelled images. Static: side by side. Enhanced: one slider.
@@ -483,7 +527,7 @@
   // their reflection answers, after the story and clearly marked as not part of it.
   const TYPE_LABELS = {
     header: 'Header', text: 'Text', quote: 'Quote', media: 'Media', gallery: 'Gallery', embed: 'Embed',
-    divider: 'Divider', references: 'References', scrolly: 'Scroll sequence', compare: 'Before/after slider', number: 'Big number',
+    divider: 'Divider', references: 'References', scrolly: 'Scroll sequence', scrollpoints: 'Scrollpoints', compare: 'Before/after slider', number: 'Big number',
   };
   function appendix(blocks, reflection) {
     const notes = blocks.map((b, i) => {
@@ -737,9 +781,18 @@
     if (!frames.length) return;
     section.insertBefore(panel, section.firstChild);
     section.classList.add('is-enhanced');
+    const motionOk = !reducedMotion(doc);
     const show = (i) => {
       const f = Math.max(0, frameFor[i]);
-      frames.forEach((fr, j) => fr.classList.toggle('is-active', j === f));
+      frames.forEach((fr, j) => {
+        const active = j === f;
+        fr.classList.toggle('is-active', active);
+        const vid = fr.querySelector('video');
+        if (vid) {
+          if (active && motionOk) vid.play?.().catch(() => {});
+          else vid.pause?.();
+        }
+      });
       steps.forEach((st, j) => st.classList.toggle('is-active', j === i));
     };
     show(0);
@@ -747,6 +800,88 @@
       entries.forEach((e) => { if (e.isIntersecting) show(steps.indexOf(e.target)); });
     }, { rootMargin: '-50% 0px -50% 0px' });
     steps.forEach((st) => io.observe(st));
+  }
+
+  // Scrollpoints: one sticky image panel zooms and pans to each step's highlighted region.
+  function setupScrollpoints(section, doc) {
+    const win = doc.defaultView;
+    if (!win || typeof win.IntersectionObserver !== 'function') return;
+    const fig = section.querySelector('.il-scrollpoints__media');
+    const steps = Array.from(section.querySelectorAll('.il-scrollpoints__step'));
+    if (!fig || !steps.length) return;
+    const panel = doc.createElement('div');
+    panel.className = 'il-scrolly__panel il-scrollpoints__panel';
+    const stage = doc.createElement('div');
+    stage.className = 'il-scrollpoints__stage';
+    const clone = fig.querySelector('img')?.cloneNode(true);
+    if (!clone) return;
+    clone.setAttribute('aria-hidden', 'true');
+    const box = doc.createElement('div');
+    box.className = 'il-scrollpoints__box';
+    box.setAttribute('aria-hidden', 'true');
+    stage.appendChild(clone);
+    stage.appendChild(box);
+    panel.appendChild(stage);
+    const cap = fig.querySelector('figcaption');
+    if (cap) panel.appendChild(cap.cloneNode(true));
+    section.insertBefore(panel, section.firstChild);
+    section.classList.add('is-enhanced');
+    const motionOk = !reducedMotion(doc);
+
+    const show = (i) => {
+      steps.forEach((st, j) => st.classList.toggle('is-active', j === i));
+      const raw = steps[i]?.getAttribute('data-il-focus');
+      if (!raw) {
+        box.classList.remove('is-visible');
+        stage.style.transform = 'none';
+        stage.style.setProperty('--il-sp-scale', '1');
+        return;
+      }
+      const [x, y, w, h] = raw.split(',').map(Number);
+      box.style.left = `${x}%`;
+      box.style.top = `${y}%`;
+      box.style.width = `${w}%`;
+      box.style.height = `${h}%`;
+      box.classList.add('is-visible');
+      if (motionOk) {
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        const scale = Math.max(1.15, Math.min(2.8, 75 / Math.max(w, h, 15)));
+        const maxShift = ((scale - 1) / (2 * scale)) * 100;
+        const tx = Math.max(-maxShift, Math.min(maxShift, 50 - cx));
+        const ty = Math.max(-maxShift, Math.min(maxShift, 50 - cy));
+        stage.style.transform = `scale(${scale.toFixed(2)}) translate(${tx.toFixed(1)}%, ${ty.toFixed(1)}%)`;
+        stage.style.setProperty('--il-sp-scale', scale.toFixed(2)); // keeps the highlight's border the same width
+      } else {
+        stage.style.transform = 'none';
+        stage.style.setProperty('--il-sp-scale', '1');
+      }
+    };
+    show(0);
+    const io = new win.IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) show(steps.indexOf(e.target)); });
+    }, { rootMargin: '-50% 0px -50% 0px' });
+    steps.forEach((st) => io.observe(st));
+  }
+
+  function setupBgVideos(videos, doc) {
+    const win = doc.defaultView;
+    if (!videos.length || !win) return;
+    if (reducedMotion(doc)) {
+      videos.forEach((v) => v.pause?.());
+      return;
+    }
+    if (typeof win.IntersectionObserver !== 'function') {
+      videos.forEach((v) => v.play?.().catch(() => {}));
+      return;
+    }
+    const io = new win.IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) e.target.play?.().catch(() => {});
+        else e.target.pause?.();
+      });
+    });
+    videos.forEach((v) => io.observe(v));
   }
 
   // Before/after slider. Skipped under reduced motion: the images stay side by side.
@@ -875,6 +1010,8 @@
     fresh('[data-il-embed-src]').forEach((e) => setupEmbed(e, doc));
     fresh('video[src^="data:"], audio[src^="data:"]').forEach(dataToBlobUrl);
     fresh('[data-il-scrolly]').forEach((el) => setupScrolly(el, doc));
+    fresh('[data-il-scrollpoints]').forEach((el) => setupScrollpoints(el, doc));
+    fresh('.il-header__media [data-il-bg-video]').forEach((v) => setupBgVideos([v], doc));
     fresh('[data-il-compare]').forEach((el) => setupCompare(el, doc));
     fresh('[data-il-count]').forEach((el) => setupNumber(el, doc));
     setupEffects(Array.from(rootNode.querySelectorAll('[data-il-effect]:not(.il-fx)')), doc);

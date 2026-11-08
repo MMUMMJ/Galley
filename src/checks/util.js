@@ -19,7 +19,7 @@ export function textSources(story) {
     if (b.type === 'text') add(b, d.body, 'body');
     if (b.type === 'header') add(b, d.standfirst, 'body');
     if (b.type === 'quote') add(b, d.text, 'quote');
-    if (b.type === 'scrolly') (d.steps || []).forEach((st, i) => add(b, st && st.text, 'body', { step: i }));
+    if (b.type === 'scrolly' || b.type === 'scrollpoints') (d.steps || []).forEach((st, i) => add(b, st && st.text, 'body', { step: i }));
     if (b.type === 'gallery' || b.type === 'compare') add(b, d.caption, 'caption');
     if (b.type === 'number') { add(b, d.context, 'caption'); add(b, d.sourceRef, 'url'); }
     if (b.type === 'embed') add(b, d.url, 'url');
@@ -36,14 +36,15 @@ export function assetUses(story) {
   const use = (b, assetId, role) => { if (assetId && story.assets[assetId]) uses.push({ blockId: b.id, assetId, role }); };
   for (const b of story.blocks) {
     const d = b.data || {};
-    if (b.type === 'header') use(b, d.media, 'header image');
+    if (b.type === 'header') use(b, d.media, /^video\//.test(story.assets[d.media]?.mime || '') ? 'header video' : 'header image');
     if (b.type === 'media') use(b, d.asset, 'media');
     if (b.type === 'gallery') (d.items || []).forEach((id) => use(b, id, 'gallery image'));
     if (b.type === 'embed') use(b, d.screenshot, 'screenshot');
-    if (b.type === 'scrolly') (d.steps || []).forEach((st) => use(b, st && st.media, 'scroll image'));
+    if (b.type === 'scrolly') (d.steps || []).forEach((st) => use(b, st && st.media, /^video\//.test(story.assets[st?.media]?.mime || '') ? 'scroll video' : 'scroll image'));
+    if (b.type === 'scrollpoints') use(b, d.asset, 'scrollpoints image');
     if (b.type === 'compare') { use(b, d.before?.asset, 'before image'); use(b, d.after?.asset, 'after image'); }
     // Images placed inside running text: ![name](asset:<id>)
-    const texts = b.type === 'text' ? [d.body] : b.type === 'scrolly' ? (d.steps || []).map((st) => st && st.text) : [];
+    const texts = b.type === 'text' ? [d.body] : (b.type === 'scrolly' || b.type === 'scrollpoints') ? (d.steps || []).map((st) => st && st.text) : [];
     for (const t of texts) for (const m of String(t || '').matchAll(INLINE_IMAGE)) use(b, m[1], 'image in the text');
   }
   return uses;

@@ -7,7 +7,7 @@
 //   'inline'  one paragraph with bold, italics and links: standfirsts
 //   'lines'   one item per line with bold, italics and links: references (saved as a list)
 import { h } from './dom.js';
-import { fileButton, ACCEPT, assetKind } from './fields.js';
+import { fileButton, assetBrowser, ACCEPT, assetKind } from './fields.js';
 
 // Page set-up only in a browser: the checks import blocks (and so this file) outside one too.
 const HAS_PAGE = typeof document !== 'undefined';
@@ -32,12 +32,16 @@ const escapeLineStart = (line) => line
   .replace(/^(\d+)([.)]) /, '$1\\$2 ')
   .replace(/^!/, '\\!');
 
-function inlineMd(el) {
+function inlineMd(el, keepMark = false) {
   let out = '';
   for (const n of el.childNodes) {
-    if (n.nodeType === 3) { out += escapeText(n.textContent.replace(/\s+/g, ' ').replace(new RegExp(MARK, 'g'), '')); continue; }
+    if (n.nodeType === 3) {
+      const raw = n.textContent.replace(/\s+/g, ' ');
+      out += escapeText(keepMark ? raw : raw.replace(new RegExp(MARK, 'g'), ''));
+      continue;
+    }
     if (n.nodeType !== 1) continue;
-    const inner = inlineMd(n);
+    const inner = inlineMd(n, keepMark);
     const wrap = (m) => {
       const t = inner.trim();
       if (!t) return inner;
@@ -56,12 +60,17 @@ function inlineMd(el) {
 
 const BLOCKS = /^(P|DIV|H[1-6]|UL|OL|FIGURE|BLOCKQUOTE)$/;
 
-function serialise(root, mode) {
+function serialise(root, mode, keepMark = false) {
   const lines = [];
-  const text = (el) => inlineMd(el).replace(/\s+/g, ' ').trim();
+  const text = (el) => inlineMd(el, keepMark).replace(/\s+/g, ' ').trim();
   const walk = (parent) => {
     for (const n of parent.childNodes) {
-      if (n.nodeType === 3) { const t = escapeText(n.textContent.replace(new RegExp(MARK, 'g'), '').trim()); if (t) lines.push(escapeLineStart(t)); continue; }
+      if (n.nodeType === 3) {
+        const raw = keepMark ? n.textContent : n.textContent.replace(new RegExp(MARK, 'g'), '');
+        const t = escapeText(raw.trim());
+        if (t) lines.push(escapeLineStart(t));
+        continue;
+      }
       if (n.nodeType !== 1) continue;
       // Browsers sometimes put a list or heading inside a paragraph: read what's inside.
       if ((n.tagName === 'P' || n.tagName === 'DIV') && [...n.children].some((c) => BLOCKS.test(c.tagName))) { walk(n); continue; }
@@ -94,6 +103,18 @@ function toHtml(value, mode, figure) {
   if (mode === 'lines') return (Array.isArray(value) ? value : String(value || '').split('\n')).filter((l) => l.trim())
     .map((l) => `<p>${strip(R.inline(l))}</p>`).join('') || '<p><br></p>';
   return strip(R.markdown(value || '', 2, figure)) || '<p><br></p>';
+}
+
+// Images are locked (contenteditable=false), so the cursor can't go past one unless there is
+// an editable line beside it. Make sure there is one before a leading image, after every image,
+// and between two images. Empty lines aren't saved, so this adds nothing to the story.
+function padImages(root) {
+  const editable = (n) => n && n.nodeType === 1 && !n.matches('figure[data-asset]');
+  const blank = () => { const p = document.createElement('p'); p.append(document.createElement('br')); return p; };
+  for (const fig of root.querySelectorAll(':scope > figure[data-asset]')) {
+    if (!editable(fig.nextElementSibling)) fig.after(blank());
+    if (!fig.previousElementSibling) fig.before(blank());
+  }
 }
 
 // Plain text from saved Markdown, for summaries in the block list.
@@ -135,7 +156,7 @@ function cleanPaste(html, text, mode) {
 // ---------------------------------------------------------------- the editor
 // ctx: inspector context (block, story, set, edit, importFiles, assetUrl, announce).
 // key: the field in ctx.block.data. Options: label, hint, mode, images, imageLabel, rows.
-export function richText(ctx, key, { label, hint, mode = 'blocks', images = false, imageLabel = 'Image', rows = 8 } = {}) {
+export function richText(ctx, key, { label, hint, mode = 'blocks', images = false, imageLabel = 'Image', imageName = 'Insert image', rows = 8 } = {}) {
   const id = `rte-${++uid}`;
   const focusKey = `${ctx.block.id}:${key}`;
   const figure = (assetId, pos, given) => {
@@ -155,6 +176,7 @@ export function richText(ctx, key, { label, hint, mode = 'blocks', images = fals
     style: `min-height:${mode === 'inline' ? 3 : rows * 1.6 + 1}em`,
   });
   body.innerHTML = toHtml(ctx.block.data[key], mode, figure);
+  padImages(body);
 
   let saved = null;
   const keep = () => { const s = getSelection(); if (s.rangeCount && body.contains(s.anchorNode)) saved = s.getRangeAt(0).cloneRange(); };
@@ -169,12 +191,16 @@ export function richText(ctx, key, { label, hint, mode = 'blocks', images = fals
   const tidy = () => {
     const s = getSelection();
     if (s.rangeCount && body.contains(s.anchorNode)) { const r = s.getRangeAt(0).cloneRange(); r.collapse(false); r.insertNode(document.createTextNode(MARK)); }
-    body.innerHTML = toHtml(value(), mode, figure);
+    body.innerHTML = toHtml(serialise(body, mode, true), mode, figure);
+    padImages(body);
     const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
     for (let n = walker.nextNode(); n; n = walker.nextNode()) {
       const at = n.data.indexOf(MARK);
       if (at < 0) continue;
       n.data = n.data.replace(MARK, '');
+      if (!n.data && n.parentElement && !n.parentElement.textContent && !n.parentElement.querySelector('br')) {
+        n.after(document.createElement('br'));
+      }
       const r = document.createRange(); r.setStart(n, at); r.collapse(true);
       saved = r.cloneRange();
       if (document.activeElement === body) { s.removeAllRanges(); s.addRange(r); }
@@ -184,8 +210,9 @@ export function richText(ctx, key, { label, hint, mode = 'blocks', images = fals
 
   // ---- toolbar
   const tools = [['bold', 'B', 'Bold', 'Ctrl/Cmd+B'], ['italic', 'I', 'Italic', 'Ctrl/Cmd+I'], ['link', 'Link', 'Link', 'Ctrl/Cmd+K']];
-  if (mode === 'blocks') tools.push(null, ['h2', 'Heading', 'Subheading'], ['h3', 'Small heading', 'Smaller subheading'], ['ul', '• List', 'Bullet list'], ['ol', '1. List', 'Numbered list']);
-  if (images) tools.push(null, ['image', imageLabel, imageLabel]);
+  // Short labels so the bar fits on one line; the full name is the button's accessible name and tooltip.
+  if (mode === 'blocks') tools.push(null, ['h2', 'H', 'Subheading'], ['h3', 'h', 'Smaller subheading'], null, ['ul', '• List', 'Bullet list'], ['ol', '1. List', 'Numbered list']);
+  if (images) tools.push(null, ['image', imageLabel, imageName]);
   // A toolbar is one Tab stop; ← → move between its buttons (Home and End jump to the ends).
   const bar = h('div', { class: 'rte-tools', role: 'toolbar', 'aria-label': `Formatting for ${label}`, 'aria-controls': id },
     tools.map((t, i) => (t ? h('button', {
@@ -233,10 +260,22 @@ export function richText(ctx, key, { label, hint, mode = 'blocks', images = fals
   }
   function insertImage(assetId, asset, isNew) {
     closePop();
+    // Mark the images already there, so the new one can be found (and the cursor put below it) after the redraw.
+    body.querySelectorAll('figure[data-asset]').forEach((f) => { f.dataset.placed = '1'; });
     document.execCommand('insertHTML', false, `${figure(assetId, '', asset)}<p><br></p>`);
+    const index = [...body.querySelectorAll('figure[data-asset]')].findIndex((f) => !f.dataset.placed);
     const md = value();
     ctx.edit((data, story) => { if (isNew) story.assets[assetId] = asset; data[key] = md; }, { rerender: true });
-    ctx.announce(`${asset.name || 'Image'} added to the text.`);
+    // The inspector has redrawn: put the cursor on the line below the new image, ready to type.
+    const fresh = document.querySelector(`[data-focus="${CSS.escape(focusKey)}"]`);
+    const fig = fresh && fresh.querySelectorAll('figure[data-asset]')[index];
+    const line = fig && fig.nextElementSibling;
+    if (line) {
+      fresh.focus();
+      const r = document.createRange(); r.selectNodeContents(line); r.collapse(true);
+      getSelection().removeAllRanges(); getSelection().addRange(r);
+    }
+    ctx.announce(`${asset.name || 'Image'} added to the text. You can carry on typing below it.`);
   }
   function openImage() {
     keep();
@@ -250,10 +289,11 @@ export function richText(ctx, key, { label, hint, mode = 'blocks', images = fals
           if (added) { restore(); insertImage(added.id, added.asset, true); }
         },
       }),
-      imgs.length ? h('p', { class: 'rte-pop-title' }, 'Or use one already in this story:') : null,
-      imgs.length ? h('div', { class: 'rte-pick' }, imgs.map(([aid, a]) => h('button', {
-        type: 'button', onclick: () => { restore(); insertImage(aid, a, false); },
-      }, h('img', { src: ctx.assetUrl(aid), alt: '' }), h('span', {}, a.name || aid)))) : null,
+      assetBrowser(ctx, imgs, {
+        label: 'Or use one already in this story:',
+        focusKey: `${focusKey}:img-existing`,
+        onPick: (aid, a) => { restore(); insertImage(aid, a, false); },
+      }),
       h('button', { type: 'button', class: 'btn', onclick: () => closePop() }, 'Cancel'));
     pop.hidden = false;
     pop.querySelector('button')?.focus();

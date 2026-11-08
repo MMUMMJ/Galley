@@ -3,11 +3,12 @@
 // Only the selected block's buttons are in the Tab order, so Tab reaches the inspector quickly.
 import { createBlock, newId } from '../model.js';
 import { BLOCKS, blockLabel } from '../blocks/index.js';
-import { esc, preserveFocus } from './dom.js';
+import { esc, preserveFocus, prefersReducedMotion } from './dom.js';
 import { enableDrag } from './drag.js';
 import { STORY_DETAILS, REFLECTION } from '../store.js';
-import { getPack, allowedBlocks, blockIssues, showpieceCount } from '../packs.js';
+import { getPack, blockIssues, showpieceCount } from '../packs.js';
 import { effectBadge } from './effects.js';
+import { openBlockPicker } from './block-picker.js';
 
 export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   panel.innerHTML = `
@@ -18,12 +19,8 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
     </div>
     <div class="blocks-head">
       <h2 class="panel-heading" id="blocks-heading">Blocks</h2>
-      <button type="button" class="btn btn-small" aria-expanded="false" aria-controls="add-menu" data-focus="add">+ Add block</button>
+      <button type="button" class="btn btn-small" aria-haspopup="dialog" data-focus="add">+ Add block</button>
     </div>
-    <ul class="add-menu" id="add-menu" hidden>
-      ${Object.values(BLOCKS).filter((b) => allowedBlocks().includes(b.type)).map((b) => `<li><button type="button" class="add-option" data-type="${b.type}">
-        <strong>${esc(b.label)}</strong><span>${esc(b.description)}</span></button></li>`).join('')}
-    </ul>
     <ol class="block-list" aria-labelledby="blocks-heading" aria-describedby="blocks-tip"></ol>
     <p class="panel-empty" hidden>Your story has no blocks yet. Use + Add block to start.</p>
     <p class="panel-tip" id="blocks-tip">Arrow keys move between blocks. Alt + ↑ or ↓ moves the selected block. Drag ⠿ to reorder.</p>`;
@@ -33,8 +30,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   const reflection = panel.querySelector('.reflection-select');
   const packInfo = panel.querySelector('.pack-info');
   const empty = panel.querySelector('.panel-empty');
-  const addButton = panel.querySelector('[aria-controls="add-menu"]');
-  const menu = panel.querySelector('#add-menu');
+  const addButton = panel.querySelector('[data-focus="add"]');
 
   const blocks = () => store.story.blocks;
   const indexOf = (id) => blocks().findIndex((b) => b.id === id);
@@ -161,40 +157,30 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
     const at = store.selected === STORY_DETAILS || store.selected === REFLECTION ? 0 : i < 0 ? blocks().length : i + 1;
     store.update((s) => { s.blocks.splice(at, 0, block); }, { select: block.id, from: 'list' });
     announce(`${blockLabel(type)} block added at position ${at + 1}.`);
-    closeMenu();
     onAdded(block.id);
   }
 
-  function openMenu() {
-    menu.hidden = false;
-    addButton.setAttribute('aria-expanded', 'true');
-    menu.querySelector('button').focus();
+  // Where a new block will go: after the selected block, at the top from Story details, else at the end.
+  function whereText() {
+    const i = indexOf(store.selected);
+    if (store.selected === STORY_DETAILS || store.selected === REFLECTION) return 'Adds at the start of your story.';
+    if (i < 0) return blocks().length ? 'Adds at the end of your story.' : 'Adds the first block of your story.';
+    return `Adds after block ${i + 1} (${blockLabel(blocks()[i].type)}).`;
   }
-  function closeMenu(refocus) {
-    menu.hidden = true;
-    addButton.setAttribute('aria-expanded', 'false');
-    if (refocus) addButton.focus();
-  }
+  addButton.addEventListener('click', () => openBlockPicker({ where: whereText(), onChoose: add, returnFocus: addButton }));
 
-  addButton.addEventListener('click', () => (menu.hidden ? openMenu() : closeMenu()));
-  menu.addEventListener('click', (e) => {
-    const opt = e.target.closest('[data-type]');
-    if (opt) add(opt.dataset.type);
-  });
-  menu.addEventListener('keydown', (e) => {
-    const opts = Array.from(menu.querySelectorAll('button'));
-    const i = opts.indexOf(document.activeElement);
-    if (e.key === 'Escape') { e.preventDefault(); closeMenu(true); }
-    if (e.key === 'ArrowDown') { e.preventDefault(); opts[(i + 1) % opts.length].focus(); }
-    if (e.key === 'ArrowUp') { e.preventDefault(); opts[(i - 1 + opts.length) % opts.length].focus(); }
-  });
+  const scrollInspectorOnNarrow = () => {
+    if (window.matchMedia('(max-width: 760px)').matches) {
+      document.getElementById('inspector')?.scrollIntoView({ block: 'start', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    }
+  };
 
   list.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-act]');
     if (!btn) return;
     const id = btn.closest('[data-id]').dataset.id;
     const act = btn.dataset.act;
-    if (act === 'select') store.select(id, 'list');
+    if (act === 'select') { store.select(id, 'list'); scrollInspectorOnNarrow(); }
     else if (act === 'up') moveTo(id, indexOf(id) - 1);
     else if (act === 'down') moveTo(id, indexOf(id) + 1);
     else if (act === 'dup') duplicate(id);
@@ -232,8 +218,8 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   });
 
   // Story details → Reflection → blocks, by arrow keys.
-  details.addEventListener('click', () => store.select(STORY_DETAILS, 'list'));
-  reflection.addEventListener('click', () => store.select(REFLECTION, 'list'));
+  details.addEventListener('click', () => { store.select(STORY_DETAILS, 'list'); scrollInspectorOnNarrow(); });
+  reflection.addEventListener('click', () => { store.select(REFLECTION, 'list'); scrollInspectorOnNarrow(); });
   details.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowDown') return;
     e.preventDefault();
@@ -255,10 +241,17 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
 
   enableDrag(list, { onDrop: (id, to) => moveTo(id, to) });
 
-  store.subscribe(() => preserveFocus(panel, render, () => {
-    const sel = store.selected;
-    if (sel) focusKey(`sel:${sel}`);
-  }));
+  store.subscribe((change) => {
+    preserveFocus(panel, render, () => {
+      const sel = store.selected;
+      if (sel) focusKey(`sel:${sel}`);
+    });
+    if (change.type === 'select' && change.from === 'preview' && store.selected) {
+      const item = list.querySelector(`[data-id="${CSS.escape(store.selected)}"]`);
+      item?.scrollIntoView({ block: 'nearest', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+      scrollInspectorOnNarrow();
+    }
+  });
   render();
 }
 

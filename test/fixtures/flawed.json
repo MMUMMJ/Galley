@@ -116,7 +116,8 @@
    "effectNote": "",
    "note": "",
    "data": {
-    "layout": "side",
+    "layout": "column",
+    "backdrop": "none",
     "steps": [
      {
       "media": "a_before",

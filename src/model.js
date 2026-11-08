@@ -7,10 +7,11 @@ export const SCHEMA_VERSION = 1;
 
 // Must match RUNTIME_VERSION in runtime/illuminate-runtime.js.
 // test/runtime.html flags any mismatch.
-export const RUNTIME_VERSION = '1.11.0';
+export const RUNTIME_VERSION = '1.13.0';
 
-export const BLOCK_TYPES = ['header', 'text', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'compare', 'number'];
+export const BLOCK_TYPES = ['header', 'text', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'scrollpoints', 'compare', 'number'];
 export const SCROLLY_LAYOUTS = ['side', 'overlay', 'column'];
+export const SCROLLY_BACKDROPS = ['solid', 'vignette', 'none'];
 export const SCROLLY_ALIGN = ['left', 'center', 'right']; // overlay and text column: where the text sits
 export const SCROLLY_TEXT_SIDE = ['right', 'left']; // side by side: which side the text is on
 export const EFFECTS = ['none', 'fade', 'rise', 'slide', 'zoom'];
@@ -39,7 +40,14 @@ const BLOCK_DATA = {
   divider: () => ({ text: '' }),
   references: () => ({ title: 'References', items: [], collapsed: false }),
   // Showpiece blocks (Phase 5)
-  scrolly: () => ({ layout: 'side', align: 'center', textSide: 'right', steps: [{ media: null, text: '' }, { media: null, text: '' }] }),
+  scrolly: () => ({ layout: 'side', align: 'center', textSide: 'right', backdrop: 'solid', steps: [{ media: null, text: '', align: 'center' }, { media: null, text: '', align: 'center' }] }),
+  scrollpoints: () => ({
+    asset: null,
+    steps: [
+      { text: '', align: 'left', focus: false, x: 50, y: 50, w: 30, h: 30 },
+      { text: '', align: 'right', focus: true, x: 40, y: 40, w: 30, h: 30 },
+    ],
+  }),
   compare: () => ({ before: { asset: null, label: '' }, after: { asset: null, label: '' }, caption: '', width: 'wide' }),
   number: () => ({ value: '', unit: '', context: '', sourceName: '', sourceRef: '' }),
 };
@@ -244,7 +252,10 @@ const BLOCK_RULES = {
     for (const k of ['kicker', 'title', 'standfirst', 'byline']) v.isString(d[k], `${p}.${k}`);
     v.ref(d.media, `${p}.media`);
   },
-  text(d, p, v) { v.isString(d.body, `${p}.body`); },
+  text(d, p, v) {
+    v.isString(d.body, `${p}.body`);
+    checkInlineImages(d.body, `${p}.body`, v);
+  },
   quote(d, p, v) { for (const k of ['text', 'cite', 'role']) v.isString(d[k], `${p}.${k}`); },
   media(d, p, v) {
     v.oneOf(d.kind, MEDIA_KINDS, `${p}.kind`);
@@ -267,11 +278,31 @@ const BLOCK_RULES = {
     v.oneOf(d.layout, SCROLLY_LAYOUTS, `${p}.layout`);
     v.oneOf(d.align, SCROLLY_ALIGN, `${p}.align`);
     v.oneOf(d.textSide, SCROLLY_TEXT_SIDE, `${p}.textSide`);
+    if (d.backdrop !== undefined) v.oneOf(d.backdrop, SCROLLY_BACKDROPS, `${p}.backdrop`);
     if (!Array.isArray(d.steps)) return v.err(`${p}.steps`, 'Must be a list of steps.');
     d.steps.forEach((step, i) => {
       if (!step || typeof step !== 'object') return v.err(`${p}.steps[${i}]`, 'Each step must be an object.');
       v.isString(step.text, `${p}.steps[${i}].text`);
+      checkInlineImages(step.text, `${p}.steps[${i}].text`, v);
       v.ref(step.media, `${p}.steps[${i}].media`);
+      if (step.align !== undefined) v.oneOf(step.align, SCROLLY_ALIGN, `${p}.steps[${i}].align`);
+    });
+  },
+  scrollpoints(d, p, v) {
+    v.ref(d.asset, `${p}.asset`);
+    if (!Array.isArray(d.steps)) return v.err(`${p}.steps`, 'Must be a list of steps.');
+    d.steps.forEach((step, i) => {
+      const sp = `${p}.steps[${i}]`;
+      if (!step || typeof step !== 'object') return v.err(sp, 'Each step must be an object.');
+      v.isString(step.text, `${sp}.text`);
+      checkInlineImages(step.text, `${sp}.text`, v);
+      if (step.align !== undefined) v.oneOf(step.align, SCROLLY_ALIGN, `${sp}.align`);
+      if (step.focus !== undefined && typeof step.focus !== 'boolean') v.err(`${sp}.focus`, 'Must be true or false.');
+      for (const [k, min, max] of [['x', 0, 100], ['y', 0, 100], ['w', 5, 100], ['h', 5, 100]]) {
+        if (step[k] !== undefined && (typeof step[k] !== 'number' || !Number.isFinite(step[k]) || step[k] < min || step[k] > max)) {
+          v.err(`${sp}.${k}`, `Must be a number between ${min} and ${max}.`);
+        }
+      }
     });
   },
   compare(d, p, v) {
@@ -305,6 +336,12 @@ export function load(input) {
 // A block background: null, a scheme colour that follows the story's scheme, or any #rrggbb colour.
 export function isBackground(v) {
   return v === null || BAND_SCHEME_COLOURS.includes(v) || (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v));
+}
+
+const INLINE_IMAGE = /^\s*!\[[^\]]*\]\(asset:([A-Za-z0-9_-]+)(?:\s+"(?:left|right)")?\)\s*$/gm;
+function checkInlineImages(text, path, v) {
+  if (typeof text !== 'string') return;
+  for (const m of text.matchAll(INLINE_IMAGE)) v.ref(m[1], path);
 }
 
 function isObj(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }

@@ -6,6 +6,7 @@ import {
 } from '../adapters/save-folder.js';
 import { getSettings, setSetting } from '../settings.js';
 import { putAsset, getBlob } from '../assets.js';
+import { syncStoryPack } from '../packs.js';
 import { h } from './dom.js';
 
 export const UNSUPPORTED = 'To save straight to your OneDrive folder, use Chrome or Edge. Until then, Export is your save.';
@@ -147,6 +148,11 @@ export async function mountFolder(store, { wrap, button, menu, folderLine, expor
   async function openFrom(handle) {
     try {
       const { story, blobs, missing } = await readProject(handle);
+      try {
+        await syncStoryPack(story);
+      } catch (err) {
+        toast(`${err.message} Carrying on without a pack.`, { tone: 'warning' });
+      }
       for (const [id, blob] of blobs) await putAsset(id, blob);
       store.update(() => story, { select: story.blocks[0]?.id ?? null, from: 'open-folder', keepModified: true });
       await connectFolder(handle);

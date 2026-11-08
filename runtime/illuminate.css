@@ -44,6 +44,16 @@
 /* Layout: every block sits in the reading column unless it asks to be wider. */
 .il-story > *, .il-part > * { grid-column: col; min-width: 0; }
 .il-story > * + *, .il-part > * + * { margin-top: 2rem; }
+/* Full-bleed sections (headers, enhanced scroll sequences, scrollpoints, coloured bands)
+   meet edge-to-edge with no gap between them, so scrolling flows seamlessly. */
+.il-story > :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]) + :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]),
+.il-part > :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]) + :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]),
+.il-story > .il-scrolly.is-enhanced, .il-part > .il-scrolly.is-enhanced,
+.il-story > [data-il-band], .il-part > [data-il-band] { margin-top: 0; }
+.il-story > :not(.il-header--full):not(.il-scrolly.is-enhanced):not([data-il-band]) + :is(.il-scrolly.is-enhanced, [data-il-band]),
+.il-part > :not(.il-header--full):not(.il-scrolly.is-enhanced):not([data-il-band]) + :is(.il-scrolly.is-enhanced, [data-il-band]) { margin-top: 2.25rem; }
+.il-story > :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]) + :not(.il-header--full):not(.il-scrolly.is-enhanced):not([data-il-band]),
+.il-part > :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]) + :not(.il-header--full):not(.il-scrolly.is-enhanced):not([data-il-band]) { margin-top: 2.25rem; }
 .il-part { grid-column: full; display: grid; grid-template-columns: var(--il-grid); }
 .il-story > .il-w-wide, .il-part > .il-w-wide { grid-column: wide; }
 .il-story > .il-w-full, .il-part > .il-w-full { grid-column: full; }
@@ -89,7 +99,8 @@
 }
 .il-header--full.il-header--media { min-height: 92vh; min-height: 92svh; }
 .il-header--full .il-header__media { position: absolute; inset: 0; z-index: -1; }
-.il-header--full .il-header__media img { width: 100%; height: 100%; object-fit: cover; }
+.il-header--full .il-header__media img, .il-header--full .il-header__media video { width: 100%; height: 100%; object-fit: cover; }
+.il-header--compact .il-header__media video { width: 100%; }
 .il-header--full .il-header__text {
   padding: 8rem max(var(--il-gutter), (100% - var(--il-measure)) / 2) 3rem;
   background: linear-gradient(to top, rgb(0 0 0 / 0.85), rgb(0 0 0 / 0.65) 55%, rgb(0 0 0 / 0));
@@ -277,7 +288,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
 .il-scrolly__panel { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #111; }
 .il-scrolly__frame { position: absolute; inset: 0; margin: 0; opacity: 0; }
 .il-scrolly__frame.is-active { opacity: 1; }
-.il-scrolly__frame img { width: 100%; height: 100%; max-width: none; object-fit: cover; }
+.il-scrolly__frame img, .il-scrolly__frame video { width: 100%; height: 100%; max-width: none; object-fit: cover; }
 .il-scrolly__frame figcaption {
   position: absolute; right: 0; bottom: 0; margin: 0; padding: 0.3rem 0.6rem;
   background: rgb(0 0 0 / 0.6); color: #fff; font-size: 0.75rem;
@@ -288,6 +299,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   padding: 1.25rem 1.5rem; border-radius: 6px; background: var(--il-surface); color: var(--il-text);
   box-shadow: 0 4px 24px rgb(0 0 0 / 0.18);
 }
+.il-scrolly--overlay.is-enhanced .il-scrolly__card { max-width: min(26rem, 78%); }
 /* Overlay (and side-by-side on narrow screens): text cards scroll over the full-bleed image. */
 .il-scrolly--overlay.is-enhanced .il-scrolly__steps {
   position: relative; z-index: 1; margin-top: -100vh; margin-top: -100svh; padding-block: 40svh 20svh;
@@ -308,19 +320,69 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
 .il-scrolly--column.il-scrolly--align-left.is-enhanced .il-scrolly__step,
 .il-scrolly--column.il-scrolly--align-right.is-enhanced .il-scrolly__step { width: min(30rem, 100% - 2 * var(--il-gutter)); }
 
+/* Vignette & no-box backdrops for overlay and text column scroll sequences (like Shorthand). */
+.il-scrolly--column.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step,
+.il-scrolly--column.il-scrolly--backdrop-none.is-enhanced .il-scrolly__step,
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__card,
+.il-scrolly--overlay.il-scrolly--backdrop-none.is-enhanced .il-scrolly__card {
+  background: none; box-shadow: none; border: 0; border-radius: 0;
+  color: #fff; --il-text: #fff; --il-link: #b8d8ff; --il-muted: #e0e0e0; --il-accent: #f0b429; --il-rule: rgb(255 255 255 / 0.35);
+  text-shadow: 0 2px 14px rgb(0 0 0 / 0.85), 0 1px 3px rgb(0 0 0 / 0.9);
+}
+/* Directional vignette behind a text column: fades from the column's side across the image. */
+.il-scrolly--column.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.15) 0%, rgb(0 0 0 / 0.72) 28%, rgb(0 0 0 / 0.72) 72%, rgb(0 0 0 / 0.15) 100%);
+}
+.il-scrolly--column.il-scrolly--align-left.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::after {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.88) 0%, rgb(0 0 0 / 0.78) 38%, rgb(0 0 0 / 0.25) 68%, transparent 92%);
+}
+.il-scrolly--column.il-scrolly--align-right.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::after {
+  background: linear-gradient(270deg, rgb(0 0 0 / 0.88) 0%, rgb(0 0 0 / 0.78) 38%, rgb(0 0 0 / 0.25) 68%, transparent 92%);
+}
+/* Vignette on overlay steps: directional fade from the side each step sits on (or soft radial in the centre). */
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__card {
+  padding: 2.5rem;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at center, rgb(0 0 0 / 0.72) 0%, rgb(0 0 0 / 0.45) 60%, transparent 100%);
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--left,
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--right {
+  width: 100% !important; margin-inline: 0 !important;
+  padding-inline: max(var(--il-gutter), 6vw);
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--left .il-scrolly__card,
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--right .il-scrolly__card {
+  background: none; padding: 1.5rem 0;
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--left {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.85) 0%, rgb(0 0 0 / 0.68) 36%, rgb(0 0 0 / 0.2) 65%, transparent 88%);
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--right {
+  background: linear-gradient(270deg, rgb(0 0 0 / 0.85) 0%, rgb(0 0 0 / 0.68) 36%, rgb(0 0 0 / 0.2) 65%, transparent 88%);
+}
+
 /* Overlay cards on the left or right: narrower, so the image shows beside them. */
 .il-scrolly--align-left.is-enhanced .il-scrolly__step,
-.il-scrolly--align-right.is-enhanced .il-scrolly__step { width: min(28rem, 100% - 2 * var(--il-gutter)); }
-.il-scrolly--align-left.is-enhanced .il-scrolly__step { margin-left: max(var(--il-gutter), 6vw); margin-right: auto; }
-.il-scrolly--align-right.is-enhanced .il-scrolly__step { margin-left: auto; margin-right: max(var(--il-gutter), 6vw); justify-content: flex-end; }
+.il-scrolly--align-right.is-enhanced .il-scrolly__step,
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--left,
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--right { width: min(28rem, 100% - 2 * var(--il-gutter)); }
+.il-scrolly--align-left.is-enhanced .il-scrolly__step,
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--left { margin-left: max(var(--il-gutter), 6vw); margin-right: auto; }
+.il-scrolly--align-right.is-enhanced .il-scrolly__step,
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--right { margin-left: auto; margin-right: max(var(--il-gutter), 6vw); justify-content: flex-end; }
 /* Cards fit their text; centre them (overlay default), or hug the chosen side. */
 .il-scrolly--overlay.is-enhanced .il-scrolly__step { justify-content: center; }
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--left,
 .il-scrolly--overlay.il-scrolly--align-left.is-enhanced .il-scrolly__step { justify-content: flex-start; }
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--right,
 .il-scrolly--overlay.il-scrolly--align-right.is-enhanced .il-scrolly__step { justify-content: flex-end; }
-@media (max-width: 599px) {
-  /* Phones: no room to offset the cards, so they sit centred whatever the setting. */
+@media (max-width: 479px) {
+  /* Narrow phones: no room to offset the cards, so they sit centred whatever the setting. */
   .il-scrolly--align-left.is-enhanced .il-scrolly__step,
-  .il-scrolly--align-right.is-enhanced .il-scrolly__step {
+  .il-scrolly--align-right.is-enhanced .il-scrolly__step,
+  .il-scrolly--overlay.is-enhanced .il-scrolly__step--left,
+  .il-scrolly--overlay.is-enhanced .il-scrolly__step--right {
     width: min(var(--il-measure), 100% - 2 * var(--il-gutter)); margin-inline: auto; justify-content: center;
   }
 }
@@ -337,7 +399,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   .il-scrolly--side.is-enhanced .il-scrolly__frame {
     display: flex; flex-direction: column; justify-content: center; padding: 1.5rem 0 1.5rem var(--il-gutter);
   }
-  .il-scrolly--side.is-enhanced .il-scrolly__frame img { height: auto; max-height: calc(100svh - 6rem); object-fit: contain; }
+  .il-scrolly--side.is-enhanced .il-scrolly__frame img, .il-scrolly--side.is-enhanced .il-scrolly__frame video { height: auto; max-height: calc(100svh - 6rem); object-fit: contain; }
   .il-scrolly--side.is-enhanced .il-scrolly__frame figcaption {
     position: static; align-self: flex-start; margin-top: 0.5rem; padding: 0; background: none; color: var(--il-muted);
   }
@@ -350,6 +412,31 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   .il-scrolly--side.is-enhanced .il-scrolly__steps {
     position: relative; z-index: 1; margin-top: -100vh; margin-top: -100svh; padding-block: 40svh 20svh;
   }
+}
+
+/* ---------- scrollpoints: zoom & highlight regions of one image */
+.il-scrollpoints__media { width: min(var(--il-wide), 100% - 2 * var(--il-gutter)); margin: 0 auto 1.5rem; }
+.il-scrollpoints__media img { width: 100%; }
+.il-scrollpoints.is-enhanced .il-scrollpoints__media {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+}
+.il-scrollpoints__panel { display: flex; align-items: center; justify-content: center; }
+.il-scrollpoints__stage {
+  position: relative; max-width: 94%; max-height: 90svh; transform-origin: center center;
+}
+.il-scrollpoints__stage img { display: block; max-width: 100%; max-height: 90svh; width: auto; height: auto; }
+.il-scrollpoints__box {
+  /* Drawn with shadows, not a border: divided by the zoom, so the outline looks the same width at any zoom
+     (borders get rounded to whole pixels; shadows don't). */
+  position: absolute; border-radius: calc(4px / var(--il-sp-scale, 1));
+  box-shadow: inset 0 0 0 calc(4px / var(--il-sp-scale, 1)) var(--il-accent, #f0b429),
+    0 0 0 calc(2px / var(--il-sp-scale, 1)) rgb(255 255 255 / 0.9), 0 0 0 9999px rgb(0 0 0 / 0.45);
+  pointer-events: none; opacity: 0;
+}
+.il-scrollpoints__box.is-visible { opacity: 1; }
+.il-scrollpoints__panel figcaption {
+  position: absolute; right: 0; bottom: 0; margin: 0; padding: 0.3rem 0.6rem;
+  background: rgb(0 0 0 / 0.6); color: #fff; font-size: 0.75rem;
 }
 
 /* ---------- before / after */
@@ -412,7 +499,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   /* One painted area that reaches the screen edges (the story clips the sides), with no seams. */
   background-color: var(--il-band); /* the block itself: what accessibility checkers measure */
   border-image: conic-gradient(var(--il-band) 0 0) fill 0 / / 0 100vmax;
-  padding-block: 2.25rem;
+  padding-block: 2.75rem;
   color: var(--il-band-ink);
   --il-text: var(--il-band-ink);
   --il-link: var(--il-band-ink);
@@ -420,11 +507,15 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   --il-accent: var(--il-band-ink);
   --il-rule: var(--il-band-ink);
 }
-.il-story > [data-il-band] + *, .il-part > [data-il-band] + * { margin-top: 2.25rem; }
+/* Full-bleed scroll sequences manage their own 100svh sticky panel, so a band shouldn't add vertical padding. */
+.il-story > .il-scrolly.is-enhanced[data-il-band], .il-part > .il-scrolly.is-enhanced[data-il-band] {
+  padding-block: 0;
+}
 /* Cards have their own background (the scheme's surface), so their text keeps the scheme's
    colours rather than the band's black or white. */
-[data-il-band] .il-card, [data-il-band] .il-btn, [data-il-band].il-scrolly.is-enhanced .il-scrolly__card,
-[data-il-band].il-scrolly--column.is-enhanced .il-scrolly__step {
+[data-il-band] .il-card, [data-il-band] .il-btn,
+[data-il-band].il-scrolly.is-enhanced:not(.il-scrolly--backdrop-vignette):not(.il-scrolly--backdrop-none) .il-scrolly__card,
+[data-il-band].il-scrolly--column.is-enhanced:not(.il-scrolly--backdrop-vignette):not(.il-scrolly--backdrop-none) .il-scrolly__step {
   --il-text: var(--il-base-text);
   --il-link: var(--il-base-link);
   --il-muted: var(--il-base-muted);
@@ -475,6 +566,8 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   .il-references summary::before { transition: transform 0.15s ease; }
   .il-scrolly__frame { transition: opacity 0.45s ease; }
   .il-scrolly--column .il-scrolly__frame { transition-duration: 0.9s; } /* a slower crossfade behind the column */
+  .il-scrollpoints__stage { transition: transform 0.75s cubic-bezier(0.22, 0.68, 0.2, 1); }
+  .il-scrollpoints__box { transition: left 0.6s ease, top 0.6s ease, width 0.6s ease, height 0.6s ease, opacity 0.35s ease; }
   .il-lightbox[open] { animation: il-fade 0.18s ease-out; }
   @keyframes il-fade { from { opacity: 0; } to { opacity: 1; } }
 }
@@ -541,8 +634,10 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   .il-scrolly.is-enhanced { display: block; }
   .il-scrolly.is-enhanced .il-scrolly__steps { margin: 0; padding: 0; gap: 1.2em; }
   .il-scrolly.is-enhanced .il-scrolly__step { min-height: 0; display: block; }
-  .il-scrolly.is-enhanced .il-scrolly__media { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
-  .il-scrolly.is-enhanced .il-scrolly__card { padding: 0; background: none; box-shadow: none; border: 0; }
+  .il-scrolly.is-enhanced .il-scrolly__media,
+  .il-scrollpoints.is-enhanced .il-scrollpoints__media { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+  .il-scrolly.is-enhanced .il-scrolly__card { padding: 0; background: none; box-shadow: none; border: 0; color: #000; text-shadow: none; }
+  .il-scrolly.is-enhanced .il-scrolly__step { background: none !important; color: #000; text-shadow: none; }
   .il-compare__pair { grid-template-columns: 1fr 1fr; }
   .il-number__figure { font-size: 36pt; }
   .il-fx { opacity: 1 !important; transform: none !important; transition: none !important; }

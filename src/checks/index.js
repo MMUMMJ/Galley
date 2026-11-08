@@ -11,8 +11,9 @@ import videoCompat from './video-compat.js';
 import longText from './long-text.js';
 import exportSize from './export-size.js';
 import bandsMirror from './bands-mirror.js';
+import textBackdrop from './text-backdrop.js';
 
-export const CHECKS = [mediaCredits, searchLinks, citations, unsourcedStats, showpieceFields, effectsMirror, videoCompat, longText, exportSize, bandsMirror];
+export const CHECKS = [mediaCredits, searchLinks, citations, unsourcedStats, showpieceFields, effectsMirror, videoCompat, longText, exportSize, bandsMirror, textBackdrop];
 
 export function runChecks(story, ctx) {
   return CHECKS.map((check) => {
