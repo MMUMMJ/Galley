@@ -1,6 +1,6 @@
 {
   "name": "Digital Publishing",
-  "blocks": ["header", "text", "quote", "media", "gallery", "embed", "divider", "references", "compare", "number"],
+  "blocks": ["header", "text", "columns", "quote", "media", "gallery", "embed", "divider", "references", "compare", "number"],
   "prompts": {
     "header": "Write the headline last. Would it make someone stop scrolling, without overselling the story? The standfirst should promise what the piece delivers.",
     "text": "Write for the screen: lead with what's new, keep paragraphs short, and link each claim to its source in the sentence that makes it, using [text](https://…).",

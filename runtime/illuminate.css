@@ -144,9 +144,36 @@
 .il-inline-img--left { float: left; margin-right: 1.25rem; }
 .il-inline-img--right { float: right; margin-left: 1.25rem; }
 .il-text::after, .il-scrolly__card::after { content: ""; display: block; clear: both; }
+/* Videos and embeds in running text */
+.il-inline-video video { display: block; width: 100%; height: auto; background: #000; }
+.il-inline-embed { margin: 1.5rem 0; clear: both; }
+
+/* ---------- columns: separate columns, or one text flowing across columns */
+.il-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem 2.5rem; }
+.il-columns--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.il-columns--flow { display: block; column-count: 2; column-gap: 2.5rem; column-rule: 1px solid var(--il-rule, #ddd); }
+.il-columns--flow.il-columns--3 { column-count: 3; }
+/* Columns are narrow: images in them fill the column instead of floating beside the text.
+   Flowing text may split between columns, but an image, video or embed stays in one piece. */
+.il-columns .il-inline-img--left, .il-columns .il-inline-img--right { float: none; width: auto; margin: 1.25rem 0; }
+.il-columns--flow > figure { break-inside: avoid; }
+.il-columns--flow p { orphans: 2; widows: 2; }
+.il-columns--flow > :is(h2, h3, h4, h5, h6) { break-after: avoid; }
+.il-columns--flow > :first-child { margin-top: 0; }
+
 @media (max-width: 599px) {
   /* Phones: no room for text to wrap round an image. */
   .il-inline-img--left, .il-inline-img--right { float: none; width: auto; margin: 1.25rem 0; }
+}
+@media (max-width: 719px) {
+  /* Three columns need room: below this they sit one under another, in reading order. */
+  .il-columns--3 { grid-template-columns: minmax(0, 1fr); }
+  .il-columns--flow.il-columns--3 { column-count: 1; }
+}
+@media (max-width: 559px) {
+  /* Phones: one column. */
+  .il-columns { grid-template-columns: minmax(0, 1fr); }
+  .il-columns--flow { column-count: 1; }
 }
 
 /* ---------- quote */
@@ -449,6 +476,11 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
   pointer-events: none; opacity: 0;
 }
 .il-scrollpoints__box.is-visible { opacity: 1; }
+@media (max-width: 699px) {
+  /* Phones: each text box rests in the lower part of the screen while its step is showing,
+     leaving the top half for the highlighted area. */
+  .il-scrollpoints.is-enhanced .il-scrolly__step { align-items: flex-end; padding-bottom: 4vh; padding-bottom: 4svh; }
+}
 .il-scrollpoints__panel figcaption {
   position: absolute; right: 0; bottom: 0; margin: 0; padding: 0.3rem 0.6rem;
   background: rgb(0 0 0 / 0.6); color: #fff; font-size: 0.75rem;

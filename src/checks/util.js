@@ -17,6 +17,7 @@ export function textSources(story) {
   for (const b of story.blocks) {
     const d = b.data || {};
     if (b.type === 'text') add(b, d.body, 'body');
+    if (b.type === 'columns') (d.mode === 'flow' ? [d.body] : [d.col1, d.col2, d.col3].slice(0, d.count === 3 ? 3 : 2)).forEach((t) => add(b, t, 'body'));
     if (b.type === 'header') add(b, d.standfirst, 'body');
     if (b.type === 'quote') add(b, d.text, 'quote');
     if (b.type === 'scrolly' || b.type === 'scrollpoints') (d.steps || []).forEach((st, i) => add(b, st && st.text, 'body', { step: i }));
@@ -44,8 +45,14 @@ export function assetUses(story) {
     if (b.type === 'scrollpoints') use(b, d.asset, 'scrollpoints image');
     if (b.type === 'compare') { use(b, d.before?.asset, 'before image'); use(b, d.after?.asset, 'after image'); }
     // Images placed inside running text: ![name](asset:<id>)
-    const texts = b.type === 'text' ? [d.body] : (b.type === 'scrolly' || b.type === 'scrollpoints') ? (d.steps || []).map((st) => st && st.text) : [];
-    for (const t of texts) for (const m of String(t || '').matchAll(INLINE_IMAGE)) use(b, m[1], 'image in the text');
+    const texts = b.type === 'text' ? [d.body]
+      : b.type === 'columns' ? (d.mode === 'flow' ? [d.body] : [d.col1, d.col2, d.col3].slice(0, d.count === 3 ? 3 : 2))
+        : (b.type === 'scrolly' || b.type === 'scrollpoints') ? (d.steps || []).map((st) => st && st.text) : [];
+    for (const t of texts) {
+      for (const m of String(t || '').matchAll(INLINE_IMAGE)) {
+        use(b, m[1], /^video\//.test(story.assets[m[1]]?.mime || '') ? 'video in the text' : 'image in the text');
+      }
+    }
   }
   return uses;
 }

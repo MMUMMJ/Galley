@@ -6,7 +6,7 @@ import { allowedBlocks } from '../packs.js';
 import { h } from './dom.js';
 
 const GROUPS = [
-  ['Writing', ['header', 'text', 'quote', 'divider', 'references']],
+  ['Writing', ['header', 'text', 'columns', 'quote', 'divider', 'references']],
   ['Media', ['media', 'gallery', 'embed']],
   ['Showpiece', ['scrolly', 'scrollpoints', 'compare', 'number']],
 ];
@@ -15,6 +15,7 @@ const GROUPS = [
 const ART = {
   header: '<i class="a-img"></i><i class="a-title"></i><i class="a-sub"></i>',
   text: '<i class="a-line l1"></i><i class="a-line l2"></i><i class="a-line l3"></i><i class="a-line l4"></i>',
+  columns: '<i class="a-col c1"><i class="a-line l1"></i><i class="a-line l2"></i><i class="a-line l3"></i></i><i class="a-col c2"><i class="a-line l1"></i><i class="a-line l2"></i><i class="a-line l3"></i></i>',
   quote: '<i class="a-mark">“</i><i class="a-line l1"></i><i class="a-line l2"></i><i class="a-cite"></i>',
   divider: '<i class="a-line l1"></i><i class="a-dots"><i></i><i></i><i></i></i><i class="a-line l2"></i>',
   references: '<i class="a-ref r1"></i><i class="a-ref r2"></i><i class="a-ref r3"></i>',

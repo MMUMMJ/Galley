@@ -7,10 +7,11 @@ export const SCHEMA_VERSION = 1;
 
 // Must match RUNTIME_VERSION in runtime/illuminate-runtime.js.
 // test/runtime.html flags any mismatch.
-export const RUNTIME_VERSION = '1.13.0';
+export const RUNTIME_VERSION = '1.14.0';
 
-export const BLOCK_TYPES = ['header', 'text', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'scrollpoints', 'compare', 'number'];
+export const BLOCK_TYPES = ['header', 'text', 'columns', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'scrollpoints', 'compare', 'number'];
 export const SCROLLY_LAYOUTS = ['side', 'overlay', 'column'];
+export const COLUMN_MODES = ['separate', 'flow'];
 export const SCROLLY_BACKDROPS = ['solid', 'vignette', 'none'];
 export const SCROLLY_ALIGN = ['left', 'center', 'right']; // overlay and text column: where the text sits
 export const SCROLLY_TEXT_SIDE = ['right', 'left']; // side by side: which side the text is on
@@ -37,6 +38,7 @@ const BLOCK_DATA = {
   media: () => ({ kind: 'image', asset: null, width: 'column' }),
   gallery: () => ({ items: [], caption: '', width: 'wide' }),
   embed: () => ({ url: '', title: '', description: '', screenshot: null, width: 'column' }),
+  columns: () => ({ mode: 'separate', count: 2, width: 'wide', col1: '', col2: '', col3: '', body: '' }),
   divider: () => ({ text: '' }),
   references: () => ({ title: 'References', items: [], collapsed: false }),
   // Showpiece blocks (Phase 5)
@@ -44,8 +46,8 @@ const BLOCK_DATA = {
   scrollpoints: () => ({
     asset: null,
     steps: [
-      { text: '', align: 'left', focus: false, x: 50, y: 50, w: 30, h: 30 },
-      { text: '', align: 'right', focus: true, x: 40, y: 40, w: 30, h: 30 },
+      { text: '', align: 'auto', focus: false, x: 50, y: 50, w: 30, h: 30 },
+      { text: '', align: 'auto', focus: true, x: 40, y: 40, w: 30, h: 30 },
     ],
   }),
   compare: () => ({ before: { asset: null, label: '' }, after: { asset: null, label: '' }, caption: '', width: 'wide' }),
@@ -256,6 +258,15 @@ const BLOCK_RULES = {
     v.isString(d.body, `${p}.body`);
     checkInlineImages(d.body, `${p}.body`, v);
   },
+  columns(d, p, v) {
+    v.oneOf(d.mode, COLUMN_MODES, `${p}.mode`);
+    if (d.count !== 2 && d.count !== 3) v.err(`${p}.count`, 'Must be 2 or 3.');
+    v.oneOf(d.width, ['column', 'wide'], `${p}.width`);
+    for (const k of ['col1', 'col2', 'col3', 'body']) {
+      v.isString(d[k], `${p}.${k}`);
+      checkInlineImages(d[k], `${p}.${k}`, v);
+    }
+  },
   quote(d, p, v) { for (const k of ['text', 'cite', 'role']) v.isString(d[k], `${p}.${k}`); },
   media(d, p, v) {
     v.oneOf(d.kind, MEDIA_KINDS, `${p}.kind`);
@@ -296,7 +307,7 @@ const BLOCK_RULES = {
       if (!step || typeof step !== 'object') return v.err(sp, 'Each step must be an object.');
       v.isString(step.text, `${sp}.text`);
       checkInlineImages(step.text, `${sp}.text`, v);
-      if (step.align !== undefined) v.oneOf(step.align, SCROLLY_ALIGN, `${sp}.align`);
+      if (step.align !== undefined) v.oneOf(step.align, [...SCROLLY_ALIGN, 'auto'], `${sp}.align`); // auto: away from the highlight
       if (step.focus !== undefined && typeof step.focus !== 'boolean') v.err(`${sp}.focus`, 'Must be true or false.');
       for (const [k, min, max] of [['x', 0, 100], ['y', 0, 100], ['w', 5, 100], ['h', 5, 100]]) {
         if (step[k] !== undefined && (typeof step[k] !== 'number' || !Number.isFinite(step[k]) || step[k] < min || step[k] > max)) {

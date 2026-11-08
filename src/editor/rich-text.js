@@ -3,7 +3,8 @@
 // runtime reads, so stories, exports and checks are unchanged.
 //
 // Modes:
-//   'blocks'  paragraphs, subheadings, lists and (optionally) images: Text blocks, scroll steps
+//   'blocks'  paragraphs, subheadings, lists and (optionally) media: images, videos and
+//             embedded links. Text blocks, columns, scroll steps
 //   'inline'  one paragraph with bold, italics and links: standfirsts
 //   'lines'   one item per line with bold, italics and links: references (saved as a list)
 import { h } from './dom.js';
@@ -76,6 +77,8 @@ function serialise(root, mode, keepMark = false) {
       if ((n.tagName === 'P' || n.tagName === 'DIV') && [...n.children].some((c) => BLOCKS.test(c.tagName))) { walk(n); continue; }
       if (n.matches('figure[data-asset]')) {
         lines.push(`![${(n.dataset.name || 'image').replace(/[[\]\n]/g, '')}](asset:${n.dataset.asset}${n.dataset.pos ? ` "${n.dataset.pos}"` : ''})`);
+      } else if (n.matches('figure[data-embed]')) {
+        lines.push(`![Embed](${n.dataset.embed})`);
       } else if (mode === 'blocks' && n.tagName === 'H2') lines.push(`## ${text(n)}`);
       else if (mode === 'blocks' && /^H[3-6]$/.test(n.tagName)) lines.push(`### ${text(n)}`);
       else if (mode === 'blocks' && (n.tagName === 'UL' || n.tagName === 'OL')) {
@@ -105,13 +108,14 @@ function toHtml(value, mode, figure) {
   return strip(R.markdown(value || '', 2, figure)) || '<p><br></p>';
 }
 
-// Images are locked (contenteditable=false), so the cursor can't go past one unless there is
+// Media are locked (contenteditable=false), so the cursor can't go past one unless there is
 // an editable line beside it. Make sure there is one before a leading image, after every image,
 // and between two images. Empty lines aren't saved, so this adds nothing to the story.
+const MEDIA = 'figure.rte-img';
 function padImages(root) {
-  const editable = (n) => n && n.nodeType === 1 && !n.matches('figure[data-asset]');
+  const editable = (n) => n && n.nodeType === 1 && !n.matches(MEDIA);
   const blank = () => { const p = document.createElement('p'); p.append(document.createElement('br')); return p; };
-  for (const fig of root.querySelectorAll(':scope > figure[data-asset]')) {
+  for (const fig of root.querySelectorAll(`:scope > ${MEDIA}`)) {
     if (!editable(fig.nextElementSibling)) fig.after(blank());
     if (!fig.previousElementSibling) fig.before(blank());
   }
@@ -119,7 +123,7 @@ function padImages(root) {
 
 // Plain text from saved Markdown, for summaries in the block list.
 export function plainText(md) {
-  return String(md || '').replace(/^\s*!\[[^\]]*\]\(asset:[^)]*\)\s*$/gm, '')
+  return String(md || '').replace(/^\s*!\[[^\]]*\]\((asset:|https?:)[^)]*\)\s*$/gm, '')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/^\s*(#{1,6}|[-*•]|\d+[.)])\s*/gm, '')
     .replace(/\\([\\*_[\]#!().+-])/g, '$1').replace(/(\*\*|__|\*|_)/g, '');
 }
@@ -156,18 +160,34 @@ function cleanPaste(html, text, mode) {
 // ---------------------------------------------------------------- the editor
 // ctx: inspector context (block, story, set, edit, importFiles, assetUrl, announce).
 // key: the field in ctx.block.data. Options: label, hint, mode, images, imageLabel, rows.
-export function richText(ctx, key, { label, hint, mode = 'blocks', images = false, imageLabel = 'Image', imageName = 'Insert image', rows = 8 } = {}) {
+export function richText(ctx, key, { label, hint, mode = 'blocks', images = false, imageLabel = 'Media', imageName = 'Add an image, video or embed', rows = 8 } = {}) {
   const id = `rte-${++uid}`;
   const focusKey = `${ctx.block.id}:${key}`;
-  const figure = (assetId, pos, given) => {
-    const a = given || ctx.story.assets[assetId];
+  const attr = (s) => String(s).replace(/[&"<>]/g, (c) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[c]));
+  // How an image, video or embed looks inside the editor: locked, with its own small toolbar.
+  // ref is an asset id, or a web address when kind is 'embed'.
+  const figure = (ref, pos, kind, given) => {
+    const remove = '<button type="button" data-remove>Remove</button>';
+    if (kind === 'embed') {
+      const info = window.Illuminate?.embedInfo(ref);
+      let host = ref;
+      try { host = new URL(ref).hostname.replace(/^www\./, ''); } catch { /* keep the address */ }
+      return `<figure class="rte-img rte-embed" contenteditable="false" data-embed="${attr(ref)}">`
+        + `<span class="rte-embed-card"><span class="rte-embed-play" aria-hidden="true">${info ? '▶' : '↗'}</span>`
+        + `<span><strong>${attr(info ? `${info.label} embed` : 'Link card')}</strong><span>${attr(host)}</span></span></span>`
+        + `<span class="rte-img-tools" role="group" aria-label="Embed">${remove}</span></figure>`;
+    }
+    const a = given || ctx.story.assets[ref];
     if (!a) return '';
-    const name = String(a.name || 'image').replace(/"/g, '');
-    return `<figure class="rte-img${pos ? ` rte-img--${pos}` : ''}" contenteditable="false" data-asset="${assetId}" data-pos="${pos}" data-name="${name}">`
-      + `<img src="${ctx.assetUrl(assetId)}" alt=""><figcaption>${name}${(a.alt || '').trim() ? '' : ' · <strong>no alt text</strong>'}</figcaption>`
-      + '<span class="rte-img-tools" role="group" aria-label="Image position">'
+    const video = assetKind(a) === 'video';
+    const name = String(a.name || (video ? 'video' : 'image')).replace(/"/g, '');
+    const media = video ? `<video src="${ctx.assetUrl(ref)}" muted preload="metadata"></video>` : `<img src="${ctx.assetUrl(ref)}" alt="">`;
+    const missing = (a.alt || '').trim() ? '' : ` · <strong>${video ? 'no description' : 'no alt text'}</strong>`;
+    return `<figure class="rte-img${pos ? ` rte-img--${pos}` : ''}${video ? ' rte-video' : ''}" contenteditable="false" data-asset="${ref}" data-pos="${pos}" data-name="${name}">`
+      + `${media}<figcaption>${video ? '▶ ' : ''}${name}${missing}</figcaption>`
+      + `<span class="rte-img-tools" role="group" aria-label="${video ? 'Video' : 'Image'} position">`
       + `<button type="button" data-pos="left" aria-pressed="${pos === 'left'}">Left</button><button type="button" data-pos="" aria-pressed="${!pos}">Full</button>`
-      + `<button type="button" data-pos="right" aria-pressed="${pos === 'right'}">Right</button><button type="button" data-remove>Remove</button></span></figure>`;
+      + `<button type="button" data-pos="right" aria-pressed="${pos === 'right'}">Right</button>${remove}</span></figure>`;
   };
 
   const body = h('div', {
@@ -258,43 +278,60 @@ export function richText(ctx, key, { label, hint, mode = 'blocks', images = fals
     pop.hidden = false;
     input.focus();
   }
-  function insertImage(assetId, asset, isNew) {
+  // Puts an image, video or embed at the cursor. html: the editor figure; isNew: an asset to add to the story.
+  function insertMedia(html, { assetId, asset, isNew, said }) {
     closePop();
-    // Mark the images already there, so the new one can be found (and the cursor put below it) after the redraw.
-    body.querySelectorAll('figure[data-asset]').forEach((f) => { f.dataset.placed = '1'; });
-    document.execCommand('insertHTML', false, `${figure(assetId, '', asset)}<p><br></p>`);
-    const index = [...body.querySelectorAll('figure[data-asset]')].findIndex((f) => !f.dataset.placed);
+    // Mark the media already there, so the new one can be found (and the cursor put below it) after the redraw.
+    body.querySelectorAll(MEDIA).forEach((f) => { f.dataset.placed = '1'; });
+    document.execCommand('insertHTML', false, `${html}<p><br></p>`);
+    const index = [...body.querySelectorAll(MEDIA)].findIndex((f) => !f.dataset.placed);
     const md = value();
     ctx.edit((data, story) => { if (isNew) story.assets[assetId] = asset; data[key] = md; }, { rerender: true });
-    // The inspector has redrawn: put the cursor on the line below the new image, ready to type.
+    // The inspector has redrawn: put the cursor on the line below the new one, ready to type.
     const fresh = document.querySelector(`[data-focus="${CSS.escape(focusKey)}"]`);
-    const fig = fresh && fresh.querySelectorAll('figure[data-asset]')[index];
+    const fig = fresh && fresh.querySelectorAll(MEDIA)[index];
     const line = fig && fig.nextElementSibling;
     if (line) {
       fresh.focus();
       const r = document.createRange(); r.selectNodeContents(line); r.collapse(true);
       getSelection().removeAllRanges(); getSelection().addRange(r);
     }
-    ctx.announce(`${asset.name || 'Image'} added to the text. You can carry on typing below it.`);
+    ctx.announce(`${said} added to the text. You can carry on typing below it.`);
   }
+  const insertAsset = (assetId, asset, isNew) => insertMedia(figure(assetId, '', '', asset),
+    { assetId, asset, isNew, said: asset.name || (assetKind(asset) === 'video' ? 'Video' : 'Image') });
   function openImage() {
     keep();
-    const imgs = Object.entries(ctx.story.assets).filter(([, a]) => assetKind(a) === 'image');
-    pop.replaceChildren(
-      h('p', { class: 'rte-pop-title' }, 'Add an image to the text'),
+    const files = Object.entries(ctx.story.assets).filter(([, a]) => ['image', 'video'].includes(assetKind(a)));
+    const urlId = `${id}-embed`;
+    const url = h('input', { id: urlId, type: 'url', placeholder: 'https://www.youtube.com/watch?v=…', 'data-focus': `${focusKey}:embed-url` });
+    const addEmbed = () => {
+      const u = url.value.trim();
+      if (!/^https?:\/\/[^\s)]+$/i.test(u)) { ctx.announce('Paste a web address that starts with https://'); url.focus(); return; }
+      const info = window.Illuminate?.embedInfo(u);
+      restore();
+      insertMedia(figure(u, '', 'embed'), { said: info ? `${info.label} embed` : 'Link card' });
+    };
+    url.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addEmbed(); } });
+    pop.replaceChildren(...[
+      h('p', { class: 'rte-pop-title' }, 'Add to the text'),
       fileButton(ctx, {
-        label: 'Import a new image…', accept: ACCEPT.image, focusKey: `${focusKey}:img-import`,
-        onFiles: async (files) => {
-          const [added] = await ctx.importFiles(files.slice(0, 1), ['image']);
-          if (added) { restore(); insertImage(added.id, added.asset, true); }
+        label: 'Import an image or video…', accept: ACCEPT.imageVideo, focusKey: `${focusKey}:img-import`,
+        onFiles: async (picked) => {
+          const [added] = await ctx.importFiles(picked.slice(0, 1), ['image', 'video']);
+          if (added) { restore(); insertAsset(added.id, added.asset, true); }
         },
       }),
-      assetBrowser(ctx, imgs, {
+      assetBrowser(ctx, files, {
         label: 'Or use one already in this story:',
         focusKey: `${focusKey}:img-existing`,
-        onPick: (aid, a) => { restore(); insertImage(aid, a, false); },
+        onPick: (aid, a) => { restore(); insertAsset(aid, a, false); },
       }),
-      h('button', { type: 'button', class: 'btn', onclick: () => closePop() }, 'Cancel'));
+      h('div', { class: 'rte-embed-row' },
+        h('label', { for: urlId }, 'Or embed a link: YouTube, Vimeo, Spotify, SoundCloud and more. Other sites show as a link card.'),
+        h('div', { class: 'rte-embed-input' }, url, h('button', { type: 'button', class: 'btn', onclick: addEmbed }, 'Embed'))),
+      h('button', { type: 'button', class: 'btn', onclick: () => closePop() }, 'Cancel'),
+    ].filter(Boolean)); // no "use one already in this story" when the story has no files yet
     pop.hidden = false;
     pop.querySelector('button')?.focus();
   }
@@ -332,7 +369,7 @@ export function richText(ctx, key, { label, hint, mode = 'blocks', images = fals
     if (b.hasAttribute('data-remove')) {
       fig.remove();
       save({ rerender: true });
-      ctx.announce('Image removed from the text. It stays in your story\'s files.');
+      ctx.announce(fig.dataset.embed ? 'Embed removed from the text.' : 'Removed from the text. The file stays in your story\'s files.');
     } else {
       fig.dataset.pos = b.dataset.pos;
       fig.className = `rte-img${b.dataset.pos ? ` rte-img--${b.dataset.pos}` : ''}`;

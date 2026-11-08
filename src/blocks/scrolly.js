@@ -81,7 +81,7 @@ export default {
             h('legend', {}, `Step ${i + 1}`),
             // Two kinds of image in a step: one inside the text, and the one behind or beside it.
             richText(sub, 'text', {
-              label: `Step ${i + 1} text (required)`, mode: 'blocks', images: true, imageLabel: 'Image', imageName: 'Image in the text', rows: 4,
+              label: `Step ${i + 1} text (required)`, mode: 'blocks', images: true, rows: 4,
               hint: i === 0 ? 'What should the reader notice first? Keep each step short.' : null,
             }),
             imageDetails(sub, 'text'),

@@ -41,12 +41,13 @@ export function countWords(story) {
   for (const b of story.blocks) {
     const d = b.data || {};
     if (b.type === 'text') parts.push(d.body);
+    if (b.type === 'columns') parts.push(...(d.mode === 'flow' ? [d.body] : [d.col1, d.col2, d.col3].slice(0, d.count === 3 ? 3 : 2)));
     if (b.type === 'header') parts.push(d.kicker, d.title, d.standfirst);
     if (b.type === 'quote') parts.push(d.text);
     if (b.type === 'scrolly' || b.type === 'scrollpoints') (d.steps || []).forEach((st) => parts.push(st && st.text));
   }
   const text = parts.filter(Boolean).join('\n')
-    .replace(/^\s*!\[[^\]]*\]\(asset:[^)]*\)\s*$/gm, ' ') // inline images aren't words
+    .replace(/^\s*!\[[^\]]*\]\((asset:|https?:)[^)]*\)\s*$/gm, ' ') // inline images, videos and embeds aren't words
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')   // [text](url) -> text
     .replace(/https?:\/\/\S+/g, ' ')
     .replace(/^\s*(#{1,6}|[-*\u2022]|\d+[.)])\s*/gm, ' ')

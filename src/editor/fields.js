@@ -36,13 +36,14 @@ export function textArea(ctx, key, { label, hint, rows = 4, placeholder, lines =
   return wrap(id, label, hint, area);
 }
 
-export function selectInput(ctx, key, { label, hint, options, fallback }) {
+// number: save the choice as a number (e.g. a count), not text.
+export function selectInput(ctx, key, { label, hint, options, fallback, number = false }) {
   const id = nextId(key);
   const current = ctx.block.data[key] ?? fallback;
   const select = h('select', {
     id, 'data-focus': `${ctx.block.id}:${key}`,
-    onchange: (e) => ctx.set(key, e.target.value, { rerender: true }),
-  }, options.map(([value, text]) => h('option', { value, selected: value === current }, text)));
+    onchange: (e) => ctx.set(key, number ? Number(e.target.value) : e.target.value, { rerender: true }),
+  }, options.map(([value, text]) => h('option', { value, selected: String(value) === String(current) }, text)));
   return wrap(id, label, hint, select);
 }
 

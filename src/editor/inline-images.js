@@ -1,4 +1,4 @@
-// The "Images in this text" list under a formatted text editor: each image's alt text,
+// The "Images and videos in this text" list under a formatted text editor: each image's alt text,
 // caption, credit and licence. Position and Remove are on the image itself, in the editor.
 import { h } from './dom.js';
 import { assetDetails, thumb } from './fields.js';
@@ -14,13 +14,13 @@ export function imageDetails(ctx, key) {
   const images = findImages(ctx.block.data[key]).filter((img) => !seen.has(img.id) && seen.add(img.id));
   if (!images.length) return null;
   return h('fieldset', { class: 'field inline-list' },
-    h('legend', {}, 'Images in this text'),
+    h('legend', {}, 'Images and videos in this text'),
     h('ol', {}, images.map((img, n) => {
       const asset = ctx.story.assets[img.id];
       return h('li', { class: 'inline-item' },
         h('div', { class: 'gallery-item-row' },
           thumb(ctx, img.id),
-          h('span', { class: 'gallery-item-name' }, asset ? asset.name || 'Untitled image' : 'Missing image',
+          h('span', { class: 'gallery-item-name' }, asset ? asset.name || 'Untitled file' : 'Missing file',
             asset && !(asset.alt || '').trim() ? h('span', { class: 'badge' }, 'No alt text') : null)),
         asset ? h('details', { class: 'gallery-item-details', open: !(asset.alt || '').trim() },
           h('summary', { 'data-focus': `${ctx.block.id}:${key}:img-details:${n}` }, 'Alt text, caption and credit'),

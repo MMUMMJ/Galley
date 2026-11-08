@@ -142,14 +142,17 @@ export default {
           h('fieldset', { class: 'field step-item' },
             h('legend', {}, `Step ${i + 1}`),
             richText(sub, 'text', {
-              label: `Step ${i + 1} text (required)`, mode: 'blocks', images: true, imageLabel: 'Image', imageName: 'Image in the text', rows: 3,
+              label: `Step ${i + 1} text (required)`, mode: 'blocks', images: true, rows: 3,
               hint: i === 0 ? 'Introduce the whole image first, or jump straight to a detail.' : null,
             }),
             imageDetails(sub, 'text'),
             selectInput(sub, 'align', {
-              label: 'Box position',
+              label: 'Text box position',
               fallback: 'left',
-              options: [['left', 'Left'], ['center', 'Centre'], ['right', 'Right']],
+              hint: st.align === 'center' && st.focus
+                ? 'A centred box can cover the highlighted area. Automatic, Left or Right keep it clear.'
+                : st.focus ? 'With the box on one side, the zoom fits the highlighted area into the space beside it.' : null,
+              options: [['auto', 'Automatic: away from the highlighted area'], ['left', 'Left'], ['center', 'Centre'], ['right', 'Right']],
             }),
             checkbox(sub, 'focus', {
               label: 'Zoom into a highlighted area of the image on this step',
@@ -168,7 +171,7 @@ export default {
         type: 'button', class: 'btn', 'data-focus': `${bid}:sp-add`,
         onclick: () => changeSteps((next) => [
           ...next,
-          { text: '', align: next.length % 2 === 0 ? 'left' : 'right', focus: true, x: 35, y: 35, w: 30, h: 30 },
+          { text: '', align: 'auto', focus: true, x: 35, y: 35, w: 30, h: 30 },
         ], `Step ${steps.length + 1} added.`),
       }, 'Add a step'),
     );

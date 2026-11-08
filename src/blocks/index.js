@@ -2,6 +2,7 @@
 // prompt: the default craft prompt shown above the block's fields (a pack can replace it).
 import header from './header.js';
 import text from './text.js';
+import columns from './columns.js';
 import quote from './quote.js';
 import media from './media.js';
 import gallery from './gallery.js';
@@ -14,7 +15,7 @@ import compare from './compare.js';
 import number from './number.js';
 
 export const BLOCKS = Object.fromEntries(
-  [header, text, quote, media, gallery, embed, divider, references, scrolly, scrollpoints, compare, number].map((b) => [b.type, b]),
+  [header, text, columns, quote, media, gallery, embed, divider, references, scrolly, scrollpoints, compare, number].map((b) => [b.type, b]),
 );
 
 export const blockLabel = (type) => BLOCKS[type]?.label || type || 'Unknown';

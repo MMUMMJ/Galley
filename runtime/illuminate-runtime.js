@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.13.0';
+  const RUNTIME_VERSION = '1.14.0';
 
   // ------------------------------------------------------------ helpers
 
@@ -142,8 +142,11 @@
   // level: the heading level that "##" maps to.
   // An image on its own line: ![file name](asset:<id>) or ![file name](asset:<id> "left"|"right").
   const IMAGE_LINE = /^!\[([^\]]*)\]\(asset:([A-Za-z0-9_-]+)(?:\s+"(left|right)")?\)$/;
+  // An embed in running text: ![Embed](https://…) on a line of its own.
+  const EMBED_LINE = /^!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)$/;
 
-  // image(id, position): renders an inline image line; without it, image lines are left out.
+  // image(ref, position, kind): renders an image, video (an asset id) or embed (kind 'embed',
+  // ref is the web address) line. Without it, those lines are left out.
   function markdown(text, level, image) {
     const base = level || 2;
     const out = [];
@@ -165,6 +168,9 @@
       else if ((m = line.match(IMAGE_LINE))) {
         closeList();
         if (image) out.push(image(m[2], m[3] || ''));
+      } else if ((m = line.match(EMBED_LINE))) {
+        closeList();
+        if (image) out.push(image(m[2], '', 'embed'));
       }
       // "## Heading" or "##Heading". A single "#" needs a space, so "#hashtag" and "#1" stay text.
       else if ((m = line.match(/^(#{2,6})\s*([^#\s].*)$/) || line.match(/^(#)\s+(.+)$/))) {
@@ -231,13 +237,45 @@
   // An image placed inside running text (text blocks and scroll steps): full width,
   // or floated left or right with the text wrapping round it. Alt text, caption and
   // credit come from the file, as everywhere else.
+  // Images, videos and embeds placed in running text (text blocks, columns and scroll steps).
   function inlineImage(ctx) {
-    return (id, position) => {
-      const a = ctx.asset(id);
-      if (!a || kindOf(a) !== 'image') return ctx.preview ? '<p class="il-placeholder">Missing image</p>' : '';
-      return `<figure class="il-inline-img${position ? ' il-inline-img--' + position : ''}">`
-        + `<img src="${esc(ctx.url(id))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(id)}>${figcaption(a)}</figure>`;
+    return (ref, position, kind) => {
+      if (kind === 'embed') {
+        const url = safeUrl(ref);
+        return /^https?:\/\//i.test(url) ? embedFigure(url, ctx, { cls: 'il-inline-embed' }) : '';
+      }
+      const a = ctx.asset(ref);
+      const k = a ? kindOf(a) : '';
+      const cls = position ? ' il-inline-img--' + position : '';
+      if (k === 'video') {
+        const src = esc(ctx.url(ref));
+        const label = str(a.alt) ? ` aria-label="${esc(a.alt)}"` : '';
+        const fallback = ctx.inline ? "Your browser can't play this video." : `<a href="${src}">Download the video</a>`;
+        return `<figure class="il-inline-img il-inline-video${cls}">`
+          + `<video controls playsinline preload="metadata" src="${src}"${label}${dims(a)}${mark(ref)}>${fallback}</video>${figcaption(a)}</figure>`;
+      }
+      if (k !== 'image') return ctx.preview ? '<p class="il-placeholder">Missing image or video</p>' : '';
+      return `<figure class="il-inline-img${cls}">`
+        + `<img src="${esc(ctx.url(ref))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(ref)}>${figcaption(a)}</figure>`;
     };
+  }
+
+  // A link card for a web address; enhance() swaps in the provider's player where there is one.
+  function embedFigure(url, ctx, { id = '', cls = '', title = '', description = '', shot = null } = {}) {
+    const info = embedInfo(url);
+    let host = '';
+    try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) { host = url; }
+    const name = title || (info ? `${info.label}: ${host}` : host);
+    const a = shot ? ctx.asset(shot) : null;
+    const data = info ? ` data-il-embed-src="${esc(info.src)}" data-il-embed-label="${esc(info.label)}" data-il-embed-provider="${info.provider}"`
+      + (info.height ? ` data-il-embed-height="${info.height}"` : '') : '';
+    return `<figure class="il-embed${cls ? ' ' + cls : ''}"${id ? ` id="${esc(id)}"` : ''}${data}><div class="il-embed__frame">`
+      + `<a class="il-card" href="${esc(url)}">`
+      + (a ? `<img class="il-card__img" src="${esc(ctx.url(shot))}" alt="${esc(a.alt)}"${dims(a)}${mark(shot)}>` : '')
+      + `<span class="il-card__body"><span class="il-card__title">${esc(name)}</span>`
+      + (description ? `<span class="il-card__desc">${esc(description)}</span>` : '')
+      + `<span class="il-card__host">${esc(host)}</span><span class="il-card__url">${esc(url)}</span></span></a></div>`
+      + (a ? figcaption(a) : '') + '</figure>';
   }
 
   function placeholder(b, ctx, message) {
@@ -278,6 +316,25 @@
     text(b, d, ctx) {
       const html = markdown(d.body, 2 + ctx.offset, inlineImage(ctx));
       return html ? `<div class="il-text" id="${esc(b.id)}">${html}</div>` : placeholder(b, ctx, 'Empty text block');
+    },
+
+    // Columns: separate columns written one by one, or one text flowing across columns like print.
+    // Phones always get one column.
+    columns(b, d, ctx) {
+      const n = d.count === 3 ? 3 : 2;
+      const width = d.width === 'column' ? 'il-w-column' : 'il-w-wide';
+      const media = inlineImage(ctx);
+      const lvl = 2 + ctx.offset;
+      if (d.mode === 'flow') {
+        const html = markdown(d.body, lvl, media);
+        return html ? `<div class="il-text il-columns il-columns--flow il-columns--${n} ${width}" id="${esc(b.id)}">${html}</div>`
+          : placeholder(b, ctx, 'Empty columns block');
+      }
+      const cols = [d.col1, d.col2, d.col3].slice(0, n).map((t) => markdown(t, lvl, media));
+      if (!cols.some(Boolean)) return placeholder(b, ctx, 'Empty columns block');
+      return `<div class="il-columns il-columns--${n} ${width}" id="${esc(b.id)}">`
+        + cols.map((c) => (c || ctx.preview ? `<div class="il-text il-columns__col">${c || '<p class="il-placeholder">This column is empty</p>'}</div>` : '')).join('')
+        + '</div>';
     },
 
     quote(b, d, ctx) {
@@ -331,20 +388,9 @@
     embed(b, d, ctx) {
       const url = safeUrl(d.url);
       if (!/^https?:\/\//i.test(url)) return placeholder(b, ctx, 'Add a web address to this embed');
-      const info = embedInfo(url);
-      let host = '';
-      try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) { host = url; }
-      const title = str(d.title) || (info ? `${info.label}: ${host}` : host);
-      const shot = ctx.asset(d.screenshot);
-      const data = info ? ` data-il-embed-src="${esc(info.src)}" data-il-embed-label="${esc(info.label)}" data-il-embed-provider="${info.provider}"`
-        + (info.height ? ` data-il-embed-height="${info.height}"` : '') : '';
-      return `<figure class="il-embed ${widthClass(d.width)}" id="${esc(b.id)}"${data}><div class="il-embed__frame">`
-        + `<a class="il-card" href="${esc(url)}">`
-        + (shot ? `<img class="il-card__img" src="${esc(ctx.url(d.screenshot))}" alt="${esc(shot.alt)}"${dims(shot)}${mark(d.screenshot)}>` : '')
-        + `<span class="il-card__body"><span class="il-card__title">${esc(title)}</span>`
-        + (str(d.description) ? `<span class="il-card__desc">${esc(d.description)}</span>` : '')
-        + `<span class="il-card__host">${esc(host)}</span><span class="il-card__url">${esc(url)}</span></span></a></div>`
-        + (shot ? figcaption(shot) : '') + '</figure>';
+      return embedFigure(url, ctx, {
+        id: b.id, cls: widthClass(d.width), title: str(d.title), description: str(d.description), shot: d.screenshot,
+      });
     },
 
     divider(b, d) {
@@ -422,7 +468,9 @@
       const clampNum = (v, min, max, fb) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(min, Math.min(max, v)) : fb);
       const html = steps.map((st, i) => {
         const text = markdown(st.text, 2 + ctx.offset, inlineImage(ctx));
-        const stAlign = st.align === 'left' || st.align === 'right' ? st.align : 'center';
+        // 'auto': the text goes on the side away from the highlighted area.
+        const away = st.focus && clampNum(st.x, 0, 100, 40) + clampNum(st.w, 5, 100, 30) / 2 < 50 ? 'right' : 'left';
+        const stAlign = st.align === 'auto' ? away : st.align === 'left' || st.align === 'right' ? st.align : 'center';
         const stepCls = stAlign !== 'center' ? ` il-scrolly__step--${stAlign}` : '';
         const focusAttr = st.focus
           ? ` data-il-focus="${clampNum(st.x, 0, 100, 40)},${clampNum(st.y, 0, 100, 40)},${clampNum(st.w, 5, 100, 30)},${clampNum(st.h, 5, 100, 30)}"`
@@ -533,7 +581,7 @@
   // The maker's notes appendix (Phase 7): the student's notes on blocks and effects, and
   // their reflection answers, after the story and clearly marked as not part of it.
   const TYPE_LABELS = {
-    header: 'Header', text: 'Text', quote: 'Quote', media: 'Media', gallery: 'Gallery', embed: 'Embed',
+    header: 'Header', text: 'Text', columns: 'Columns', quote: 'Quote', media: 'Media', gallery: 'Gallery', embed: 'Embed',
     divider: 'Divider', references: 'References', scrolly: 'Scroll sequence', scrollpoints: 'Scrollpoints', compare: 'Before/after slider', number: 'Big number',
   };
   function appendix(blocks, reflection) {
@@ -837,7 +885,6 @@
     if (cap) panel.appendChild(cap.cloneNode(true));
     section.insertBefore(panel, section.firstChild);
     section.classList.add('is-enhanced');
-    const motionOk = !reducedMotion(doc);
 
     const show = (i) => {
       steps.forEach((st, j) => st.classList.toggle('is-active', j === i));
@@ -854,25 +901,56 @@
       box.style.width = `${w}%`;
       box.style.height = `${h}%`;
       box.classList.add('is-visible');
-      if (motionOk) {
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        const scale = Math.max(1.15, Math.min(2.8, 75 / Math.max(w, h, 15)));
-        const maxShift = ((scale - 1) / (2 * scale)) * 100;
-        const tx = Math.max(-maxShift, Math.min(maxShift, 50 - cx));
-        const ty = Math.max(-maxShift, Math.min(maxShift, 50 - cy));
-        stage.style.transform = `scale(${scale.toFixed(2)}) translate(${tx.toFixed(1)}%, ${ty.toFixed(1)}%)`;
-        stage.style.setProperty('--il-sp-scale', scale.toFixed(2)); // keeps the highlight's border the same width
-      } else {
-        stage.style.transform = 'none';
-        stage.style.setProperty('--il-sp-scale', '1');
+      // Zoom so the highlighted area sits in the free part of the screen: beside the text box
+      // when the box is on the left or right, otherwise in the middle. Under reduced motion the
+      // image jumps there without animating (the transition is only set when motion is allowed).
+      const W = stage.offsetWidth;
+      const H = stage.offsetHeight;
+      if (!W || !H) return;
+      const pw = panel.clientWidth;
+      const ph = panel.clientHeight;
+      const region = { left: 0, right: pw, top: 0, bottom: ph };
+      const card = steps[i].querySelector('.il-scrolly__card');
+      const side = steps[i].classList.contains('il-scrolly__step--left') ? 'left'
+        : steps[i].classList.contains('il-scrolly__step--right') ? 'right' : '';
+      if (card && side && pw >= 700) {
+        const pr = panel.getBoundingClientRect();
+        const cr = card.getBoundingClientRect();
+        const gap = 32;
+        if (side === 'left') region.left = Math.min(pw * 0.7, cr.right - pr.left + gap);
+        else region.right = Math.max(pw * 0.3, cr.left - pr.left - gap);
+      } else if (pw < 700) {
+        // Phones: the text box is full width and rests low on the screen (see the CSS), so the
+        // highlighted area goes in the top half.
+        region.bottom = ph * 0.52;
       }
+      const rw = region.right - region.left;
+      const rh = region.bottom - region.top;
+      const hw = (w / 100) * W;
+      const hh = (h / 100) * H;
+      // Fill about three-quarters of the free space; shrink the image if the area is too big for it.
+      const scale = Math.max(0.5, Math.min(2.8, (rw * 0.75) / hw, (rh * 0.75) / hh));
+      // Where the highlight's centre should land, in the stage's own coordinates.
+      const tx = region.left + rw / 2 - stage.offsetLeft;
+      const ty = region.top + rh / 2 - stage.offsetTop;
+      // transform-origin is the stage's centre (cx, cy): a point p lands at c + scale × (p − c + shift).
+      const cx = W / 2;
+      const cy = H / 2;
+      const dx = (tx - cx) / scale - ((x + w / 2) / 100) * W + cx;
+      const dy = (ty - cy) / scale - ((y + h / 2) / 100) * H + cy;
+      stage.style.transform = `scale(${scale.toFixed(3)}) translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+      stage.style.setProperty('--il-sp-scale', scale.toFixed(3)); // keeps the highlight's border the same width
     };
+    let current = 0;
     show(0);
     const io = new win.IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) show(steps.indexOf(e.target)); });
+      entries.forEach((e) => { if (e.isIntersecting) { current = steps.indexOf(e.target); show(current); } });
     }, { rootMargin: '-50% 0px -50% 0px' });
     steps.forEach((st) => io.observe(st));
+    // The free space changes with the window (or a phone turning sideways).
+    let resizeTimer = 0;
+    win.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => show(current), 150); });
+    if (!clone.complete) clone.addEventListener('load', () => show(current), { once: true }); // its size is known only once loaded
   }
 
   function setupBgVideos(videos, doc) {
