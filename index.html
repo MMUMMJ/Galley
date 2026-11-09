@@ -5,7 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Galley</title>
   <meta name="description" content="Galley: a scrollytelling editor for journalism students.">
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <meta name="theme-color" content="#B3261E">
+  <!-- Link previews (Teams, Moodle, Slack…): the image needs a full address. -->
+  <meta property="og:title" content="Galley">
+  <meta property="og:description" content="A scrollytelling editor for journalism students.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mmummj.github.io/Galley/">
+  <meta property="og:image" content="https://mmummj.github.io/Galley/social/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Galley logo: a red square with a G, beside the word Galley.">
+  <meta name="twitter:card" content="summary_large_image">
   <!-- The reader's styles first (the canvas shows the story with them), then the editor's. -->
   <link rel="stylesheet" href="runtime/galley.css">
   <link rel="stylesheet" href="src/editor/editor.css">
@@ -16,7 +30,10 @@
   <a class="skip-link" href="#inspector">Skip to block settings</a>
 
   <header class="app-header">
-    <h1 class="app-title">Galley</h1>
+    <h1 class="app-title"><picture>
+      <source srcset="galley-brand/logo/svg/galley-lockup-dark.svg" media="(prefers-color-scheme: dark)">
+      <img src="galley-brand/logo/svg/galley-lockup-light.svg" alt="Galley" width="94" height="32">
+    </picture></h1>
     <div class="toolbar">
       <div class="menu-wrap">
         <button type="button" class="btn" id="file" aria-expanded="false" aria-controls="file-menu">File &amp; Export <span aria-hidden="true">▾</span></button>

@@ -1,8 +1,15 @@
-# Galley
+<h1>
+  <picture>
+    <source srcset="galley-brand/logo/svg/galley-lockup-dark.svg" media="(prefers-color-scheme: dark)">
+    <img src="galley-brand/logo/svg/galley-lockup-light.svg" alt="Galley" height="72">
+  </picture>
+</h1>
 
 A scrollytelling editor for journalism students at Manchester Metropolitan University. Students build feature articles and reflective process portfolios, then export a self-contained package to submit through Moodle.
 
 The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
+
+Use it at **https://mmummj.github.io/Galley/**.
 
 ### Why Galley?
 
@@ -11,6 +18,8 @@ In letterpress printing, a galley was the shallow metal tray where typesetters c
 Galley does the same job for a digital story. Students gather their words, pictures and scroll effects in one place, shape them on the page, and lock them into a finished package ready to publish. The name nods to the newsroom craft behind the work.
 
 (Galley was called Illuminate until November 2026. It still opens stories exported under the old name.)
+
+The logos, colours and type are in [galley-brand/](galley-brand/README.md). The site's icons (`favicon.*`, `apple-touch-icon.png`, `site.webmanifest`, `icons/`) and its link-preview image (`social/og-image.png`) sit in the root.
 
 ## Status
 

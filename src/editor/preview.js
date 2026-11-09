@@ -65,6 +65,7 @@ export function mountPreview(iframe, store, { assetUrl }) {
       w.document.write(`<!doctype html><html lang="en-GB"><head><meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Preview · Galley</title>
+        <link rel="icon" href="${new URL('favicon.svg', document.baseURI).href}" type="image/svg+xml">
         <base target="_blank"><link rel="stylesheet" href="${css}"><script src="${js}"></script>
         </head><body class="il-page"><main id="preview-root"></main></body></html>`);
       w.document.close();
