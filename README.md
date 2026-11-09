@@ -1,8 +1,16 @@
-# Illuminate
+# Galley
 
 A scrollytelling editor for journalism students at Manchester Metropolitan University. Students build feature articles and reflective process portfolios, then export a self-contained package to submit through Moodle.
 
 The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
+
+### Why Galley?
+
+In letterpress printing, a galley was the shallow metal tray where typesetters collected and arranged lines of type before locking them up for the press.
+
+Galley does the same job for a digital story. Students gather their words, pictures and scroll effects in one place, shape them on the page, and lock them into a finished package ready to publish. The name nods to the newsroom craft behind the work.
+
+(Galley was called Illuminate until November 2026. It still opens stories exported under the old name.)
 
 ## Status
 
@@ -15,7 +23,7 @@ The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
 - Phase 7 (pedagogy + packs): craft prompts on every block, maker's notes, reflection questions, an optional maker's notes appendix in the export, and prompt packs.
 - Phase 8 (checks): a Checks panel of editor's questions (never marks), one module per check in `src/checks/`. Run <http://localhost:8000/test/checks.html> to confirm every check fires on `test/fixtures/flawed.json` and stays silent on `clean.json`.
 - Phase 9 (folder saver): in Chrome and Edge, **Save to folder…** keeps an unzipped copy (`index.html`, `story.json`, `assets/`) in a folder the student chooses, ideally inside their synced OneDrive folder. Choosing a folder that already has a story offers to open it. Other browsers show: "To save straight to your OneDrive folder, use Chrome or Edge. Until then, Export is your save." The header shows when the story was last saved to the folder and last exported, and nudges after 3 days without an export.
-- Colour schemes and block backgrounds: six ready-made colour schemes (House, Wire, Long read, Magazine, Night desk, Investigation), all checked for 4.5:1 contrast, chosen in Story details; a pack can lock one as its house style. Any block can sit on a full-width coloured band, from the scheme's colours or any colour; Illuminate picks black or white text for it. Print always uses black on white.
+- Colour schemes and block backgrounds: six ready-made colour schemes (House, Wire, Long read, Magazine, Night desk, Investigation), all checked for 4.5:1 contrast, chosen in Story details; a pack can lock one as its house style. Any block can sit on a full-width coloured band, from the scheme's colours or any colour; Galley picks black or white text for it. Print always uses black on white.
 - Scroll sequence layouts: side by side (text left or right), overlay (text boxes left, centre or right), and text column (one continuous column of text, left, centre or right, while full-screen images crossfade behind).
 - Canvas view: the editor opens on the story itself, drawn as readers will see it (without movement, so every step and effect is visible). A rail of numbered blocks sits on the left; clicking a block selects it and shows its toolbar (Settings, Up, Down, Duplicate, Delete); **+ Add** appears between blocks and opens the illustrated block picker; Settings slide in the familiar Write / Look / Notes panel from the right. **Classic** (blocks, settings and preview side by side) is one click away in the header, and each browser remembers the choice. A link can choose for students: `?view=classic` or `?view=canvas`.
 - Typing on the canvas (stage 2): click a headline, kicker, standfirst, byline, paragraph, column, quote, attribution, big number (and its unit, context and source), divider label or the text of a scroll sequence or scrollpoints step and type straight onto the page. A small bar above the text names what is being typed and offers bold, italics, links, subheadings, lists and media where they apply, plus Settings and Done. Enter (one-line text) and Tab move on to the next piece of text in the block; Esc or Done finishes. Empty text shows what goes there; optional pieces (kicker, byline, unit, role, divider label) appear only while their block is selected. Each spell of typing is one undo step. The edit marks come from the runtime only when the canvas asks for them (`renderArticle(story, { mode: 'preview', editable: true })`), never in exports or the preview.

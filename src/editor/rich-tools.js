@@ -146,7 +146,7 @@ export function attachRichEditing(body, o) {
     const addEmbed = () => {
       const u = url.value.trim();
       if (!/^https?:\/\/[^\s)]+$/i.test(u)) { ctx.announce('Paste a web address that starts with https://'); url.focus(); return; }
-      const info = window.Illuminate?.embedInfo(u);
+      const info = window.Galley?.embedInfo(u);
       restore();
       insertMedia(figure(u, '', 'embed'), { said: info ? `${info.label} embed` : 'Link card' });
     };

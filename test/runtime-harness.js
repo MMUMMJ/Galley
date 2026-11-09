@@ -4,7 +4,7 @@ import { load, RUNTIME_VERSION as MODEL_RUNTIME_VERSION, SCHEME_IDS } from '../s
 
 const FIXTURES = { feature: 'Feature article', portfolio: 'Process portfolio', showpiece: 'Showpiece blocks', effects: 'Effects', 'edge-cases': 'Edge cases' };
 const $ = (id) => document.getElementById(id);
-const R = window.Illuminate;
+const R = window.Galley;
 let story = null;
 
 const assetUrl = (id, asset) => new URL('fixtures/' + R.assetPath(id, asset), location.href).href;
@@ -41,7 +41,7 @@ async function show(name) {
     const mode = $('t-preview').checked ? 'preview' : 'export';
     $('t-story').innerHTML = R.renderArticle(story, { assetUrl, mode });
     R.enhance($('t-story'));
-    document.title = `${FIXTURES[name]} · Illuminate runtime fixtures`;
+    document.title = `${FIXTURES[name]} · Galley runtime fixtures`;
     history.replaceState(null, '', `?fixture=${encodeURIComponent(name)}`);
   } catch (e) {
     $('t-story').innerHTML = `<p class="t-bad" style="padding:16px">Could not load fixture: ${esc(e.message)}</p>`;
@@ -53,8 +53,8 @@ async function openStatic(withJs) {
   if (!story) return;
   const tab = window.open('', '_blank');
   const [css, js] = await Promise.all([
-    text('../runtime/illuminate.css'),
-    withJs ? text('../runtime/illuminate-runtime.js') : Promise.resolve(undefined),
+    text('../runtime/galley.css'),
+    withJs ? text('../runtime/galley-runtime.js') : Promise.resolve(undefined),
   ]);
   const html = R.renderDocument(story, { css, js, assetUrl });
   const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));

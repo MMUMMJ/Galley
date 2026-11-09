@@ -90,7 +90,7 @@ export function serialise(root, mode, keepMark = false, base = 2) {
 // ---------------------------------------------------------------- Markdown in
 // bare: an 'inline' paragraph typed into its own element, so no <p> round it.
 export function toHtml(value, mode, figure, { base = 2, bare = false } = {}) {
-  const R = window.Illuminate;
+  const R = window.Galley;
   if (!R) return '';
   const strip = (s) => s.replace(/ class="il-autolink"/g, '');
   if (mode === 'inline' && bare) return strip(R.inline(value || ''));
@@ -159,7 +159,7 @@ export function mediaFigure(ctx, look = 'panel') {
   return (ref, pos, kind, given) => {
     const remove = '<button type="button" data-remove>Remove</button>';
     if (kind === 'embed') {
-      const info = window.Illuminate?.embedInfo(ref);
+      const info = window.Galley?.embedInfo(ref);
       let host = ref;
       try { host = new URL(ref).hostname.replace(/^www\./, ''); } catch { /* keep the address */ }
       return `<figure class="rte-img rte-embed" contenteditable="false" data-embed="${attr(ref)}">`

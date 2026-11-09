@@ -1,10 +1,12 @@
 // Open: turns a file the student picked back into a story plus its asset files.
-// Accepts an Illuminate ZIP (as exported, or unzipped and re-zipped by Windows or
+// Accepts a Galley ZIP (as exported, or unzipped and re-zipped by Windows or
 // macOS, even inside a folder), an exported .html page, or a story .json file.
 import { load } from './model.js';
 import { isZip, listZip, readEntry } from './zip-read.js';
 
-const SOURCE_ID = 'illuminate-source';
+// Exports made before the rename (when the project was called Illuminate) use the old ids.
+const SOURCE_IDS = ['galley-source', 'illuminate-source'];
+const ASSET_IDS = ['galley-assets', 'illuminate-assets'];
 
 // Returns { story, blobs: Map(id -> Blob), missing: [names], errors }.
 export async function openFile(file) {
@@ -16,18 +18,18 @@ export async function openFile(file) {
 }
 
 function parseJson(text) {
-  try { return JSON.parse(text); } catch { throw new Error('This file isn\'t a valid Illuminate story.'); }
+  try { return JSON.parse(text); } catch { throw new Error('This file isn\'t a valid Galley story.'); }
 }
 
 async function fromHtml(text) {
   const doc = new DOMParser().parseFromString(text, 'text/html');
-  const source = doc.getElementById(SOURCE_ID);
-  if (!source) throw new Error('This web page wasn\'t made by Illuminate, so it can\'t be opened for editing.');
+  const source = SOURCE_IDS.map((id) => doc.getElementById(id)).find(Boolean);
+  if (!source) throw new Error('This web page wasn\'t made by Galley, so it can\'t be opened for editing.');
   const raw = parseJson(source.textContent);
   // Single-file exports carry their assets as data: URLs.
   const blobs = new Map();
   const ids = Object.keys(raw.assets || {});
-  const spareEl = doc.getElementById('illuminate-assets');
+  const spareEl = ASSET_IDS.map((id) => doc.getElementById(id)).find(Boolean);
   const spare = spareEl ? parseJson(spareEl.textContent) : {};
   for (const id of ids) {
     const el = doc.querySelector(`[data-il-asset="${CSS.escape(id)}"]`);
@@ -49,7 +51,7 @@ async function openZip(file) {
   let blobs = new Map();
   for (const entry of pages) {
     const text = await (await readEntry(file, entry)).text();
-    if (!text.includes(SOURCE_ID)) continue;
+    if (!SOURCE_IDS.some((id) => text.includes(id))) continue;
     ({ raw, blobs } = await fromHtml(text));
     base = entry.name.slice(0, entry.name.lastIndexOf('/') + 1);
     break;
@@ -58,7 +60,7 @@ async function openZip(file) {
     raw = parseJson(await (await readEntry(file, jsons[0])).text());
     base = jsons[0].name.slice(0, jsons[0].name.lastIndexOf('/') + 1);
   }
-  if (!raw) throw new Error('This ZIP doesn\'t contain an Illuminate story (no index.html made by Illuminate).');
+  if (!raw) throw new Error('This ZIP doesn\'t contain a Galley story (no index.html made by Galley).');
 
   // Files are stored as assets/<id>-<name>; match on the id so renamed files still work.
   for (const [id, asset] of Object.entries(raw.assets || {})) {

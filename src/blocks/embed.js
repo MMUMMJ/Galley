@@ -13,7 +13,7 @@ export default {
     const note = help('');
     note.setAttribute('aria-live', 'polite');
     const describe = (url) => {
-      const info = url ? window.Illuminate?.embedInfo(url) : null;
+      const info = url ? window.Galley?.embedInfo(url) : null;
       note.hidden = !url;
       note.textContent = info
         ? `${info.label} link: readers see the ${info.label} player in the story, with a link to the original. `

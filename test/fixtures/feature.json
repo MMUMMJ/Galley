@@ -6,7 +6,7 @@
     "standfirst": "On a stretch of the Rochdale Canal, a dozen volunteers spend their Saturdays pulling trolleys, traffic cones and shopping bags out of the water. *Why do they keep coming back?*",
     "byline": "By Sam Example · Sample fixture",
     "seoTitle": "Who keeps the canal alive? Volunteers on the Rochdale Canal",
-    "seoDescription": "Every Saturday, volunteers clear rubbish from a stretch of the Rochdale Canal. A sample feature for testing the Illuminate runtime.",
+    "seoDescription": "Every Saturday, volunteers clear rubbish from a stretch of the Rochdale Canal. A sample feature for testing the Galley runtime.",
     "shareImage": "a_hero",
     "shareText": "Meet the volunteers who clear the canal every week.",
     "pack": null,
@@ -46,7 +46,7 @@
   "assets": {
     "a_hero": { "name": "canal-at-dusk.svg", "mime": "image/svg+xml", "bytes": 6565, "width": 1800, "height": 1000,
       "alt": "A row of mill buildings silhouetted against an orange sky, reflected in still canal water.",
-      "caption": "", "credit": "Illustration: Illuminate fixture", "licence": "Own work" },
+      "caption": "", "credit": "Illustration: Galley fixture", "licence": "Own work" },
     "a_towpath": { "name": "towpath-volunteers.svg", "mime": "image/svg+xml", "bytes": 6155, "width": 1200, "height": 800,
       "alt": "Brick warehouses beside the canal under a pale blue sky.",
       "caption": "The towpath near Ancoats, where the group meets every Saturday.", "credit": "Sam Example", "licence": "Own work" },

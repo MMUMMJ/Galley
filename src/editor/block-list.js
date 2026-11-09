@@ -42,7 +42,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
     const out = [];
     if (warning) out.push(`<span class="tag tag-warn">${esc(warning)}</span>`);
     if (effectBadge(b.effect)) out.push(`<span class="tag">${esc(effectBadge(b.effect).split(' ')[0])}</span>`);
-    const colour = b.background && window.Illuminate ? window.Illuminate.bandColour(b.background, store.story.meta.theme) : '';
+    const colour = b.background && window.Galley ? window.Galley.bandColour(b.background, store.story.meta.theme) : '';
     if (colour) out.push(`<span class="tag"><span class="tag-dot" style="background:${colour}" aria-hidden="true"></span>Band</span>`);
     return out.join('');
   }
@@ -72,7 +72,7 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
     packInfo.hidden = !pack.path;
     if (!pack.path) return;
     const rules = [
-      pack.scheme && window.Illuminate ? `House style: ${window.Illuminate.SCHEMES[pack.scheme].name} colour scheme` : null,
+      pack.scheme && window.Galley ? `House style: ${window.Galley.SCHEMES[pack.scheme].name} colour scheme` : null,
       pack.includeNotes ? 'Maker\'s notes on every block' : null,
       pack.effectNotes === 'required' ? 'Every effect needs a note' : null,
       { inline: 'Source claims with links in the text', references: 'Source claims with a reference list', both: 'Source claims with links and a reference list' }[pack.sourcing],

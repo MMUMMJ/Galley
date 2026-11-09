@@ -1,4 +1,4 @@
-// Illuminate editor entry point: load the saved story, then wire up the panels.
+// Galley editor entry point: load the saved story, then wire up the panels.
 import { load, createStory, createAsset, newId } from './model.js';
 import './adapters/save-indexeddb.js';
 import './adapters/export-zip.js';
@@ -40,7 +40,7 @@ async function boot() {
       if (raw) {
         const result = load(raw);
         story = result.story;
-        if (result.errors.length) console.warn('Illuminate: saved story has problems', result.errors);
+        if (result.errors.length) console.warn('Galley: saved story has problems', result.errors);
         break;
       }
     } catch (err) {
@@ -49,7 +49,7 @@ async function boot() {
   }
   if (problem && !story) {
     savers = [];
-    toast(`Illuminate couldn't open this browser's saved story, so it won't save changes. ${problem.message}`, { tone: 'warning' });
+    toast(`Galley couldn't open this browser's saved story, so it won't save changes. ${problem.message}`, { tone: 'warning' });
   }
 
   // 2. Pack: ?pack=packs/<name>.json, or else the pack this story was made with.
@@ -151,5 +151,5 @@ async function boot() {
 boot().catch((err) => {
   console.error(err);
   const status = $('app-status');
-  if (status) status.textContent = `Illuminate couldn't start: ${err.message}`;
+  if (status) status.textContent = `Galley couldn't start: ${err.message}`;
 });

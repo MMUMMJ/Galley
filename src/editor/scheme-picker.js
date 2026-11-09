@@ -4,7 +4,7 @@ import { h } from './dom.js';
 import { getPack } from '../packs.js';
 
 export function renderSchemePicker(story, { set, announce }) {
-  const R = window.Illuminate;
+  const R = window.Galley;
   const schemes = R ? Object.entries(R.SCHEMES) : [];
   const locked = getPack().scheme;
   const current = locked || story.meta.theme || 'house';

@@ -1,4 +1,4 @@
-// Helpers shared by the exporters. The runtime (window.Illuminate) renders the page;
+// Helpers shared by the exporters. The runtime (window.Galley) renders the page;
 // its CSS and JS are fetched once and inlined, so exports never depend on this site.
 
 let runtimeText = null;
@@ -10,21 +10,21 @@ export async function runtimeFiles() {
       if (!res.ok) throw new Error(`Couldn't load ${path} (HTTP ${res.status}).`);
       return res.text();
     };
-    const [css, js] = await Promise.all([get('runtime/illuminate.css'), get('runtime/illuminate-runtime.js')]);
+    const [css, js] = await Promise.all([get('runtime/galley.css'), get('runtime/galley-runtime.js')]);
     runtimeText = { css, js };
   }
   return runtimeText;
 }
 
 export function runtime() {
-  if (!window.Illuminate) throw new Error('The Illuminate runtime did not load. Reload the page and try again.');
-  return window.Illuminate;
+  if (!window.Galley) throw new Error('The Galley runtime did not load. Reload the page and try again.');
+  return window.Galley;
 }
 
 export function exportName(story, ext) {
-  const slug = (story.meta.title || firstHeaderTitle(story) || 'illuminate-story')
+  const slug = (story.meta.title || firstHeaderTitle(story) || 'galley-story')
     .normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'illuminate-story';
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'galley-story';
   const d = new Date();
   const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   return `${slug}-${date}.${ext}`;

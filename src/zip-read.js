@@ -1,4 +1,4 @@
-// ZIP reader for opening exports. Handles Illuminate's own stored ZIPs and ZIPs
+// ZIP reader for opening exports. Handles Galley's own stored ZIPs and ZIPs
 // that Windows or macOS re-compressed (deflate), including ZIP64 and data descriptors.
 // Compressed entries are unpacked with the browser's DecompressionStream('deflate-raw').
 
@@ -94,5 +94,5 @@ export async function readEntry(blob, entry, type = '') {
     const stream = raw.stream().pipeThrough(new DecompressionStream('deflate-raw'));
     return new Blob([await new Response(stream).arrayBuffer()], { type });
   }
-  throw new Error(`"${entry.name}" uses a ZIP compression method Illuminate can't read.`);
+  throw new Error(`"${entry.name}" uses a ZIP compression method Galley can't read.`);
 }

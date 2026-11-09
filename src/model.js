@@ -1,13 +1,13 @@
-// Illuminate story model: schema, defaults, validation and migrations.
+// Galley story model: schema, defaults, validation and migrations.
 //
 // The story is data. Everything the editor and the runtime know about a story
 // lives in the object described here; nothing else is saved or exported.
 
 export const SCHEMA_VERSION = 1;
 
-// Must match RUNTIME_VERSION in runtime/illuminate-runtime.js.
+// Must match RUNTIME_VERSION in runtime/galley-runtime.js.
 // test/runtime.html flags any mismatch.
-export const RUNTIME_VERSION = '1.15.0';
+export const RUNTIME_VERSION = '1.16.0';
 
 export const BLOCK_TYPES = ['header', 'text', 'columns', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'scrollpoints', 'compare', 'number'];
 export const SCROLLY_LAYOUTS = ['side', 'overlay', 'column'];
@@ -19,7 +19,7 @@ export const EFFECTS = ['none', 'fade', 'rise', 'slide', 'zoom'];
 export const HEADER_VARIANTS = ['full', 'compact'];
 export const MEDIA_KINDS = ['image', 'video', 'audio'];
 export const MEDIA_WIDTHS = ['column', 'wide', 'full'];
-// Must match SCHEMES in runtime/illuminate-runtime.js (test/runtime.html checks).
+// Must match SCHEMES in runtime/galley-runtime.js (test/runtime.html checks).
 export const SCHEME_IDS = ['house', 'wire', 'longread', 'magazine', 'nightdesk', 'investigation'];
 export const BAND_SCHEME_COLOURS = ['tint', 'ink', 'accent'];
 export const LICENCES = ['Own work', 'CC BY', 'CC BY-SA', 'CC BY-NC', 'OGL', 'Used with permission', 'Other'];
@@ -107,13 +107,13 @@ const MIGRATIONS = {
 };
 
 export function migrate(input) {
-  if (!isObj(input)) throw new Error('This file does not contain an Illuminate story.');
+  if (!isObj(input)) throw new Error('This file does not contain a Galley story.');
   const version = input.schemaVersion;
   if (!Number.isInteger(version) || version < 1) {
-    throw new Error('This file does not contain an Illuminate story (no schemaVersion).');
+    throw new Error('This file does not contain a Galley story (no schemaVersion).');
   }
   if (version > SCHEMA_VERSION) {
-    throw new Error(`This story was made with a newer version of Illuminate (schema ${version}). Reload the editor to update it.`);
+    throw new Error(`This story was made with a newer version of Galley (schema ${version}). Reload the editor to update it.`);
   }
   let story = structuredClone(input);
   for (let v = version; v < SCHEMA_VERSION; v++) {

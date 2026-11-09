@@ -8,7 +8,7 @@ function readme(story, assetCount, assetBytes) {
   const title = story.meta.title || story.blocks.find((b) => b.type === 'header')?.data.title || 'Untitled story';
   return [
     title,
-    `Made with Illuminate (runtime ${runtime().RUNTIME_VERSION}) on ${new Date().toLocaleString('en-GB')}.`,
+    `Made with Galley (runtime ${runtime().RUNTIME_VERSION}) on ${new Date().toLocaleString('en-GB')}.`,
     '',
     'HOW TO OPEN THIS STORY',
     '1. Unzip (extract) the ZIP file first.',
@@ -19,7 +19,7 @@ function readme(story, assetCount, assetBytes) {
     '   Keep index.html and the assets folder together.',
     '',
     'TO EDIT IT AGAIN',
-    'Open Illuminate, choose Open, and pick this ZIP file.',
+    'Open Galley, choose Open, and pick this ZIP file.',
     '',
     'CONTENTS',
     `Words: ${countWords(story)} (text, headers, quotes and scroll steps; not references or captions)`,

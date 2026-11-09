@@ -10,7 +10,7 @@ import { load } from '../model.js';
 
 const KEY = 'folder';
 const DELAY = 2000;
-const OURS = /^a_[A-Za-z0-9_]+-/; // asset files Illuminate wrote (assets/<id>-<name>)
+const OURS = /^a_[A-Za-z0-9_]+-/; // asset files Galley wrote (assets/<id>-<name>)
 
 export const folderSupported = () => typeof window.showDirectoryPicker === 'function' && window.isSecureContext;
 
@@ -59,7 +59,7 @@ export async function restoreFolder() {
 }
 
 export function pickFolder() {
-  return window.showDirectoryPicker({ id: 'illuminate', mode: 'readwrite', startIn: 'documents' });
+  return window.showDirectoryPicker({ id: 'illuminate' /* old name: keeps the remembered folder */, mode: 'readwrite', startIn: 'documents' });
 }
 
 // What's already in a folder the student picked.
@@ -141,7 +141,7 @@ async function writeProject(story, getBlob) {
   const { css, js } = await runtimeFiles();
   const dir = state.handle;
   if ((await permissionOf(dir)) !== 'granted') {
-    const err = new Error('Illuminate needs your permission to save to this folder again.');
+    const err = new Error('Galley needs your permission to save to this folder again.');
     err.name = 'NotAllowedError';
     throw err;
   }
@@ -158,7 +158,7 @@ async function writeProject(story, getBlob) {
     if (there && (await there.getFile()).size === blob.size) continue; // unchanged: don't rewrite
     await writeFile(assetsDir, name, blob);
   }
-  // Remove only files Illuminate wrote that the story no longer uses.
+  // Remove only files Galley wrote that the story no longer uses.
   for (const name of existing.keys()) {
     if (OURS.test(name) && !expected.has(name)) await assetsDir.removeEntry(name);
   }
@@ -170,7 +170,7 @@ async function writeProject(story, getBlob) {
 function describe(err) {
   if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
     state.permission = 'prompt';
-    return 'Illuminate needs your permission to save to this folder again.';
+    return 'Galley needs your permission to save to this folder again.';
   }
   if (err.name === 'NotFoundError') return 'The folder can\'t be found. Was it moved, renamed or deleted? Choose it again.';
   if (err.name === 'QuotaExceededError') return 'The folder\'s drive is full.';

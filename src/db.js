@@ -2,7 +2,7 @@
 //   projects: key "current" -> { story, savedAt }
 //   assets:   asset id      -> Blob (or { type, buffer } where a browser refuses Blobs)
 
-const DB_NAME = 'illuminate';
+const DB_NAME = 'illuminate'; // the project's old name: kept so saved stories and settings survive the rename
 const DB_VERSION = 1;
 let opening = null;
 
@@ -19,7 +19,7 @@ export function openDb() {
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error || new Error('Could not open storage.'));
-      req.onblocked = () => reject(new Error('Storage is blocked by another Illuminate tab. Close other tabs and reload.'));
+      req.onblocked = () => reject(new Error('Storage is blocked by another Galley tab. Close other tabs and reload.'));
     });
     opening.catch(() => { opening = null; });
   }

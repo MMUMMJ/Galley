@@ -80,7 +80,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   // ---------------------------------------------------------------- drawing
   let lastHtml = '';
   function render() {
-    const R = window.Illuminate;
+    const R = window.Galley;
     if (!R) return;
     const html = R.renderArticle(store.story, { assetUrl, mode: 'preview', editable: true });
     if (html !== lastHtml) {

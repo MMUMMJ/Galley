@@ -7,7 +7,7 @@ import { h } from './dom.js';
 const SCHEME_CHOICES = [['tint', 'Tint'], ['ink', 'Ink'], ['accent', 'Accent']];
 
 export function renderBackground(block, story, { setBlock, announce }) {
-  const R = window.Illuminate;
+  const R = window.Galley;
   if (!R) return null;
   if (block.type === 'header' && block.data.variant !== 'compact') {
     return h('div', { class: 'field background' }, h('p', { class: 'field-label' }, 'Background'),

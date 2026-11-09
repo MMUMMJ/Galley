@@ -61,7 +61,7 @@ export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, getBlo
         onProgress: (done, total) => setStatus(`Exporting… ${done} of ${total}`),
       });
       download(blob, filename);
-      window.dispatchEvent(new CustomEvent('illuminate:exported', { detail: { filename } }));
+      window.dispatchEvent(new CustomEvent('galley:exported', { detail: { filename } }));
       const done = `Exported ${filename} (${formatMB(blob.size)}). Look in your Downloads folder.`;
       toast([done, ...warnings].join(' '), { tone: warnings.length ? 'warning' : undefined });
       setStatus(`Exported at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);

@@ -140,7 +140,7 @@ export function mountInspector(panel, store, deps) {
     const titleEl = h('h3', { class: 'inspector-title' },
       `${blockLabel(block.type)} block `, h('span', { class: 'inspector-pos' }, `${pos} of ${store.story.blocks.length}`));
     if (!mod) {
-      body.append(titleEl, h('p', {}, `This version of Illuminate can't edit "${block.type}" blocks. The block is kept so nothing is lost.`));
+      body.append(titleEl, h('p', {}, `This version of Galley can't edit "${block.type}" blocks. The block is kept so nothing is lost.`));
       return;
     }
     body.append(h('div', { class: 'inspector-head' }, titleEl, tabList(block)));

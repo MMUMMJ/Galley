@@ -1,6 +1,6 @@
-# Illuminate: build plan (greenfield)
+# Galley: build plan (greenfield)
 
-*Illuminate is a scrollytelling editor for journalism students at Manchester Metropolitan University (MMU). It replaces Shorthand.*
+*Galley is a scrollytelling editor for journalism students at Manchester Metropolitan University (MMU). It replaces Shorthand.*
 
 Put this file in the root of a **new, empty** repo. Work through it **one phase per session**. At the end of each phase, stop, summarise what changed, and list anything that fell short of the acceptance criteria. Don't start the next phase until the user says so.
 
@@ -12,10 +12,10 @@ Students build feature articles and reflective process portfolios, then export a
 An earlier prototype ("Story Studio" v0.2, a single `index.html`) may be supplied in `reference/`. **Read it for reference only.** Its hand-rolled ZIP writer and `IntersectionObserver` pattern are worth looking at. Do not copy its structure.
 
 ## Architecture
-Illuminate is two separate things:
+Galley is two separate things:
 
 1. **The editor.** The authoring app, hosted on GitHub Pages. Plain ES modules in `src/`, with no build step and no dependencies. Each file should stay under roughly 400 lines.
-2. **The runtime.** A small, stable renderer (`runtime/illuminate-runtime.js` + `runtime/illuminate.css`) that turns story JSON into the reader-facing page. **The exporter inlines the runtime into every export.** A submitted story therefore never depends on the live site, which is essential for retaining assessed work. The runtime is versioned (`RUNTIME_VERSION`) and changes rarely. The editor's preview uses the same runtime, so what students see is what gets submitted.
+2. **The runtime.** A small, stable renderer (`runtime/galley-runtime.js` + `runtime/galley.css`) that turns story JSON into the reader-facing page. **The exporter inlines the runtime into every export.** A submitted story therefore never depends on the live site, which is essential for retaining assessed work. The runtime is versioned (`RUNTIME_VERSION`) and changes rarely. The editor's preview uses the same runtime, so what students see is what gets submitted.
 
 ```
 /index.html               editor shell
@@ -33,8 +33,8 @@ Illuminate is two separate things:
   checks/                 one module per check
   packs.js                load + apply prompt packs
 /runtime/
-  illuminate-runtime.js
-  illuminate.css
+  galley-runtime.js
+  galley.css
 /packs/
   digital-publishing.json
   advanced-storytelling.json
@@ -47,7 +47,7 @@ Illuminate is two separate things:
 1. **No dependencies, no build step, no CDN, no frameworks.** Vanilla JavaScript (ES2020+), HTML and CSS.
 2. **No backend, no network calls, no analytics, no accounts.** Student data leaves the browser only as files the student saves themselves.
 3. **Exports work offline** from an unzipped folder opened via `file://`, in current Edge, Chrome, Safari and Firefox. Exports contain no third-party scripts. Embeds are link cards with an archived screenshot; only YouTube, Vimeo, Spotify and SoundCloud get inline iframes.
-4. **The story is data.** Every export contains the story JSON (`<script type="application/json" id="illuminate-source">`) and can be re-opened in the editor. The JSON includes `schemaVersion` and `runtimeVersion`.
+4. **The story is data.** Every export contains the story JSON (`<script type="application/json" id="galley-source">`) and can be re-opened in the editor. The JSON includes `schemaVersion` and `runtimeVersion`.
 5. **Accessibility:**
    - every action works from the keyboard;
    - visible focus;
@@ -97,7 +97,7 @@ Assets are stored as Blobs in IndexedDB and referenced by ID. They are never bas
 ## Phase 3: exporters + open
 - **ZIP exporter.** Hand-written ZIP writer with stored (uncompressed) entries. Output: `index.html` (runtime inlined, plus the story JSON), `assets/` with the original files, and `README.txt` (how to open it, plus the story's word and asset counts).
 - **Single-file HTML exporter.** Everything inlined. Warn when the result is over 25 MB.
-- **Open.** Accept an Illuminate ZIP, an Illuminate HTML file, or a ZIP that was unzipped and re-zipped with compression on Windows or Mac, including when everything is nested inside a folder. Use `DecompressionStream('deflate-raw')` to read compressed entries.
+- **Open.** Accept a Galley ZIP, a Galley HTML file, or a ZIP that was unzipped and re-zipped with compression on Windows or Mac, including when everything is nested inside a folder. Use `DecompressionStream('deflate-raw')` to read compressed entries.
 - Build the export menu from the adapter registry.
 - **Acceptance:** export, delete the local copy, then re-open the file: the story is identical. The exported folder works offline in all four browsers.
 
@@ -175,7 +175,7 @@ Show the checks in a panel. Each item jumps to its block. The wording asks a que
 
 ## Phase 10 (optional): installable editor
 - Add `manifest.webmanifest` and a service worker so the editor works offline once loaded, and can be added to the home screen. Home-screen web apps may be less exposed to Safari clearing a site's stored data. **Test this on iPad; don't assume it.**
-- **Cache strategy:** network-first for `index.html` and `src/`, falling back to the cache when offline. Each release bumps `CACHE_VERSION`. When a new version is detected, show a banner: "A new version of Illuminate is available — reload". Never leave students silently on a stale build.
+- **Cache strategy:** network-first for `index.html` and `src/`, falling back to the cache when offline. Each release bumps `CACHE_VERSION`. When a new version is detected, show a banner: "A new version of Galley is available — reload". Never leave students silently on a stale build.
 - Never cache student data in the service worker. That stays in IndexedDB and the student's saved files.
 - **Acceptance:** after one online visit, the editor loads with the network off. A new deploy is picked up on the next reload.
 

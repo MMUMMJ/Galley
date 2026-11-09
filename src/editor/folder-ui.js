@@ -66,7 +66,7 @@ export async function mountFolder(store, { wrap, button, menu, folderLine, expor
         onclick: (e) => { e.stopPropagation(); exportButton.click(); },
       }, 'Export a copy to keep it safe') : '');
   }
-  window.addEventListener('illuminate:exported', async () => {
+  window.addEventListener('galley:exported', async () => {
     await setSetting('exportedAt', new Date().toISOString());
     renderExport();
   });
@@ -127,13 +127,13 @@ export async function mountFolder(store, { wrap, button, menu, folderLine, expor
     const info = await inspectFolder(handle);
     if (info.hasStory) {
       const choice = await ask(dialog,
-        `"${handle.name}" already has an Illuminate story${info.title ? `: "${info.title}"` : ''}. What would you like to do?`,
+        `"${handle.name}" already has a Galley story${info.title ? `: "${info.title}"` : ''}. What would you like to do?`,
         [['open', 'Open that story'], ['replace', 'Save my current story there instead (replaces it)'], ['cancel', 'Cancel']]);
       if (choice === 'open') return openFrom(handle);
       if (choice !== 'replace') return;
     } else if (info.otherFiles) {
       const choice = await ask(dialog,
-        `"${handle.name}" already has ${info.otherFiles} other item${info.otherFiles === 1 ? '' : 's'} in it. Illuminate will add index.html, story.json and an assets folder. A new, empty folder for each story keeps things tidy.`,
+        `"${handle.name}" already has ${info.otherFiles} other item${info.otherFiles === 1 ? '' : 's'} in it. Galley will add index.html, story.json and an assets folder. A new, empty folder for each story keeps things tidy.`,
         [['use', 'Use this folder anyway'], ['cancel', 'Choose a different folder']]);
       if (choice !== 'use') return;
     }

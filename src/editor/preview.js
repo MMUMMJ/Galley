@@ -8,8 +8,8 @@ import { articlePatcher } from './article-patch.js';
 
 export function mountPreview(iframe, store, { assetUrl }) {
   const bust = `?v=${encodeURIComponent(RUNTIME_VERSION)}-${Date.now()}`;
-  const css = new URL(`runtime/illuminate.css${bust}`, document.baseURI).href;
-  const js = new URL(`runtime/illuminate-runtime.js${bust}`, document.baseURI).href;
+  const css = new URL(`runtime/galley.css${bust}`, document.baseURI).href;
+  const js = new URL(`runtime/galley-runtime.js${bust}`, document.baseURI).href;
   iframe.srcdoc = `<!doctype html><html lang="en-GB"><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <base target="_blank"><link rel="stylesheet" href="${css}"><script src="${js}"></script>
@@ -56,7 +56,7 @@ export function mountPreview(iframe, store, { assetUrl }) {
   const ready = new Promise((resolve) => iframe.addEventListener('load', resolve, { once: true }));
 
   function openPopout() {
-    const w = window.open('', 'illuminate-preview');
+    const w = window.open('', 'galley-preview');
     if (!w) return;
     if (w !== popWin || !w.document.getElementById('preview-root')) {
       popWin = w;
@@ -64,12 +64,12 @@ export function mountPreview(iframe, store, { assetUrl }) {
       w.document.open();
       w.document.write(`<!doctype html><html lang="en-GB"><head><meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Preview · Illuminate</title>
+        <title>Preview · Galley</title>
         <base target="_blank"><link rel="stylesheet" href="${css}"><script src="${js}"></script>
         </head><body class="il-page"><main id="preview-root"></main></body></html>`);
       w.document.close();
       popReady = new Promise((resolve) => {
-        if (w.Illuminate) resolve();
+        if (w.Galley) resolve();
         else w.addEventListener('load', resolve, { once: true });
       });
     }
@@ -90,7 +90,7 @@ export function mountPreview(iframe, store, { assetUrl }) {
   async function renderPopout() {
     if (!popWin || popWin.closed) return;
     if (popReady) await popReady;
-    if (!popWin || popWin.closed || !popWin.Illuminate || !popWin.document) return;
+    if (!popWin || popWin.closed || !popWin.Galley || !popWin.document) return;
     const doc = popWin.document;
     const root = doc.getElementById('preview-root');
     if (!root) return;
@@ -98,13 +98,13 @@ export function mountPreview(iframe, store, { assetUrl }) {
     const headerTitle = store.story.blocks.find((b) => b.type === 'header' && b.data?.title)?.data.title || '';
     const title = m.seoTitle || m.title || headerTitle || 'Untitled story';
     doc.title = `${title} · Preview`;
-    const html = popWin.Illuminate.renderArticle(store.story, { assetUrl, mode: 'export' });
+    const html = popWin.Galley.renderArticle(store.story, { assetUrl, mode: 'export' });
     if (html !== popLastHtml) {
       drawPopout(root, html);
-      const scheme = popWin.Illuminate.SCHEMES[store.story.meta.theme];
+      const scheme = popWin.Galley.SCHEMES[store.story.meta.theme];
       doc.body.style.background = scheme ? scheme.bg : '';
       popLastHtml = html;
-      popWin.Illuminate.enhance(root);
+      popWin.Galley.enhance(root);
     }
   }
 
@@ -113,7 +113,7 @@ export function mountPreview(iframe, store, { assetUrl }) {
     await ready;
     const win = iframe.contentWindow;
     const doc = iframe.contentDocument;
-    if (!win || !win.Illuminate || !doc) return;
+    if (!win || !win.Galley || !doc) return;
     if (!boundClick) {
       boundClick = true;
       doc.addEventListener('click', (e) => {
@@ -126,13 +126,13 @@ export function mountPreview(iframe, store, { assetUrl }) {
       });
     }
     const root = doc.getElementById('preview-root');
-    const html = win.Illuminate.renderArticle(store.story, { assetUrl, mode: 'preview' });
+    const html = win.Galley.renderArticle(store.story, { assetUrl, mode: 'preview' });
     if (html !== lastHtml) {
       draw(root, html);
-      const scheme = win.Illuminate.SCHEMES[store.story.meta.theme];
+      const scheme = win.Galley.SCHEMES[store.story.meta.theme];
       doc.body.style.background = scheme ? scheme.bg : '';
       lastHtml = html;
-      win.Illuminate.enhance(root);
+      win.Galley.enhance(root);
     }
     root.querySelectorAll('.il-editor-selected').forEach((el) => el.classList.remove('il-editor-selected'));
     const sel = store.selected ? doc.getElementById(store.selected) : null;

@@ -1,11 +1,11 @@
-/*! Illuminate runtime: renders an Illuminate story into a reader-facing page.
+/*! Galley runtime: renders a Galley story into a reader-facing page.
  *  Inlined into every export, so it must stay self-contained: no imports, no network.
  *  renderArticle / renderDocument produce static HTML that reads fine without JavaScript.
  *  enhance() then adds the optional extras (gallery lightbox, embed players, print). */
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.15.0';
+  const RUNTIME_VERSION = '1.16.0';
 
   // ------------------------------------------------------------ helpers
 
@@ -710,7 +710,7 @@
       .find((b) => isObj(b) && b.type === 'header' && isObj(b.data) && str(b.data.title));
     const title = str(m.seoTitle) || str(m.title) || (firstHeader ? firstHeader.data.title : '') || 'Untitled story';
     const json = JSON.stringify(Object.assign({}, story, { runtimeVersion: RUNTIME_VERSION })).replace(/</g, '\\u003c');
-    const boot = '<script>window.Illuminate && window.Illuminate.enhance(document);</' + 'script>';
+    const boot = '<script>window.Galley && window.Galley.enhance(document);</' + 'script>';
     const css = o.css != null ? `<style>\n${String(o.css).replace(/<\/style/gi, '<\\/style')}\n</style>`
       : o.cssHref ? `<link rel="stylesheet" href="${esc(o.cssHref)}">` : '';
     const js = o.js != null ? `<script>\n${String(o.js).replace(/<\/script/gi, '<\\/script')}\n</` + `script>\n${boot}`
@@ -719,9 +719,9 @@
       + '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
       + `<title>${esc(title)}</title>\n`
       + headTags(story, o, title)
-      + `<meta name="generator" content="Illuminate ${RUNTIME_VERSION}">\n${css}\n</head>\n`
+      + `<meta name="generator" content="Galley ${RUNTIME_VERSION}">\n${css}\n</head>\n`
       + `<body class="il-page"${schemeOf(m) === 'house' ? '' : ` style="background:${SCHEMES[schemeOf(m)].bg}"`}>\n<main>\n${renderArticle(story, o)}\n</main>\n`
-      + `<script type="application/json" id="illuminate-source">${json}</` + 'script>\n'
+      + `<script type="application/json" id="galley-source">${json}</` + 'script>\n'
       + (o.bodyEnd ? o.bodyEnd + '\n' : '')
       + `${js}\n</body>\n</html>\n`;
   }
@@ -1172,5 +1172,5 @@
     SCHEMES, bandColour, inkFor, contrast,
   });
   if (typeof module === 'object' && module && module.exports) module.exports = api;
-  root.Illuminate = api;
+  root.Galley = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

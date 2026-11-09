@@ -38,7 +38,7 @@ registerExporter({
     R.renderArticle(story, { assetUrl, inline: true });
     const spare = Object.fromEntries([...urls].filter(([id]) => !used.has(id)));
     const bodyEnd = Object.keys(spare).length
-      ? `<script type="application/json" id="illuminate-assets">${JSON.stringify(spare).replace(/</g, '\\u003c')}</` + 'script>'
+      ? `<script type="application/json" id="galley-assets">${JSON.stringify(spare).replace(/</g, '\\u003c')}</` + 'script>'
       : '';
     const html = R.renderDocument(story, { css, js, assetUrl, inline: true, bodyEnd });
     const blob = new Blob([html], { type: 'text/html' });
