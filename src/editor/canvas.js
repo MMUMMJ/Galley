@@ -23,7 +23,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     <h2 class="sr-only" id="canvas-heading">Story canvas</h2>
     <nav class="canvas-rail" aria-label="Blocks">
       <ol class="rail-list"></ol>
-      <button type="button" class="rail-add" aria-haspopup="dialog" title="Add a block">+<span class="sr-only"> Add a block</span></button>
+      <button type="button" class="rail-add" aria-haspopup="dialog" aria-label="Add a block" title="Add a block"><span class="rail-add-plus" aria-hidden="true">+</span><span class="rail-add-label" aria-hidden="true">Add</span></button>
     </nav>
     <div class="canvas-main">
       <div class="canvas-bar">

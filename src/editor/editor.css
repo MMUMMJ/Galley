@@ -726,7 +726,16 @@ fieldset.field legend { padding: 0 4px; }
 .rail-item:hover, .rail-add:hover { border-color: var(--accent); }
 .rail-item.is-selected { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .rail-item.needs-work::after { content: ""; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; background: #e0a100; border: 2px solid var(--surface); }
-.rail-add { border-style: dashed; color: var(--accent); font-size: 1.25rem; font-weight: 400; }
+/* Add: solid and larger than the block numbers, so it is hard to miss. */
+.rail-add {
+  flex-shrink: 0; width: 44px; height: 48px; margin-top: 4px; gap: 1px; align-content: center;
+  position: sticky; bottom: 0; right: 0; z-index: 1; /* stays in view however long the story */
+  border-color: var(--accent); background: var(--accent); color: var(--accent-text);
+  box-shadow: 0 0 0 6px var(--surface), 0 2px 6px 6px var(--surface); /* block numbers scroll under it */
+}
+.rail-add:hover { background: color-mix(in srgb, var(--accent) 85%, #000); }
+.rail-add-plus { font: 400 1.6rem/0.8 system-ui, sans-serif; }
+.rail-add-label { font: 700 0.6875rem/1 system-ui, sans-serif; letter-spacing: 0.02em; }
 
 .canvas-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface); }
 .canvas-bar .btn-slim[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
@@ -752,8 +761,8 @@ fieldset.field legend { padding: 0 4px; }
 .canvas-tools [data-act="settings"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .canvas-insert {
   position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); pointer-events: auto;
-  min-height: 28px; padding: 0 12px; border: 1px solid var(--accent); border-radius: 99px;
-  background: var(--surface); color: var(--accent); font: 700 0.8125rem/1 system-ui, sans-serif; cursor: pointer;
+  min-height: 36px; padding: 0 18px; border: 1px solid var(--accent); border-radius: 99px;
+  background: var(--accent); color: var(--accent-text); font: 700 0.9375rem/1 system-ui, sans-serif; cursor: pointer;
   box-shadow: 0 2px 10px rgb(0 0 0 / 0.15);
 }
 .canvas-insert::before, .canvas-insert::after { content: ""; position: absolute; top: 50%; width: 40vw; max-width: 340px; border-top: 2px dashed var(--accent); }

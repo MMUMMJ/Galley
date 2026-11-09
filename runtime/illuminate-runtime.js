@@ -425,7 +425,7 @@
 
     embed(b, d, ctx) {
       const url = safeUrl(d.url);
-      if (!/^https?:\/\//i.test(url)) return placeholder(b, ctx, 'Add a web address to this embed');
+      if (!/^https?:\/\//i.test(url)) return placeholder(b, ctx, 'Embed: paste a YouTube, Vimeo, Spotify or web link in Settings');
       return embedFigure(url, ctx, {
         id: b.id, cls: widthClass(d.width), title: str(d.title), description: str(d.description), shot: d.screenshot,
       });
