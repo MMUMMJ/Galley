@@ -15,6 +15,7 @@ export function articlePatcher() {
     for (const { name } of Array.from(live.attributes)) if (!next.hasAttribute(name)) live.removeAttribute(name);
     for (const { name, value } of Array.from(next.attributes)) if (live.getAttribute(name) !== value) live.setAttribute(name, value);
   }
+  let keep = null; // an element being typed in on the canvas: its block is left alone
   function patch(liveParent, nextParent) {
     const live = Array.from(liveParent.children);
     const next = Array.from(nextParent.children);
@@ -31,6 +32,8 @@ export function articlePatcher() {
       if (isPart(el) && isPart(n)) {
         patch(el, n);
         source.set(el, html);
+      } else if (keep && el.contains(keep)) {
+        // Redrawn when the typing ends (see forget).
       } else {
         el.replaceWith(n);
         remember(n);
@@ -38,7 +41,9 @@ export function articlePatcher() {
     });
   }
   // root: the element that holds the article; html: renderArticle()'s output.
-  return function draw(root, html) {
+  // keepEl: leave the block holding this element as it is (the canvas, while a student types in it).
+  function draw(root, html, keepEl = null) {
+    keep = keepEl;
     const doc = root.ownerDocument;
     const fresh = doc.createElement('template');
     fresh.innerHTML = html;
@@ -51,5 +56,10 @@ export function articlePatcher() {
       root.replaceChildren(...(next ? [next] : []));
       if (next) remember(next);
     }
+  }
+  // The next draw redraws el's block even if its HTML hasn't changed (it was edited by hand).
+  draw.forget = (el) => {
+    for (let n = el; n; n = n.parentElement) source.delete(n);
   };
+  return draw;
 }

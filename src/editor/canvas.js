@@ -1,6 +1,8 @@
 // The story canvas: the story as readers will see it, with editing tools laid over it.
 //   - A rail of numbered blocks on the left (arrow keys move between them).
-//   - Click a block to select it; its toolbar (Settings, Up, Down, Duplicate, Delete) sits on it.
+//   - Click a block to select it; its toolbar (Settings, Edit text, Up, Down, Duplicate, Delete) sits on it.
+//   - Click a piece of text (headline, paragraphs, quote, number…) to type straight onto the page
+//     (canvas-text.js).
 //   - "+ Add" appears between blocks on hover and opens the illustrated block picker.
 //   - Settings open the usual Write / Look / Notes inspector as a sheet from the right.
 // The page is drawn by the runtime without enhance(), so nothing moves or hides while editing:
@@ -11,11 +13,12 @@ import { blockIssues } from '../packs.js';
 import { blockOps } from './block-ops.js';
 import { openBlockPicker } from './block-picker.js';
 import { articlePatcher } from './article-patch.js';
+import { canvasText } from './canvas-text.js';
 import { esc, prefersReducedMotion } from './dom.js';
 
 const FOCUSABLE = 'a[href], button, input, select, textarea, summary, video, audio, iframe, [tabindex]';
 
-export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, announce, toast }) {
+export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, importFiles, announce, toast }) {
   section.innerHTML = `
     <h2 class="sr-only" id="canvas-heading">Story canvas</h2>
     <nav class="canvas-rail" aria-label="Blocks">
@@ -37,6 +40,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, a
           <div class="canvas-tools" role="toolbar" hidden>
             <span class="canvas-tools-name"></span>
             <button type="button" class="btn-slim" data-act="settings">Settings</button>
+            <button type="button" class="btn-slim" data-act="text">Edit text</button>
             <button type="button" class="btn-slim" data-act="up">Up</button>
             <button type="button" class="btn-slim" data-act="down">Down</button>
             <button type="button" class="btn-slim" data-act="dup">Duplicate</button>
@@ -97,10 +101,18 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, a
   function render() {
     const R = window.Illuminate;
     if (!R) return;
-    const html = R.renderArticle(store.story, { assetUrl, mode: 'preview' });
+    const html = R.renderArticle(store.story, { assetUrl, mode: 'preview', editable: true });
     if (html !== lastHtml) {
-      draw(page, html);
+      draw(page, html, text.current);
       lastHtml = html;
+      // Rarely the typing's block is redrawn anyway (a part's header gains or loses its title):
+      // carry on in the same piece of text.
+      if (text.current && !text.current.isConnected) {
+        const { blockId, field } = text;
+        text.stop('switch', { save: false });
+        const again = editableIn(elOf(blockId === STORY_DETAILS ? 'il-top' : blockId), field);
+        if (again) text.start(again);
+      }
       const scheme = R.SCHEMES[store.story.meta.theme];
       page.style.background = scheme ? scheme.bg : '';
       // The page is for looking at and clicking, not tabbing through: the rail and toolbar do that.
@@ -142,8 +154,11 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, a
   function place() {
     const id = store.selected;
     const el = isBlock(id) ? elOf(id) : null;
+    page.querySelectorAll('.canvas-sel').forEach((x) => { if (x !== el) x.classList.remove('canvas-sel'); });
+    el?.classList.add('canvas-sel'); // shows the block's optional empty text (kicker, byline…)
     frame.hidden = !el;
-    tools.hidden = !isBlock(id);
+    tools.hidden = !isBlock(id) || Boolean(text.current);
+    text.place();
     if (!isBlock(id)) return;
     const i = ops.indexOf(id);
     const name = `Block ${i + 1}, ${blockLabel(blocks()[i].type)}`;
@@ -156,6 +171,8 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, a
     tools.querySelector('[data-act="dup"]').setAttribute('aria-label', `Duplicate ${name}`);
     tools.querySelector('[data-act="del"]').setAttribute('aria-label', `Delete ${name}`);
     tools.querySelector('[data-act="settings"]').setAttribute('aria-label', `Settings for ${name}`);
+    tools.querySelector('[data-act="text"]').hidden = !editableIn(el);
+    tools.querySelector('[data-act="text"]').setAttribute('aria-label', `Edit the text of ${name}`);
     if (!el) { tools.style.top = `${scroller.scrollTop + 8}px`; tools.style.left = '8px'; return; }
     const box = boxOf(el);
     setBox(frame, box);
@@ -172,13 +189,55 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, a
 
   // ---------------------------------------------------------------- pointer: hover, select, insert
   // The block a page element belongs to (inner elements such as a header's title have ids too).
-  function blockIdFrom(target) {
+  function blockFrom(target) {
     for (let el = target.closest('[id]'); el && page.contains(el); el = el.parentElement?.closest('[id]')) {
-      if (el.id === 'il-top') return STORY_DETAILS;
-      if (isBlock(el.id)) return el.id;
+      if (el.id === 'il-top') return { id: STORY_DETAILS, type: 'header', meta: true, el };
+      const b = blocks().find((x) => x.id === el.id);
+      if (b) return { id: b.id, type: b.type, el };
     }
     return null;
   }
+  const blockIdFrom = (target) => blockFrom(target)?.id || null;
+  // A block's first piece of text, or the one for a field.
+  const editableIn = (el, field) => {
+    if (!el) return null;
+    const sel = field ? `[data-il-edit="${field}"]` : '[data-il-edit]';
+    return el.matches(sel) ? el : el.querySelector(sel);
+  };
+
+  // ---------------------------------------------------------------- typing on the page
+  const text = canvasText({
+    page, holder: section.querySelector('.canvas-chrome'), scroller, boxOf, blockOf: blockFrom, store, assetUrl, importFiles, announce,
+    onEnd(how, blockId, el) {
+      if (how === 'switch') return;
+      draw.forget(el);
+      lastHtml = '';
+      render();
+      if (how === 'escape' || how === 'done') tools.querySelector('[data-act="text"]:not([hidden])')?.focus();
+      else if (how === 'tab-out') tools.querySelector('[data-act="settings"]')?.focus();
+      else if (how === 'back-out') railButton(blockId)?.focus();
+    },
+    openSettings: (blockId) => openSheet(railButton(blockId) || railAdd),
+    onStart: () => place(),
+  });
+  // Pressing on a piece of text starts typing there, with the cursor where it was pressed.
+  page.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    const target = e.target.closest('[data-il-edit]');
+    if (!target || target === text.current) return; // in the text being typed: the browser places the cursor
+    const info = blockFrom(target);
+    if (!info) return;
+    e.preventDefault();
+    const { clientX: x, clientY: y } = e;
+    let el = target;
+    if (text.current && text.blockId !== info.id) {
+      text.stop('away'); // redraws the other block, which can move this one
+      el = document.elementFromPoint(x, y)?.closest('[data-il-edit]');
+      if (!el || !blockFrom(el)) return;
+    }
+    store.select(info.id, 'canvas');
+    text.start(el, { x, y });
+  });
 
   let insertAt = -1;
   function showInsert(y) {
@@ -213,13 +272,18 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, a
 
   page.addEventListener('click', (e) => {
     // Links and buttons in the story don't go anywhere while editing.
-    if (e.target.closest('a, button, summary')) e.preventDefault();
-    const id = blockIdFrom(e.target);
+    if (e.target.closest('a, button, summary') && !e.target.closest('.rte-img-tools')) e.preventDefault();
+    if (e.target.closest('[data-il-edit]')) return; // typing (see mousedown)
+    // Finishing the typing may have redrawn the block that was clicked.
+    const target = e.target.isConnected ? e.target : document.elementFromPoint(e.clientX, e.clientY);
+    if (!target || !page.contains(target)) return;
+    const id = blockIdFrom(target);
     if (!id) return;
     store.select(id, 'canvas');
-    if (id === STORY_DETAILS) openSheet(e.target);
+    if (id === STORY_DETAILS) openSheet(target);
   });
   page.addEventListener('dblclick', (e) => {
+    if (e.target.closest('[data-il-edit]')) return; // double-click in text selects a word
     const id = blockIdFrom(e.target);
     if (id) { store.select(id, 'canvas'); openSheet(railButton(id)); }
   });
@@ -248,6 +312,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, a
     if (!btn || !isBlock(id)) return;
     const act = btn.dataset.act;
     if (act === 'settings') openSheet(btn);
+    else if (act === 'text') { const el = editableIn(elOf(id)); if (el) { scrollToSelected(); text.start(el); } }
     else if (act === 'up' || act === 'down') {
       ops.moveTo(id, ops.indexOf(id) + (act === 'up' ? -1 : 1));
       render();
@@ -298,6 +363,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, a
   let timer = 0;
   store.subscribe((change) => {
     if (!active()) return;
+    if ((change.type === 'undo' || change.type === 'redo') && text.current) text.cancel();
     if (change.type === 'select') {
       render();
       if (change.from !== 'canvas' && change.from !== 'rail') scrollToSelected('center');
@@ -321,6 +387,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, a
       requestAnimationFrame(() => scrollToSelected('center'));
     },
     hide() {
+      text.stop('hide');
       app.classList.remove('sheet-open');
       sheet.removeAttribute('inert');
       page.replaceChildren();

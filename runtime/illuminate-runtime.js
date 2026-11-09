@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.14.0';
+  const RUNTIME_VERSION = '1.15.0';
 
   // ------------------------------------------------------------ helpers
 
@@ -282,6 +282,19 @@
     return ctx.preview ? `<div class="il-placeholder" id="${esc(b.id)}" role="note">${esc(message)}</div>` : '';
   }
 
+  // A piece of text in a block. On the editor's canvas (opts.editable) it is always drawn, even
+  // when empty, and marked with the field it comes from so the student can type straight onto
+  // the page: e = { field, mode: plain|inline|lines|blocks, ph: hint when empty, opt: only shown
+  // while the block is selected, meta: the text comes from Story details, base: heading level }.
+  // Exports and the preview never get these marks.
+  function slot(ctx, tag, attrs, value, html, e) {
+    if (!ctx.edit || !e) return value ? `<${tag}${attrs}>${html}</${tag}>` : '';
+    const marks = ` data-il-edit="${e.field}" data-il-mode="${e.mode}" data-il-ph="${esc(e.ph)}"`
+      + (e.meta ? ' data-il-meta' : '') + (e.base ? ` data-il-base="${e.base}"` : '')
+      + (value ? '' : ' data-il-empty' + (e.opt ? ' data-il-opt' : ''));
+    return `<${tag}${attrs}${marks}>${value ? html : ''}</${tag}>`;
+  }
+
   const BLOCKS = {
     header(b, d, ctx) {
       const m = ctx.meta;
@@ -302,12 +315,15 @@
           ? `<div class="il-header__media"><video muted loop playsinline preload="metadata" data-il-bg-video src="${esc(ctx.url(d.media))}"${label}${dims(a)}${mark(d.media)}></video></div>`
           : '';
       const credit = a && media ? [str(a.credit), str(a.licence)].filter(Boolean).join(' · ') : '';
+      // Text shown from Story details (the opening header, or a story with no header block).
+      const top = b.id === 'il-top';
+      const meta = (key) => top || (first && !str(d[key]) && Boolean(str(m[key])));
       return `<header class="il-header il-header--${variant}${media ? ' il-header--media' : ''}" id="${esc(b.id)}">${media}`
         + '<div class="il-header__text">'
-        + (str(d.kicker) ? `<p class="il-kicker">${esc(d.kicker)}</p>` : '')
-        + (title ? `<h${lvl} class="il-title" id="${esc(b.id)}-title">${esc(title)}</h${lvl}>` : '')
-        + (standfirst ? `<p class="il-standfirst">${inline(standfirst)}</p>` : '')
-        + (byline ? `<p class="il-byline">${esc(byline)}</p>` : '')
+        + slot(ctx, 'p', ' class="il-kicker"', str(d.kicker), esc(d.kicker), top ? null : { field: 'kicker', mode: 'plain', ph: 'Kicker', opt: true })
+        + slot(ctx, `h${lvl}`, ` class="il-title" id="${esc(b.id)}-title"`, title, esc(title), { field: 'title', mode: 'plain', ph: 'Headline', meta: meta('title') })
+        + slot(ctx, 'p', ' class="il-standfirst"', standfirst, inline(standfirst), { field: 'standfirst', mode: 'inline', ph: 'Standfirst: one or two sentences that sell the story', meta: meta('standfirst') })
+        + slot(ctx, 'p', ' class="il-byline"', byline, esc(byline), { field: 'byline', mode: 'plain', ph: 'By …', opt: true, meta: meta('byline') })
         + '</div>'
         + (credit ? `<p class="il-header__credit">${esc(credit)}</p>` : '')
         + '</header>';
@@ -315,7 +331,8 @@
 
     text(b, d, ctx) {
       const html = markdown(d.body, 2 + ctx.offset, inlineImage(ctx));
-      return html ? `<div class="il-text" id="${esc(b.id)}">${html}</div>` : placeholder(b, ctx, 'Empty text block');
+      if (!html && !ctx.edit) return placeholder(b, ctx, 'Empty text block');
+      return slot(ctx, 'div', ` class="il-text" id="${esc(b.id)}"`, html, html, { field: 'body', mode: 'blocks', ph: 'Start writing…', base: 2 + ctx.offset });
     },
 
     // Columns: separate columns written one by one, or one text flowing across columns like print.
@@ -327,10 +344,16 @@
       const lvl = 2 + ctx.offset;
       if (d.mode === 'flow') {
         const html = markdown(d.body, lvl, media);
-        return html ? `<div class="il-text il-columns il-columns--flow il-columns--${n} ${width}" id="${esc(b.id)}">${html}</div>`
-          : placeholder(b, ctx, 'Empty columns block');
+        if (!html && !ctx.edit) return placeholder(b, ctx, 'Empty columns block');
+        return slot(ctx, 'div', ` class="il-text il-columns il-columns--flow il-columns--${n} ${width}" id="${esc(b.id)}"`, html, html,
+          { field: 'body', mode: 'blocks', ph: 'Start writing: the text flows from one column into the next', base: lvl });
       }
       const cols = [d.col1, d.col2, d.col3].slice(0, n).map((t) => markdown(t, lvl, media));
+      if (ctx.edit) {
+        return `<div class="il-columns il-columns--${n} ${width}" id="${esc(b.id)}">`
+          + cols.map((c, i) => slot(ctx, 'div', ' class="il-text il-columns__col"', c, c, { field: `col${i + 1}`, mode: 'blocks', ph: `Column ${i + 1}`, base: lvl })).join('')
+          + '</div>';
+      }
       if (!cols.some(Boolean)) return placeholder(b, ctx, 'Empty columns block');
       return `<div class="il-columns il-columns--${n} ${width}" id="${esc(b.id)}">`
         + cols.map((c) => (c || ctx.preview ? `<div class="il-text il-columns__col">${c || '<p class="il-placeholder">This column is empty</p>'}</div>` : '')).join('')
@@ -339,6 +362,17 @@
 
     quote(b, d, ctx) {
       const lines = str(d.text).split(/\n+/).map((s) => s.trim()).filter(Boolean);
+      if (ctx.edit) {
+        const cite = str(d.cite).trim();
+        const role = str(d.role).trim();
+        return `<figure class="il-quote" id="${esc(b.id)}">`
+          + slot(ctx, 'blockquote', '', lines.length, lines.map((l) => `<p>${inline(l)}</p>`).join(''), { field: 'text', mode: 'lines', ph: 'Type the quote, without quotation marks' })
+          + '<figcaption class="il-quote__cite">'
+          + slot(ctx, 'span', '', cite, esc(cite), { field: 'cite', mode: 'plain', ph: 'Who said it' })
+          + `<span class="il-quote__sep">${cite && role ? ', ' : ' '}</span>`
+          + slot(ctx, 'span', '', role, esc(role), { field: 'role', mode: 'plain', ph: 'Their role', opt: true })
+          + '</figcaption></figure>';
+      }
       if (!lines.length) return placeholder(b, ctx, 'Empty quote');
       const who = [str(d.cite).trim(), str(d.role).trim()].filter(Boolean).map(esc).join(', ');
       return `<figure class="il-quote" id="${esc(b.id)}"><blockquote>${lines.map((l) => `<p>${inline(l)}</p>`).join('')}</blockquote>`
@@ -393,8 +427,13 @@
       });
     },
 
-    divider(b, d) {
+    divider(b, d, ctx) {
       const text = str(d.text).trim();
+      if (ctx.edit) {
+        const label = slot(ctx, 'p', ' class="il-divider__label"', text, inline(text), { field: 'text', mode: 'inline', ph: 'Add a label (optional)', opt: true });
+        return text ? `<div class="il-divider il-divider--label" id="${esc(b.id)}"><hr>${label}</div>`
+          : `<div class="il-divider-edit" id="${esc(b.id)}"><hr class="il-divider">${label}</div>`;
+      }
       if (!text) return `<hr class="il-divider" id="${esc(b.id)}">`;
       return `<div class="il-divider il-divider--label" id="${esc(b.id)}"><hr><p class="il-divider__label">${inline(text)}</p></div>`;
     },
@@ -507,6 +546,19 @@
     // Big number: always in the HTML at its final value; enhance() may count up to it.
     number(b, d, ctx) {
       const value = str(d.value).trim();
+      if (ctx.edit) {
+        const unitText = str(d.unit).trim();
+        return `<figure class="il-number" id="${esc(b.id)}"><p class="il-number__figure">`
+          + slot(ctx, 'span', ` class="il-number__value" data-il-count="${esc(value)}"`, value, esc(value), { field: 'value', mode: 'plain', ph: '0' })
+          + slot(ctx, 'span', ' class="il-number__unit"', unitText, esc(unitText), { field: 'unit', mode: 'plain', ph: 'unit', opt: true })
+          + '</p><figcaption>'
+          + slot(ctx, 'p', ' class="il-number__context"', str(d.context).trim(), inline(d.context), { field: 'context', mode: 'inline', ph: 'Why does this number matter?' })
+          + '<p class="il-number__source">Source: '
+          + slot(ctx, 'span', '', str(d.sourceName).trim(), esc(d.sourceName), { field: 'sourceName', mode: 'plain', ph: 'Who published the figure' })
+          + '<span class="il-number__sep">, </span>'
+          + slot(ctx, 'span', '', str(d.sourceRef).trim(), esc(d.sourceRef), { field: 'sourceRef', mode: 'plain', ph: 'link or reference', opt: true })
+          + '</p></figcaption></figure>';
+      }
       if (!value) return placeholder(b, ctx, 'Add a number');
       const unit = str(d.unit).trim();
       const name = str(d.sourceName).trim();
@@ -538,6 +590,7 @@
       meta: isObj(s.meta) ? s.meta : {},
       scheme: schemeOf(s.meta),
       preview: o.mode === 'preview',
+      edit: o.mode === 'preview' && o.editable === true, // the editor's canvas: see slot()
       inline: o.inline === true, // single-file export: assets are data: URLs
       headers: 0,
       offset: 0,

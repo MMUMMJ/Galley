@@ -7,7 +7,7 @@ export const SCHEMA_VERSION = 1;
 
 // Must match RUNTIME_VERSION in runtime/illuminate-runtime.js.
 // test/runtime.html flags any mismatch.
-export const RUNTIME_VERSION = '1.14.0';
+export const RUNTIME_VERSION = '1.15.0';
 
 export const BLOCK_TYPES = ['header', 'text', 'columns', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'scrollpoints', 'compare', 'number'];
 export const SCROLLY_LAYOUTS = ['side', 'overlay', 'column'];

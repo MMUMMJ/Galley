@@ -760,6 +760,41 @@ fieldset.field legend { padding: 0 4px; }
 .canvas-insert::before { right: calc(100% + 6px); }
 .canvas-insert::after { left: calc(100% + 6px); }
 
+/* Typing on the page. Text that can be typed into shows a dashed line on hover. */
+.canvas-page [data-il-edit], .canvas-page [data-il-edit] * { cursor: text; }
+.canvas-page [data-il-edit]:hover:not(.canvas-typing) { outline: 1px dashed color-mix(in srgb, var(--accent) 70%, transparent); outline-offset: 3px; }
+.canvas-page .canvas-typing { outline: 2px solid var(--accent); outline-offset: 4px; }
+.canvas-page .canvas-typing:focus { outline: 2px solid var(--accent); }
+/* Empty text shows what goes there. Optional pieces (kicker, byline, unit…) only while the block is selected. */
+.canvas-page [data-il-empty]::before { content: attr(data-il-ph); opacity: 0.5; font-style: italic; pointer-events: none; }
+.canvas-page .canvas-typing[data-il-empty] { position: relative; min-height: 1.2em; }
+.canvas-page span.canvas-typing[data-il-empty] { display: inline-block; min-width: 3ch; }
+.canvas-page .canvas-typing[data-il-empty]::before { position: absolute; left: 0; top: 0; white-space: nowrap; }
+.canvas-page [data-il-opt][data-il-empty]:not(.canvas-typing) { display: none; }
+.canvas-page .canvas-sel [data-il-opt][data-il-empty], .canvas-page .canvas-sel[data-il-opt][data-il-empty] { display: revert; }
+.canvas-page .il-number__sep:has(+ [data-il-empty]) { display: none; }
+.canvas-page .canvas-sel .il-number__sep:has(+ [data-il-empty]) { display: inline; }
+.canvas-page .il-divider-edit .il-divider__label { margin: -2rem 0 2rem; text-align: center; }
+/* Media inside text being typed: as readers see them, with the small Left / Full / Right / Remove bar. */
+.canvas-page .rte-img.il-inline-img { padding: 0; border: 0; border-radius: 0; background: none; }
+.canvas-page .rte-img.il-inline-img:not(.il-inline-img--left):not(.il-inline-img--right) { margin: 1.5rem 0; }
+.canvas-page .rte-img.il-inline-img--left { margin: 0.35rem 1.25rem 1rem 0; }
+.canvas-page .rte-img.il-inline-img--right { margin: 0.35rem 0 1rem 1.25rem; }
+.canvas-page .rte-img img, .canvas-page .rte-img video { width: 100%; height: auto; object-fit: initial; border-radius: 0; }
+.canvas-page .rte-img figcaption { padding: 6px 0 0; font: 0.875rem/1.4 var(--il-sans, system-ui); color: inherit; opacity: 0.8; white-space: normal; }
+.canvas-page .rte-embed { margin: 1.5rem 0; color: var(--text); }
+/* The bar above the text being typed: what it is, formatting, Done. */
+.canvas-format {
+  position: absolute; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: calc(100% - 12px);
+  padding: 4px; pointer-events: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.16); font: 0.875rem/1.3 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text);
+}
+.canvas-format[hidden] { display: none; }
+.canvas-format-name { padding: 0 6px; font-size: 0.8125rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+.canvas-format .rte-tools { padding: 0; border: 0; border-radius: 0; background: none; }
+.canvas-format .rte-tools + .btn-slim { margin-left: 4px; }
+.canvas-format .rte-pop { top: calc(100% + 6px); left: 0; right: auto; width: min(30rem, calc(100vw - 32px)); }
+
 /* The settings sheet: the inspector, sliding in from the right. */
 .app-main.view-canvas > .panel-inspector {
   position: absolute; top: 0; right: 0; bottom: 0; z-index: 10; width: min(30rem, 100%);
@@ -768,7 +803,7 @@ fieldset.field legend { padding: 0 4px; }
 }
 .app-main.view-canvas.sheet-open > .panel-inspector { transform: none; visibility: visible; transition: transform 0.2s ease; }
 .sheet-close { display: none; }
-.app-main.view-canvas .sheet-close { display: inline-flex; position: sticky; top: 0; float: right; z-index: 2; margin: -4px -4px 0 8px; }
+.app-main.view-canvas .sheet-close { display: inline-flex; position: sticky; top: 0; float: right; z-index: 5; /* above the sticky block title */ margin: -4px -4px 0 8px; }
 .app-main.view-canvas > .checks-panel { position: absolute; top: 0; right: 0; bottom: 0; z-index: 12; width: min(28rem, 100%); border-radius: 0; }
 @media (prefers-reduced-motion: reduce) { .app-main.view-canvas > .panel-inspector { transition: none; } }
 /* Wide screens: the story makes room for the open sheet instead of hiding under it. */
