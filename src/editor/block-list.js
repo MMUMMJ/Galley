@@ -1,7 +1,6 @@
 // The block list: select, add, move, duplicate and delete blocks.
 // Keyboard: arrow keys move between blocks; Alt + arrow moves the selected block.
 // Only the selected block's buttons are in the Tab order, so Tab reaches the inspector quickly.
-import { createBlock, newId } from '../model.js';
 import { BLOCKS, blockLabel } from '../blocks/index.js';
 import { esc, preserveFocus, prefersReducedMotion } from './dom.js';
 import { enableDrag } from './drag.js';
@@ -9,6 +8,7 @@ import { STORY_DETAILS, REFLECTION } from '../store.js';
 import { getPack, blockIssues, showpieceCount } from '../packs.js';
 import { effectBadge } from './effects.js';
 import { openBlockPicker } from './block-picker.js';
+import { blockOps } from './block-ops.js';
 
 export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   panel.innerHTML = `
@@ -32,9 +32,9 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
   const empty = panel.querySelector('.panel-empty');
   const addButton = panel.querySelector('[data-focus="add"]');
 
+  const ops = blockOps(store, { announce, toast, from: 'list' });
   const blocks = () => store.story.blocks;
-  const indexOf = (id) => blocks().findIndex((b) => b.id === id);
-  const labelOf = (id) => blockLabel(blocks()[indexOf(id)]?.type);
+  const { indexOf, labelOf } = ops;
   const focusKey = (key) => list.querySelector(`[data-focus="${CSS.escape(key)}"]`)?.focus();
 
   // Small word tags after the summary: what still needs doing, movement, and a band.
@@ -123,51 +123,14 @@ export function mountBlockList(panel, store, { announce, toast, onAdded }) {
     }).join('');
   }
 
-  function moveTo(id, to) {
-    const from = indexOf(id);
-    if (from < 0 || to < 0 || to >= blocks().length || to === from) return;
-    store.update((s) => {
-      const [b] = s.blocks.splice(from, 1);
-      s.blocks.splice(to, 0, b);
-    }, { select: id, from: 'list' });
-    announce(`${labelOf(id)} block moved to position ${to + 1} of ${blocks().length}.`);
-  }
-
-  function duplicate(id) {
-    const i = indexOf(id);
-    const copy = { ...structuredClone(blocks()[i]), id: newId('b') };
-    store.update((s) => { s.blocks.splice(i + 1, 0, copy); }, { select: copy.id, from: 'list' });
-    announce(`${labelOf(id)} block duplicated. The copy is block ${i + 2}.`);
-    focusKey(`sel:${copy.id}`);
-  }
-
-  function remove(id) {
-    const i = indexOf(id);
-    const label = labelOf(id);
-    const all = blocks();
-    const neighbour = all[i + 1]?.id || all[i - 1]?.id || null;
-    store.update((s) => { s.blocks.splice(i, 1); }, { select: neighbour, from: 'list' });
-    toast(`${label} block deleted.`, { action: 'Undo', onAction: () => store.undo() });
+  const moveTo = (id, to) => ops.moveTo(id, to);
+  const duplicate = (id) => focusKey(`sel:${ops.duplicate(id)}`);
+  const remove = (id) => {
+    const neighbour = ops.remove(id);
     if (neighbour) focusKey(`sel:${neighbour}`); else addButton.focus();
-  }
-
-  function add(type) {
-    const block = createBlock(type);
-    const i = indexOf(store.selected);
-    const at = store.selected === STORY_DETAILS || store.selected === REFLECTION ? 0 : i < 0 ? blocks().length : i + 1;
-    store.update((s) => { s.blocks.splice(at, 0, block); }, { select: block.id, from: 'list' });
-    announce(`${blockLabel(type)} block added at position ${at + 1}.`);
-    onAdded(block.id);
-  }
-
-  // Where a new block will go: after the selected block, at the top from Story details, else at the end.
-  function whereText() {
-    const i = indexOf(store.selected);
-    if (store.selected === STORY_DETAILS || store.selected === REFLECTION) return 'Adds at the start of your story.';
-    if (i < 0) return blocks().length ? 'Adds at the end of your story.' : 'Adds the first block of your story.';
-    return `Adds after block ${i + 1} (${blockLabel(blocks()[i].type)}).`;
-  }
-  addButton.addEventListener('click', () => openBlockPicker({ where: whereText(), onChoose: add, returnFocus: addButton }));
+  };
+  const add = (type) => onAdded(ops.add(type));
+  addButton.addEventListener('click', () => openBlockPicker({ where: ops.whereText(), onChoose: add, returnFocus: addButton }));
 
   const scrollInspectorOnNarrow = () => {
     if (window.matchMedia('(max-width: 760px)').matches) {

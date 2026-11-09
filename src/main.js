@@ -18,6 +18,8 @@ import { loadPack, setPack, applyPack, startStory } from './packs.js';
 import { mountFileMenu } from './editor/file-menu.js';
 import { mountChecks } from './editor/checks-panel.js';
 import { mountFolder } from './editor/folder-ui.js';
+import { mountCanvas } from './editor/canvas.js';
+import { getSettings, setSetting } from './settings.js';
 
 export const EDITOR_VERSION = '0.3.0';
 
@@ -108,6 +110,23 @@ async function boot() {
   mountBlockList($('blocks'), store, { announce, toast, onAdded: () => inspector.focusFirstField() });
   mountPreview($('preview-frame'), store, { assetUrl });
   mountChecks(store, { button: $('checks'), panel: $('checks-panel'), announce });
+
+  // Canvas (the story with tools on it) or Classic (blocks | settings | preview). Remembered per browser.
+  const canvas = mountCanvas($('canvas'), store, { app: $('app'), sheet: $('inspector'), inspector, assetUrl, announce, toast });
+  const viewButtons = document.querySelectorAll('[data-view]');
+  function setView(view, { save = true, say = false } = {}) {
+    const isCanvas = view !== 'classic';
+    $('app').classList.toggle('view-canvas', isCanvas);
+    $('canvas').hidden = !isCanvas;
+    viewButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === (isCanvas ? 'canvas' : 'classic'))));
+    if (isCanvas) canvas.show(); else canvas.hide();
+    if (save) setSetting('view', isCanvas ? 'canvas' : 'classic');
+    if (say) announce(isCanvas ? 'Canvas view: your story with editing tools on it.' : 'Classic view: blocks, settings and preview side by side.');
+  }
+  viewButtons.forEach((b) => b.addEventListener('click', () => setView(b.dataset.view, { say: true })));
+  // ?view=classic or ?view=canvas in the address (a tutor's link, say) wins over the remembered choice.
+  const asked = new URLSearchParams(location.search).get('view');
+  setView(asked === 'classic' || asked === 'canvas' ? asked : (await getSettings()).view === 'classic' ? 'classic' : 'canvas', { save: false });
   mountFileMenu(store, {
     fileBtn: $('file'), menu: $('file-menu'), openBtn: $('open'), getBlob, announce, toast,
     setStatus: (text) => { statusLine.textContent = text; },

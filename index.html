@@ -6,12 +6,14 @@
   <title>Illuminate</title>
   <meta name="description" content="Illuminate: a scrollytelling editor for journalism students.">
   <link rel="icon" href="data:,">
+  <!-- The reader's styles first (the canvas shows the story with them), then the editor's. -->
+  <link rel="stylesheet" href="runtime/illuminate.css">
   <link rel="stylesheet" href="src/editor/editor.css">
   <script src="runtime/illuminate-runtime.js"></script>
   <script type="module" src="src/main.js"></script>
 </head>
 <body>
-  <a class="skip-link" href="#inspector">Skip to inspector</a>
+  <a class="skip-link" href="#inspector">Skip to block settings</a>
 
   <header class="app-header">
     <h1 class="app-title">Illuminate</h1>
@@ -29,6 +31,10 @@
       <span class="toolbar-sep" aria-hidden="true"></span>
       <button type="button" class="btn" id="checks" aria-expanded="false" aria-controls="checks-panel">Checks <span class="count"></span></button>
       <button type="button" class="btn" id="preview-show" hidden>Show preview</button>
+      <div class="view-switch" role="group" aria-label="Editor view">
+        <button type="button" class="btn-slim" data-view="canvas" aria-pressed="true" title="Edit on the story itself">Canvas</button>
+        <button type="button" class="btn-slim" data-view="classic" aria-pressed="false" title="Blocks, settings and preview side by side">Classic</button>
+      </div>
     </div>
     <div class="status-lines">
       <p class="app-status" id="app-status">Loading editor…</p>
@@ -48,6 +54,8 @@
   </noscript>
 
   <main class="app-main" id="app">
+    <section class="canvas" id="canvas" aria-labelledby="canvas-heading" hidden></section>
+
     <section class="panel panel-blocks" id="blocks" aria-labelledby="blocks-heading">
       <h2 id="blocks-heading" class="panel-heading">Blocks</h2>
     </section>
