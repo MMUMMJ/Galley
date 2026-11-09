@@ -108,11 +108,11 @@ async function boot() {
   mountToolbar(store, { undoBtn: $('undo'), redoBtn: $('redo'), newBtn: $('new-story'), announce });
   const inspector = mountInspector($('inspector'), store, { importFiles, assetUrl, announce });
   mountBlockList($('blocks'), store, { announce, toast, onAdded: () => inspector.focusFirstField() });
-  mountPreview($('preview-frame'), store, { assetUrl });
+  const preview = mountPreview($('preview-frame'), store, { assetUrl });
   mountChecks(store, { button: $('checks'), panel: $('checks-panel'), announce });
 
   // Canvas (the story with tools on it) or Classic (blocks | settings | preview). Remembered per browser.
-  const canvas = mountCanvas($('canvas'), store, { app: $('app'), sheet: $('inspector'), inspector, assetUrl, importFiles, announce, toast });
+  const canvas = mountCanvas($('canvas'), store, { app: $('app'), sheet: $('inspector'), inspector, assetUrl, importFiles, announce, toast, playFrom: preview.playFrom });
   const viewButtons = document.querySelectorAll('[data-view]');
   function setView(view, { save = true, say = false } = {}) {
     const isCanvas = view !== 'classic';

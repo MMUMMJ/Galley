@@ -74,9 +74,18 @@ export function mountPreview(iframe, store, { assetUrl }) {
       });
     }
     w.focus();
-    renderPopout();
+    return renderPopout();
   }
-  popoutBtn?.addEventListener('click', openPopout);
+  popoutBtn?.addEventListener('click', () => openPopout());
+
+  // Play on the canvas: the preview tab, scrolled to just before a block so it runs as readers see it.
+  async function playFrom(blockId) {
+    await openPopout();
+    const el = popWin && !popWin.closed ? popWin.document.getElementById(blockId) : null;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + popWin.scrollY;
+    popWin.scrollTo({ top: Math.max(0, top - popWin.innerHeight * 0.15), behavior: 'auto' });
+  }
 
   async function renderPopout() {
     if (!popWin || popWin.closed) return;
@@ -146,4 +155,5 @@ export function mountPreview(iframe, store, { assetUrl }) {
     if (!timer) timer = setTimeout(() => { timer = 0; render(); }, 200);
   });
   render();
+  return { playFrom };
 }

@@ -14,11 +14,16 @@ import { blockOps } from './block-ops.js';
 import { openBlockPicker } from './block-picker.js';
 import { articlePatcher } from './article-patch.js';
 import { canvasText } from './canvas-text.js';
+import { canvasSheet } from './canvas-sheet.js';
+import { canvasMedia } from './canvas-media.js';
 import { esc, prefersReducedMotion } from './dom.js';
 
 const FOCUSABLE = 'a[href], button, input, select, textarea, summary, video, audio, iframe, [tabindex]';
 
-export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, importFiles, announce, toast }) {
+// Blocks whose effect only shows when the story moves: Play opens the preview at them.
+const SHOWPIECES = new Set(['scrolly', 'scrollpoints', 'number', 'compare']);
+
+export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, importFiles, announce, toast, playFrom }) {
   section.innerHTML = `
     <h2 class="sr-only" id="canvas-heading">Story canvas</h2>
     <nav class="canvas-rail" aria-label="Blocks">
@@ -41,6 +46,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
             <span class="canvas-tools-name"></span>
             <button type="button" class="btn-slim" data-act="settings">Settings</button>
             <button type="button" class="btn-slim" data-act="text">Edit text</button>
+            <button type="button" class="btn-slim canvas-play" data-act="play" title="Open the preview here, to see it move as readers will">Play <span aria-hidden="true">▶</span></button>
             <button type="button" class="btn-slim" data-act="up">Up</button>
             <button type="button" class="btn-slim" data-act="down">Down</button>
             <button type="button" class="btn-slim" data-act="dup">Duplicate</button>
@@ -69,32 +75,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   const smooth = () => (prefersReducedMotion() ? 'auto' : 'smooth');
 
   // ---------------------------------------------------------------- the sheet (inspector)
-  const closeBtn = document.createElement('button');
-  closeBtn.type = 'button';
-  closeBtn.className = 'btn sheet-close';
-  closeBtn.textContent = 'Close';
-  closeBtn.setAttribute('aria-label', 'Close settings');
-  sheet.prepend(closeBtn);
-  let returnTo = null;
-  const sheetOpen = () => app.classList.contains('sheet-open');
-  function openSheet(from, { focusField = false } = {}) {
-    returnTo = from || document.activeElement;
-    app.classList.add('sheet-open');
-    sheet.removeAttribute('inert');
-    if (focusField) inspector.focusFirstField();
-    else sheet.focus();
-  }
-  function closeSheet() {
-    if (!sheetOpen()) return;
-    app.classList.remove('sheet-open');
-    sheet.setAttribute('inert', '');
-    const back = returnTo && returnTo.isConnected ? returnTo : rail.querySelector('[tabindex="0"]');
-    back?.focus();
-  }
-  closeBtn.addEventListener('click', closeSheet);
-  sheet.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && active() && !e.defaultPrevented && !e.target.closest('dialog, .rte-pop')) { e.preventDefault(); closeSheet(); }
-  });
+  const { open: openSheet } = canvasSheet({ app, sheet, inspector, active, fallback: () => rail.querySelector('[tabindex="0"]') });
 
   // ---------------------------------------------------------------- drawing
   let lastHtml = '';
@@ -159,6 +140,8 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     frame.hidden = !el;
     tools.hidden = !isBlock(id) || Boolean(text.current);
     text.place();
+    if (media.blockId && media.blockId !== id) media.hide();
+    media.place();
     if (!isBlock(id)) return;
     const i = ops.indexOf(id);
     const name = `Block ${i + 1}, ${blockLabel(blocks()[i].type)}`;
@@ -173,6 +156,8 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     tools.querySelector('[data-act="settings"]').setAttribute('aria-label', `Settings for ${name}`);
     tools.querySelector('[data-act="text"]').hidden = !editableIn(el);
     tools.querySelector('[data-act="text"]').setAttribute('aria-label', `Edit the text of ${name}`);
+    tools.querySelector('[data-act="play"]').hidden = !SHOWPIECES.has(blocks()[i].type) || !playFrom;
+    tools.querySelector('[data-act="play"]').setAttribute('aria-label', `Play ${name} in the preview`);
     if (!el) { tools.style.top = `${scroller.scrollTop + 8}px`; tools.style.left = '8px'; return; }
     const box = boxOf(el);
     setBox(frame, box);
@@ -218,7 +203,12 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
       else if (how === 'back-out') railButton(blockId)?.focus();
     },
     openSettings: (blockId) => openSheet(railButton(blockId) || railAdd),
-    onStart: () => place(),
+    onStart: () => { media.hide(); place(); },
+  });
+  // Clicking an image or video: Replace, Alt text and Settings on it (canvas-media.js).
+  const media = canvasMedia({
+    page, holder: section.querySelector('.canvas-chrome'), scroller, boxOf, blockOf: blockFrom, store, importFiles, announce,
+    openSettings: (blockId) => openSheet(railButton(blockId) || railAdd),
   });
   // Pressing on a piece of text starts typing there, with the cursor where it was pressed.
   page.addEventListener('mousedown', (e) => {
@@ -260,7 +250,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   }
 
   scroller.addEventListener('mousemove', (e) => {
-    if (e.target.closest('.canvas-tools')) return;
+    if (e.target.closest('.canvas-tools, .canvas-media')) return;
     const s = scroller.getBoundingClientRect();
     if (!e.target.closest('.canvas-insert')) showInsert(e.clientY - s.top + scroller.scrollTop);
     const id = page.contains(e.target) ? blockIdFrom(e.target) : null;
@@ -280,7 +270,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     const id = blockIdFrom(target);
     if (!id) return;
     store.select(id, 'canvas');
-    if (id === STORY_DETAILS) openSheet(target);
+    if (id === STORY_DETAILS) { media.hide(); openSheet(target); } else media.click(e.clientX, e.clientY);
   });
   page.addEventListener('dblclick', (e) => {
     if (e.target.closest('[data-il-edit]')) return; // double-click in text selects a word
@@ -312,6 +302,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     if (!btn || !isBlock(id)) return;
     const act = btn.dataset.act;
     if (act === 'settings') openSheet(btn);
+    else if (act === 'play') playFrom(id);
     else if (act === 'text') { const el = editableIn(elOf(id)); if (el) { scrollToSelected(); text.start(el); } }
     else if (act === 'up' || act === 'down') {
       ops.moveTo(id, ops.indexOf(id) + (act === 'up' ? -1 : 1));
@@ -363,7 +354,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   let timer = 0;
   store.subscribe((change) => {
     if (!active()) return;
-    if ((change.type === 'undo' || change.type === 'redo') && text.current) text.cancel();
+    if (change.type === 'undo' || change.type === 'redo') { if (text.current) text.cancel(); media.hide(); }
     if (change.type === 'select') {
       render();
       if (change.from !== 'canvas' && change.from !== 'rail') scrollToSelected('center');
@@ -388,6 +379,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     },
     hide() {
       text.stop('hide');
+      media.hide();
       app.classList.remove('sheet-open');
       sheet.removeAttribute('inert');
       page.replaceChildren();
