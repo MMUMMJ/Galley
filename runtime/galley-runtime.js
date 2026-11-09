@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.16.0';
+  const RUNTIME_VERSION = '1.17.0';
 
   // ------------------------------------------------------------ helpers
 
@@ -460,9 +460,9 @@
     scrolly(b, d, ctx) {
       const steps = (Array.isArray(d.steps) ? d.steps : []).filter(isObj);
       if (!(ctx.edit && steps.length) && !steps.some((st) => str(st.text).trim() || ctx.asset(st.media))) return placeholder(b, ctx, 'Add steps to this scroll sequence');
-      // side: image beside the text; overlay: text cards over a full-screen image;
-      // column: one continuous column of text over full-screen images that crossfade.
-      const layout = d.layout === 'overlay' || d.layout === 'column' ? d.layout : 'side';
+      // side: image beside the text; overlay: text cards over a full-screen image.
+      // (One continuous column of text over images is its own block: textcolumn.)
+      const layout = d.layout === 'overlay' ? 'overlay' : 'side';
       const fallbackAlign = d.align === 'left' || d.align === 'right' ? d.align : 'center';
       const html = steps.map((st, i) => {
         const a = ctx.asset(st.media);
@@ -486,18 +486,41 @@
         if (!fig && !card) return '';
         return `<div class="il-scrolly__step${stepCls}" data-il-step="${i}">${fig}${card}</div>`;
       }).join('');
-      // Overlay: each step's card can sit on the left, centre or right.
-      // Text column: the column sits on the left, centre or right. Side by side: text on the right (default) or left.
-      const position = layout === 'column'
-        ? (d.align === 'left' || d.align === 'right' ? ` il-scrolly--align-${d.align}` : '')
-        : layout === 'side'
-          ? (d.textSide === 'left' ? ' il-scrolly--text-left' : '')
-          : '';
-      const backdrop = (layout === 'overlay' || layout === 'column') && (d.backdrop === 'vignette' || d.backdrop === 'none')
+      // Overlay: each step's card can sit on the left, centre or right. Side by side: text on the right (default) or left.
+      const position = layout === 'side' && d.textSide === 'left' ? ' il-scrolly--text-left' : '';
+      const backdrop = layout === 'overlay' && (d.backdrop === 'vignette' || d.backdrop === 'none')
         ? ` il-scrolly--backdrop-${d.backdrop}`
         : '';
       return `<section class="il-scrolly il-scrolly--${layout}${position}${backdrop}" id="${esc(b.id)}" data-il-scrolly aria-label="Scroll sequence">`
         + `<div class="il-scrolly__steps">${html}</div></section>`;
+    },
+
+    // Text column: one continuous column of text scrolls over full-screen images. The text and
+    // the images are separate: the images share the scroll evenly (two images: the first for the
+    // first half of the text, the second for the rest). Without JavaScript, and in print, the
+    // images come first and the text follows. Uses the scroll sequence's column styles.
+    textcolumn(b, d, ctx) {
+      const ids = (Array.isArray(d.images) ? d.images : []).filter((id) => ctx.asset(id));
+      const html = markdown(d.body, 2 + ctx.offset, inlineImage(ctx));
+      if (!ctx.edit && !html && !ids.length) return placeholder(b, ctx, 'Text column: add the text and the images in Settings');
+      const figs = ids.map((id) => {
+        const a = ctx.asset(id);
+        if (kindOf(a) === 'video') {
+          const label = str(a.alt) ? ` aria-label="${esc(a.alt)}"` : '';
+          return `<figure class="il-scrolly__media"><video muted loop playsinline preload="metadata" data-il-bg-video src="${esc(ctx.url(id))}"${label}${dims(a)}${mark(id)}></video>${figcaption(a)}</figure>`;
+        }
+        return kindOf(a) === 'image'
+          ? `<figure class="il-scrolly__media"><img src="${esc(ctx.url(id))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(id)}>${figcaption(a)}</figure>`
+          : '';
+      }).join('');
+      const images = figs ? `<div class="il-textcol__images">${figs}</div>`
+        : ctx.preview ? '<p class="il-placeholder il-textcol__none">No images yet: add them in Settings</p>' : '';
+      const card = slot(ctx, 'div', ' class="il-scrolly__card"', html, html,
+        { field: 'body', mode: 'blocks', ph: 'Write the text that scrolls over the images…', base: 2 + ctx.offset });
+      const position = d.align === 'left' || d.align === 'right' ? ` il-scrolly--align-${d.align}` : '';
+      const backdrop = d.backdrop === 'vignette' || d.backdrop === 'none' ? ` il-scrolly--backdrop-${d.backdrop}` : '';
+      return `<section class="il-scrolly il-scrolly--column il-textcol${position}${backdrop}" id="${esc(b.id)}" data-il-textcol aria-label="Text over images">`
+        + `${images}<div class="il-scrolly__steps"><div class="il-scrolly__step">${card || '<div class="il-scrolly__card"></div>'}</div></div></section>`;
     },
 
     // Scrollpoints: one image stays on screen and zooms/pans to highlighted regions as steps scroll past.
@@ -642,7 +665,7 @@
   // their reflection answers, after the story and clearly marked as not part of it.
   const TYPE_LABELS = {
     header: 'Header', text: 'Text', columns: 'Columns', quote: 'Quote', media: 'Media', gallery: 'Gallery', embed: 'Embed',
-    divider: 'Divider', references: 'References', scrolly: 'Scroll sequence', scrollpoints: 'Scrollpoints', compare: 'Before/after slider', number: 'Big number',
+    divider: 'Divider', references: 'References', scrolly: 'Scroll sequence', textcolumn: 'Text column', scrollpoints: 'Scrollpoints', compare: 'Before/after slider', number: 'Big number',
   };
   function appendix(blocks, reflection) {
     const notes = blocks.map((b, i) => {
@@ -921,6 +944,60 @@
     steps.forEach((st) => io.observe(st));
   }
 
+  // Text column: the images share the text evenly. Which one shows depends on how far the
+  // middle of the screen has got through the text: with three images, the first third of the
+  // text has the first image, and so on.
+  function setupTextColumn(section, doc) {
+    const win = doc.defaultView;
+    if (!win || typeof win.IntersectionObserver !== 'function') return;
+    const figs = Array.from(section.querySelectorAll('.il-textcol__images > .il-scrolly__media'));
+    const text = section.querySelector('.il-scrolly__step');
+    if (!figs.length || !text) return;
+    const panel = doc.createElement('div');
+    panel.className = 'il-scrolly__panel';
+    const frames = figs.map((fig) => {
+      const frame = fig.cloneNode(true);
+      frame.className = 'il-scrolly__frame';
+      frame.setAttribute('aria-hidden', 'true'); // the figure in the text column's list is the accessible copy
+      panel.appendChild(frame);
+      return frame;
+    });
+    section.insertBefore(panel, section.firstChild);
+    section.classList.add('is-enhanced');
+    const motionOk = !reducedMotion(doc);
+    let current = -1;
+    const show = (i) => {
+      if (i === current) return;
+      current = i;
+      frames.forEach((fr, j) => {
+        fr.classList.toggle('is-active', j === i);
+        const vid = fr.querySelector('video');
+        if (vid) {
+          if (j === i && motionOk) vid.play?.().catch(() => {});
+          else vid.pause?.();
+        }
+      });
+    };
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const r = text.getBoundingClientRect();
+      const through = (win.innerHeight / 2 - r.top) / Math.max(1, r.height);
+      show(Math.max(0, Math.min(frames.length - 1, Math.floor(through * frames.length))));
+    };
+    const onScroll = () => { if (!queued) { queued = true; win.requestAnimationFrame(update); } };
+    update();
+    if (frames.length < 2) return;
+    // Only listen while the column is on screen.
+    let on = false;
+    new win.IntersectionObserver((entries) => {
+      const visible = entries.some((e) => e.isIntersecting);
+      if (visible && !on) { win.addEventListener('scroll', onScroll, { passive: true }); win.addEventListener('resize', onScroll); onScroll(); }
+      if (!visible && on) { win.removeEventListener('scroll', onScroll); win.removeEventListener('resize', onScroll); }
+      on = visible;
+    }).observe(section);
+  }
+
   // Scrollpoints: one sticky image panel zooms and pans to each step's highlighted region.
   function setupScrollpoints(section, doc) {
     const win = doc.defaultView;
@@ -1159,6 +1236,7 @@
     fresh('[data-il-embed-src]').forEach((e) => setupEmbed(e, doc));
     fresh('video[src^="data:"], audio[src^="data:"]').forEach(dataToBlobUrl);
     fresh('[data-il-scrolly]').forEach((el) => setupScrolly(el, doc));
+    fresh('[data-il-textcol]').forEach((el) => setupTextColumn(el, doc));
     fresh('[data-il-scrollpoints]').forEach((el) => setupScrollpoints(el, doc));
     fresh('.il-header__media [data-il-bg-video]').forEach((v) => setupBgVideos([v], doc));
     fresh('[data-il-compare]').forEach((el) => setupCompare(el, doc));

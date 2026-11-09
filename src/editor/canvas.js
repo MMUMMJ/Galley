@@ -21,7 +21,7 @@ import { esc, prefersReducedMotion } from './dom.js';
 const FOCUSABLE = 'a[href], button, input, select, textarea, summary, video, audio, iframe, [tabindex]';
 
 // Blocks whose effect only shows when the story moves: Play opens the preview at them.
-const SHOWPIECES = new Set(['scrolly', 'scrollpoints', 'number', 'compare']);
+const SHOWPIECES = new Set(['scrolly', 'textcolumn', 'scrollpoints', 'number', 'compare']);
 
 export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, importFiles, announce, toast, playFrom }) {
   section.innerHTML = `

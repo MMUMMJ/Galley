@@ -21,6 +21,7 @@ export function textSources(story) {
     if (b.type === 'header') add(b, d.standfirst, 'body');
     if (b.type === 'quote') add(b, d.text, 'quote');
     if (b.type === 'scrolly' || b.type === 'scrollpoints') (d.steps || []).forEach((st, i) => add(b, st && st.text, 'body', { step: i }));
+    if (b.type === 'textcolumn') add(b, d.body, 'body');
     if (b.type === 'gallery' || b.type === 'compare') add(b, d.caption, 'caption');
     if (b.type === 'number') { add(b, d.context, 'caption'); add(b, d.sourceRef, 'url'); }
     if (b.type === 'embed') add(b, d.url, 'url');
@@ -42,10 +43,12 @@ export function assetUses(story) {
     if (b.type === 'gallery') (d.items || []).forEach((id) => use(b, id, 'gallery image'));
     if (b.type === 'embed') use(b, d.screenshot, 'screenshot');
     if (b.type === 'scrolly') (d.steps || []).forEach((st) => use(b, st && st.media, /^video\//.test(story.assets[st?.media]?.mime || '') ? 'scroll video' : 'scroll image'));
+    if (b.type === 'textcolumn') (d.images || []).forEach((id) => use(b, id, /^video\//.test(story.assets[id]?.mime || '') ? 'scroll video' : 'scroll image'));
     if (b.type === 'scrollpoints') use(b, d.asset, 'scrollpoints image');
     if (b.type === 'compare') { use(b, d.before?.asset, 'before image'); use(b, d.after?.asset, 'after image'); }
     // Images placed inside running text: ![name](asset:<id>)
     const texts = b.type === 'text' ? [d.body]
+      : b.type === 'textcolumn' ? [d.body]
       : b.type === 'columns' ? (d.mode === 'flow' ? [d.body] : [d.col1, d.col2, d.col3].slice(0, d.count === 3 ? 3 : 2))
         : (b.type === 'scrolly' || b.type === 'scrollpoints') ? (d.steps || []).map((st) => st && st.text) : [];
     for (const t of texts) {

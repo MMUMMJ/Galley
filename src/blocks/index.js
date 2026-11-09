@@ -10,12 +10,13 @@ import embed from './embed.js';
 import divider from './divider.js';
 import references from './references.js';
 import scrolly from './scrolly.js';
+import textcolumn from './textcolumn.js';
 import scrollpoints from './scrollpoints.js';
 import compare from './compare.js';
 import number from './number.js';
 
 export const BLOCKS = Object.fromEntries(
-  [header, text, columns, quote, media, gallery, embed, divider, references, scrolly, scrollpoints, compare, number].map((b) => [b.type, b]),
+  [header, text, columns, quote, media, gallery, embed, divider, references, scrolly, textcolumn, scrollpoints, compare, number].map((b) => [b.type, b]),
 );
 
 export const blockLabel = (type) => BLOCKS[type]?.label || type || 'Unknown';

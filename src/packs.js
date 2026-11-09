@@ -17,7 +17,7 @@ const DEFAULT_PACK = Object.freeze({
 let current = DEFAULT_PACK;
 
 export const getPack = () => current;
-export const SHOWPIECES = ['scrolly', 'scrollpoints', 'compare', 'number'];
+export const SHOWPIECES = ['scrolly', 'textcolumn', 'scrollpoints', 'compare', 'number'];
 
 export function isPackPath(path) {
   return typeof path === 'string' && PACK_PATH.test(path);

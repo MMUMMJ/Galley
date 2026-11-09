@@ -3,17 +3,17 @@
 // The story is data. Everything the editor and the runtime know about a story
 // lives in the object described here; nothing else is saved or exported.
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 // Must match RUNTIME_VERSION in runtime/galley-runtime.js.
 // test/runtime.html flags any mismatch.
-export const RUNTIME_VERSION = '1.16.0';
+export const RUNTIME_VERSION = '1.17.0';
 
-export const BLOCK_TYPES = ['header', 'text', 'columns', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'scrollpoints', 'compare', 'number'];
-export const SCROLLY_LAYOUTS = ['side', 'overlay', 'column'];
+export const BLOCK_TYPES = ['header', 'text', 'columns', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'textcolumn', 'scrollpoints', 'compare', 'number'];
+export const SCROLLY_LAYOUTS = ['side', 'overlay']; // the single text column is its own block (textcolumn) since schema 2
 export const COLUMN_MODES = ['separate', 'flow'];
 export const SCROLLY_BACKDROPS = ['solid', 'vignette', 'none'];
-export const SCROLLY_ALIGN = ['left', 'center', 'right']; // overlay and text column: where the text sits
+export const SCROLLY_ALIGN = ['left', 'center', 'right']; // overlay steps and text columns: where the text sits
 export const SCROLLY_TEXT_SIDE = ['right', 'left']; // side by side: which side the text is on
 export const EFFECTS = ['none', 'fade', 'rise', 'slide', 'zoom'];
 export const HEADER_VARIANTS = ['full', 'compact'];
@@ -43,6 +43,8 @@ const BLOCK_DATA = {
   references: () => ({ title: 'References', items: [], collapsed: false }),
   // Showpiece blocks (Phase 5)
   scrolly: () => ({ layout: 'side', align: 'center', textSide: 'right', backdrop: 'solid', steps: [{ media: null, text: '', align: 'center' }, { media: null, text: '', align: 'center' }] }),
+  // Text column: one long text scrolls over full-screen images, which share the scroll evenly.
+  textcolumn: () => ({ body: '', images: [], align: 'center', backdrop: 'solid' }),
   scrollpoints: () => ({
     asset: null,
     steps: [
@@ -103,7 +105,25 @@ export function createStory(now = new Date().toISOString()) {
 // MIGRATIONS[n] turns a version-n story into a version-(n+1) story.
 // Add one entry per schema change; never edit an old entry.
 const MIGRATIONS = {
-  // 1: (s) => { ...; s.schemaVersion = 2; return s; },
+  // 1 → 2: a scroll sequence with the "text column" layout becomes a Text column block. Its
+  // steps' text joins into one text and their images into the block's list of images.
+  1: (s) => {
+    for (const b of Array.isArray(s.blocks) ? s.blocks : []) {
+      if (!isObj(b) || b.type !== 'scrolly' || !isObj(b.data) || b.data.layout !== 'column') continue;
+      const steps = (Array.isArray(b.data.steps) ? b.data.steps : []).filter(isObj);
+      const images = [];
+      for (const st of steps) if (typeof st.media === 'string' && st.media && images[images.length - 1] !== st.media) images.push(st.media);
+      b.type = 'textcolumn';
+      b.data = {
+        body: steps.map((st) => str(st.text).trim()).filter(Boolean).join('\n\n'),
+        images,
+        align: SCROLLY_ALIGN.includes(b.data.align) ? b.data.align : 'center',
+        backdrop: SCROLLY_BACKDROPS.includes(b.data.backdrop) ? b.data.backdrop : 'solid',
+      };
+    }
+    s.schemaVersion = 2;
+    return s;
+  },
 };
 
 export function migrate(input) {
@@ -298,6 +318,14 @@ const BLOCK_RULES = {
       v.ref(step.media, `${p}.steps[${i}].media`);
       if (step.align !== undefined) v.oneOf(step.align, SCROLLY_ALIGN, `${p}.steps[${i}].align`);
     });
+  },
+  textcolumn(d, p, v) {
+    v.isString(d.body, `${p}.body`);
+    checkInlineImages(d.body, `${p}.body`, v);
+    if (!Array.isArray(d.images)) v.err(`${p}.images`, 'Must be a list of images.');
+    else d.images.forEach((id, i) => v.ref(id, `${p}.images[${i}]`));
+    v.oneOf(d.align, SCROLLY_ALIGN, `${p}.align`);
+    v.oneOf(d.backdrop, SCROLLY_BACKDROPS, `${p}.backdrop`);
   },
   scrollpoints(d, p, v) {
     v.ref(d.asset, `${p}.asset`);

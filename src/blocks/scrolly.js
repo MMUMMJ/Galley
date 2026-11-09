@@ -11,9 +11,7 @@ export default {
   defaults: () => blockDefaults('scrolly'),
   prompt: 'A scroll sequence controls the reader\'s pace. Each step should reveal one new thing. '
     + 'If a single image and a paragraph would do the job, use those instead.',
-  summary: (d) => `${(d.steps || []).length} steps · ${d.layout === 'column'
-    ? `text column${d.backdrop === 'vignette' ? ' (vignette)' : d.backdrop === 'none' ? ' (no box)' : ''}${d.align && d.align !== 'center' ? `, text ${d.align}` : ''}`
-    : d.layout === 'overlay'
+  summary: (d) => `${(d.steps || []).length} steps · ${d.layout === 'overlay'
       ? `overlay${d.backdrop === 'vignette' ? ' (vignette)' : d.backdrop === 'none' ? ' (no box)' : ''}`
       : `side by side${d.textSide === 'left' ? ', text left' : ''}`}`,
   editorUI(el, ctx) {
@@ -44,31 +42,23 @@ export default {
         options: [
           ['side', 'Side by side: image beside the text'],
           ['overlay', 'Overlay: text boxes scroll over a full-screen image'],
-          ['column', 'Text column: one column of text scrolls while images crossfade behind'],
         ],
+        hint: 'For one long column of text over images, use a Text column block instead.',
       }),
-      ctx.block.data.layout === 'column'
-        ? selectInput(ctx, 'align', {
+      ctx.block.data.layout === 'side'
+        ? selectInput(ctx, 'textSide', {
           label: 'Text position',
-          hint: 'Where the column of text sits over the images. On phones it always fills the width.',
-          options: [['left', 'Left'], ['center', 'Centre'], ['right', 'Right']],
+          hint: 'Which side of the screen the text is on. On phones the text scrolls over the image instead.',
+          options: [['right', 'Text on the right, images on the left'], ['left', 'Text on the left, images on the right']],
         })
-        : ctx.block.data.layout === 'side'
-          ? selectInput(ctx, 'textSide', {
-            label: 'Text position',
-            hint: 'Which side of the screen the text is on. On phones the text scrolls over the image instead.',
-            options: [['right', 'Text on the right, images on the left'], ['left', 'Text on the left, images on the right']],
-          })
-          : null,
-      ctx.block.data.layout === 'overlay' || ctx.block.data.layout === 'column'
+        : null,
+      ctx.block.data.layout === 'overlay'
         ? selectInput(ctx, 'backdrop', {
           label: 'Text backdrop',
           fallback: 'solid',
-          hint: ctx.block.data.layout === 'column'
-            ? 'Vignette fades softly from the edge behind the column into the image, like Shorthand.'
-            : 'Vignette puts a soft shaded gradient behind each step instead of a solid box.',
+          hint: 'Vignette puts a soft shaded gradient behind each step instead of a solid box.',
           options: [
-            ['solid', ctx.block.data.layout === 'column' ? 'Solid column' : 'Solid card'],
+            ['solid', 'Solid card'],
             ['vignette', 'Soft vignette (gradient fade)'],
             ['none', 'No box (text shadow only)'],
           ],

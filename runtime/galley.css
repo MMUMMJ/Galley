@@ -347,6 +347,12 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
 .il-scrolly--column.is-enhanced .il-scrolly__step:first-child { border-radius: 6px 6px 0 0; padding-top: 2.25rem; }
 .il-scrolly--column.is-enhanced .il-scrolly__step:last-child { min-height: 0; padding-bottom: 2.25rem; border-radius: 0 0 6px 6px; }
 .il-scrolly--column.is-enhanced .il-scrolly__card { padding: 0; background: none; box-shadow: none; border-radius: 0; }
+.il-scrolly--column.is-enhanced .il-scrolly__step:only-child { border-radius: 6px; } /* a text column block: one long step */
+/* Text column block: its images are listed first (the order for no JavaScript and print);
+   enhanced, they become the full-screen panel behind the text and the list is for screen readers. */
+.il-textcol__images { display: grid; gap: 1.25rem; width: min(var(--il-measure), 100% - 2 * var(--il-gutter)); margin: 0 auto 1.75rem; }
+.il-textcol__images .il-scrolly__media { margin: 0; }
+.il-textcol.is-enhanced .il-textcol__images { display: block; width: auto; margin: 0; }
 .il-scrolly--column.il-scrolly--align-left.is-enhanced .il-scrolly__step,
 .il-scrolly--column.il-scrolly--align-right.is-enhanced .il-scrolly__step { width: min(30rem, 100% - 2 * var(--il-gutter)); }
 

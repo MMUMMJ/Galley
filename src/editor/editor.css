@@ -535,6 +535,13 @@ fieldset.field legend { padding: 0 4px; }
 .pick-art--scrolly .b1 { background: linear-gradient(160deg, #2c3e66, #8aa0c8); }
 .pick-art--scrolly .b2 { background: linear-gradient(160deg, #5c3a2e, #e0a070); opacity: 0; }
 .pick-art--scrolly .a-step { left: 24%; width: 52%; top: 34%; height: 30%; border-radius: 4px; background: var(--surface); box-shadow: 0 2px 8px rgb(0 0 0 / 0.25); }
+/* text column: one long column of lines over images that change */
+.pick-art--textcolumn .a-bg { inset: 0; }
+.pick-art--textcolumn .b1 { background: linear-gradient(160deg, #3d2c5c, #c08aa0); }
+.pick-art--textcolumn .b2 { background: linear-gradient(160deg, #23463a, #8cc0a0); opacity: 0; }
+.pick-art--textcolumn .a-col { left: 32%; width: 36%; top: 8%; height: 170%; display: grid; align-content: start; gap: 9%; padding: 10% 9%; border-radius: 4px; background: var(--surface); box-shadow: 0 2px 8px rgb(0 0 0 / 0.25); }
+.pick-art--textcolumn .a-col b { display: block; height: 3px; border-radius: 2px; background: var(--border); }
+.pick-art--textcolumn .a-col b:nth-child(3n) { width: 70%; }
 /* scrollpoints */
 .pick-art--scrollpoints .a-bg { inset: 0; background: linear-gradient(160deg, #1f3330, #5b8c85); }
 .pick-art--scrollpoints .a-spot { left: 18%; top: 20%; width: 34%; height: 42%; border-radius: 4px; border: 2px solid #f0b429; box-shadow: 0 0 0 99px rgb(0 0 0 / 0.28); }
@@ -569,6 +576,8 @@ fieldset.field legend { padding: 0 4px; }
   .pick-art--embed .a-play { animation: art-pulse 1.8s ease-in-out infinite; }
   .pick-art--scrolly .b2 { animation: art-fade 4.8s ease-in-out infinite; }
   .pick-art--scrolly .a-step { animation: art-scroll 4.8s linear infinite; }
+  .pick-art--textcolumn .b2 { animation: art-fade 6s ease-in-out infinite; }
+  .pick-art--textcolumn .a-col { animation: art-col 6s linear infinite; }
   .pick-art--scrollpoints .a-spot { animation: art-spot 4.2s ease-in-out infinite; }
   .pick-art--scrollpoints .a-step { animation: art-scroll 4.2s linear infinite; }
   .pick-art--compare .a-after { animation: art-reveal 3.6s ease-in-out infinite; }
@@ -584,6 +593,7 @@ fieldset.field legend { padding: 0 4px; }
 @keyframes art-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
 @keyframes art-fade { 0%, 35% { opacity: 0; } 50%, 85% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes art-scroll { 0% { transform: translateY(140%); } 100% { transform: translateY(-190%); } }
+@keyframes art-col { 0% { transform: translateY(0); } 100% { transform: translateY(-58%); } }
 @keyframes art-spot { 0%, 100% { left: 14%; top: 18%; width: 32%; height: 40%; } 50% { left: 48%; top: 38%; width: 36%; height: 42%; } }
 @keyframes art-reveal { 0%, 100% { clip-path: inset(0 0 0 22%); } 50% { clip-path: inset(0 0 0 78%); } }
 @keyframes art-handle { 0%, 100% { left: 22%; } 50% { left: 78%; } }
@@ -754,7 +764,7 @@ fieldset.field legend { padding: 0 4px; }
 .canvas-hover { outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 2px; }
 .canvas-frame { outline: 3px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 15%, transparent); }
 .canvas-tools {
-  position: absolute; z-index: 3; display: flex; align-items: center; gap: 4px; padding: 4px; pointer-events: auto;
+  position: absolute; z-index: 3; display: flex; align-items: center; gap: 4px; padding: 4px; pointer-events: auto; white-space: nowrap;
   border: 1px solid var(--border); border-radius: 8px; background: var(--surface); box-shadow: 0 4px 16px rgb(0 0 0 / 0.16);
 }
 .canvas-tools-name { padding: 0 6px; font-size: 0.8125rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
@@ -839,6 +849,20 @@ fieldset.field legend { padding: 0 4px; }
 }
 .canvas-page .il-scrolly__media { margin: 0 0 12px; }
 .canvas-page .il-scrolly__media :is(img, video) { max-height: 280px; width: auto; max-width: 100%; border-radius: 6px; }
+/* Text column on the canvas: its images as a numbered strip, then the text as one card. */
+.canvas-page .il-textcol .il-scrolly__step::before { content: "Text"; }
+.canvas-page .il-textcol__images { display: flex; flex-wrap: wrap; gap: 8px; counter-reset: il-img; margin-top: 1.5rem; margin-bottom: 0; }
+.canvas-page .il-textcol__images::before {
+  content: "Images behind the text, in order: they share the text evenly"; flex-basis: 100%;
+  font: 700 0.75rem/1.3 system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: var(--il-muted);
+}
+.canvas-page .il-textcol__images .il-scrolly__media { position: relative; flex: 1 1 140px; max-width: 220px; counter-increment: il-img; }
+.canvas-page .il-textcol__images .il-scrolly__media::after {
+  content: counter(il-img); position: absolute; top: 6px; left: 6px; min-width: 22px; padding: 2px 6px; border-radius: 99px;
+  background: rgb(0 0 0 / 0.7); color: #fff; font: 700 0.75rem/1.2 system-ui, sans-serif; text-align: center;
+}
+.canvas-page .il-textcol__images :is(img, video) { display: block; width: 100%; height: 120px; object-fit: cover; border-radius: 6px; }
+.canvas-page .il-textcol__images figcaption { display: none; }
 .canvas-page .il-scrollpoints__media { width: min(var(--il-measure), 100% - 2 * var(--il-gutter)); margin: 0 auto; }
 
 /* The settings sheet: the inspector, sliding in from the right. */

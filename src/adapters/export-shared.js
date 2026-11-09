@@ -45,6 +45,7 @@ export function countWords(story) {
     if (b.type === 'header') parts.push(d.kicker, d.title, d.standfirst);
     if (b.type === 'quote') parts.push(d.text);
     if (b.type === 'scrolly' || b.type === 'scrollpoints') (d.steps || []).forEach((st) => parts.push(st && st.text));
+    if (b.type === 'textcolumn') parts.push(d.body);
   }
   const text = parts.filter(Boolean).join('\n')
     .replace(/^\s*!\[[^\]]*\]\((asset:|https?:)[^)]*\)\s*$/gm, ' ') // inline images, videos and embeds aren't words

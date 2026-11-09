@@ -8,7 +8,7 @@ import { h } from './dom.js';
 const GROUPS = [
   ['Writing', ['header', 'text', 'columns', 'quote', 'divider', 'references']],
   ['Media', ['media', 'gallery', 'embed']],
-  ['Showpiece', ['scrolly', 'scrollpoints', 'compare', 'number']],
+  ['Showpiece', ['scrolly', 'textcolumn', 'scrollpoints', 'compare', 'number']],
 ];
 
 // Little pictures made of plain elements; editor.css draws and animates them.
@@ -23,6 +23,7 @@ const ART = {
   gallery: '<i class="a-tile t1"></i><i class="a-tile t2"></i><i class="a-tile t3"></i><i class="a-tile t4"></i>',
   embed: '<i class="a-card"><i class="a-play"></i></i><i class="a-line l1"></i>',
   scrolly: '<i class="a-bg b1"></i><i class="a-bg b2"></i><i class="a-step"></i>',
+  textcolumn: '<i class="a-bg b1"></i><i class="a-bg b2"></i><i class="a-col"><b></b><b></b><b></b><b></b><b></b><b></b></i>',
   scrollpoints: '<i class="a-bg b1"></i><i class="a-spot"></i><i class="a-step"></i>',
   compare: '<i class="a-before"></i><i class="a-after"></i><i class="a-handle"></i>',
   number: '<i class="a-count"><i>0</i><i>480</i><i>960</i><i>1,240</i></i><i class="a-line l1"></i>',
