@@ -184,6 +184,8 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     return null;
   }
   const blockIdFrom = (target) => blockFrom(target)?.id || null;
+  // An image or video placed in text (not text being typed): clicking it opens the image tools.
+  const inTextMedia = (el) => Boolean(el.closest('figure.il-inline-img')?.querySelector('[data-il-asset]')) && !el.closest('.canvas-typing');
   // A block's first piece of text, or the one for a field.
   const editableIn = (el, field) => {
     if (!el) return null;
@@ -217,6 +219,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     if (e.button !== 0) return;
     const target = e.target.closest('[data-il-edit]');
     if (!target || target === text.current) return; // in the text being typed: the browser places the cursor
+    if (inTextMedia(e.target)) return; // an image in the text: its own tools (see click)
     const info = blockFrom(target);
     if (!info) return;
     e.preventDefault();
@@ -265,7 +268,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   page.addEventListener('click', (e) => {
     // Links and buttons in the story don't go anywhere while editing.
     if (e.target.closest('a, button, summary') && !e.target.closest('.rte-img-tools')) e.preventDefault();
-    if (e.target.closest('[data-il-edit]')) return; // typing (see mousedown)
+    if (e.target.closest('[data-il-edit]') && !inTextMedia(e.target)) return; // typing (see mousedown)
     // Finishing the typing may have redrawn the block that was clicked.
     const target = e.target.isConnected ? e.target : document.elementFromPoint(e.clientX, e.clientY);
     if (!target || !page.contains(target)) return;

@@ -853,11 +853,16 @@ fieldset.field legend { padding: 0 4px; }
 }
 .canvas-media-alt[hidden] { display: none; }
 .canvas-media-alt label { font-weight: 700; }
+.canvas-media-alt label:not(:first-child) { margin-top: 6px; }
+.canvas-media-alt input { width: 100%; box-sizing: border-box; font: inherit; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; }
 .canvas-media-alt .field-hint { margin: 0; }
 .canvas-media-alt textarea { width: 100%; font: inherit; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; resize: vertical; }
 .canvas-media-alt-row { display: flex; justify-content: flex-end; }
 .canvas-page [data-il-asset] { cursor: pointer; }
-.canvas-page [data-il-edit] [data-il-asset] { cursor: text; }
+.canvas-page [data-il-edit] figure.il-inline-img, .canvas-page [data-il-edit] figure.il-inline-img * { cursor: pointer; }
+.canvas-page .canvas-typing figure, .canvas-page .canvas-typing figure * { cursor: default; }
+.canvas-media .canvas-media-pos[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.canvas-media .canvas-media-pos[hidden] { display: none; }
 .canvas-tools .canvas-play { border-color: var(--accent); color: var(--accent); }
 
 /* Scroll steps on the canvas: numbered cards, one after another (the preview shows them moving). */

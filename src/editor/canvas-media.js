@@ -1,24 +1,28 @@
-// Images and videos on the canvas. Clicking one (outside text being typed) puts a small bar on it:
+// Images and videos on the canvas, wherever they are (in text too, unless it's being typed in).
+// Clicking one puts a small bar on it:
 //   Replace…  choose a new file; this block uses it instead (other blocks keep the old one).
-//   Alt text  write the description for readers who can't see it, right there.
-//   Settings  the block's settings, for the caption, credit, licence and the rest.
+//   Alt text  its alt text, caption and credit, right there.
+//   Left · Full · Right · Remove   for one placed in text.
+//   Settings  the block's settings, for the licence and the rest.
 //   ‹ ›       the block's other images (a scroll sequence, a text column, a gallery…).
 // From the keyboard: the block toolbar's Image button opens it; arrow keys move along it; Esc closes it.
 // The runtime marks every image and video with data-il-asset="<asset id>" (exports too: the
 // mark is harmless there).
 import { h } from './dom.js';
 import { ACCEPT, assetKind } from './fields.js';
+import { textPlace, setTextPos, removeFromText, swapInText } from './canvas-media-text.js';
 
 const ALT_HINT = 'Describe what the image shows, for readers who can\'t see it. This is not the caption.';
 
-// Every place in a block's data that holds exactly this asset id (media fields, not text).
+// Every place in a block's data that shows this asset: media fields, and images in its text.
 function swapIn(value, from, to) {
   if (Array.isArray(value)) return value.map((v) => swapIn(v, from, to));
   if (value && typeof value === 'object') {
     for (const k of Object.keys(value)) value[k] = swapIn(value[k], from, to);
     return value;
   }
-  return value === from ? to : value;
+  if (value === from) return to;
+  return typeof value === 'string' ? swapInText(value, from, to) : value;
 }
 
 // page, holder, scroller, boxOf, blockOf: as for canvasText. openSettings(blockId).
@@ -36,19 +40,29 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
   const altBox = h('textarea', { id: altId, rows: 3 });
   const altHint = h('p', { class: 'field-hint', id: `${altId}-hint` }, ALT_HINT);
   const altDone = h('button', { type: 'button', class: 'btn-slim' }, 'Done');
+  const capBox = h('textarea', { id: `${altId}-cap`, rows: 2 });
+  const creditBox = h('input', { id: `${altId}-credit`, type: 'text' });
   const altPop = h('div', { class: 'canvas-media-alt', hidden: true },
-    h('label', { for: altId }, 'Alt text'), altHint, altBox, h('div', { class: 'canvas-media-alt-row' }, altDone));
+    h('label', { for: altId }, 'Alt text'), altHint, altBox,
+    h('label', { for: capBox.id }, 'Caption'), h('p', { class: 'field-hint' }, 'Shown under it. Adds context the picture can\'t.'), capBox,
+    h('label', { for: creditBox.id }, 'Credit'), h('p', { class: 'field-hint' }, 'Who made it, e.g. "Photo: Sam Example".'), creditBox,
+    h('div', { class: 'canvas-media-alt-row' }, altDone));
   altBox.setAttribute('aria-describedby', altHint.id);
+  // For an image placed in text: where it sits, or take it out.
+  const posBtns = [['left', 'Left'], ['', 'Full'], ['right', 'Right']].map(([pos, label]) => h('button', {
+    type: 'button', class: 'btn-slim canvas-media-pos', 'data-pos': pos, 'aria-pressed': 'false', 'aria-label': `${label}: ${pos ? `float ${pos}, text wraps round it` : 'full width'}`,
+  }, label));
+  const removeBtn = h('button', { type: 'button', class: 'btn-slim btn-danger canvas-media-pos' }, 'Remove');
   const bar = h('div', { class: 'canvas-media', role: 'toolbar', hidden: true },
-    prevBtn, count, nextBtn, name, replaceBtn, altBtn, settingsBtn, closeBtn, input, altPop);
+    prevBtn, count, nextBtn, name, replaceBtn, altBtn, ...posBtns, removeBtn, settingsBtn, closeBtn, input, altPop);
   holder.append(bar);
 
-  let cur = null; // { assetId, blockId, nth: which of this block's copies of the file }
+  let cur = null; // { assetId, blockId, nth: which of this block's copies of the file, place: where it is in text }
   let session = 0;
   let returnTo = null; // where focus goes when the bar closes from the keyboard
 
-  // A block's images and videos, in page order (not the ones inside its text: typing has those).
-  const mediaIn = (blockEl) => [...blockEl.querySelectorAll('[data-il-asset]')].filter((e) => !e.closest('[data-il-edit]'));
+  // A block's images and videos, in page order (not ones in text being typed: typing has those).
+  const mediaIn = (blockEl) => [...blockEl.querySelectorAll('[data-il-asset]')].filter((e) => !e.closest('.canvas-typing'));
   const blockEl = () => (cur ? page.querySelector(`[id="${CSS.escape(cur.blockId)}"]`) : null);
 
   const asset = () => (cur ? store.story.assets[cur.assetId] : null);
@@ -64,8 +78,12 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
   function at(x, y) {
     for (const el of document.elementsFromPoint(x, y)) {
       if (!page.contains(el)) continue;
-      if (el.closest('[data-il-edit]')) return null;
-      if (el.matches('[data-il-asset]')) return el;
+      if (el.closest('.canvas-typing')) return null;
+      // An image in text: the picture, or its caption.
+      const fig = el.closest('figure.il-inline-img');
+      const media = el.matches('[data-il-asset]') ? el : fig?.querySelector('[data-il-asset]');
+      if (media) return media;
+      if (el.closest('[data-il-edit]')) return null; // the words: typing
     }
     return null;
   }
@@ -81,7 +99,9 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
     count.textContent = `${at + 1} of ${all.length}`;
     const id = el.dataset.ilAsset;
     const same = [...info.el.querySelectorAll(`[data-il-asset="${CSS.escape(id)}"]`)];
-    cur = { assetId: id, blockId: info.id, nth: Math.max(0, same.indexOf(el)) };
+    cur = { assetId: id, blockId: info.id, nth: Math.max(0, same.indexOf(el)), place: textPlace(el) };
+    posBtns.concat(removeBtn).forEach((b) => { b.hidden = !cur.place; });
+    if (cur.place) posBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pos === cur.place.pos)));
     const a = asset();
     const kind = assetKind(a) || 'image';
     name.textContent = a?.name || (kind === 'video' ? 'Video' : 'Image');
@@ -162,6 +182,8 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
     if (!cur) return;
     session++;
     altBox.value = asset()?.alt || '';
+    capBox.value = asset()?.caption || '';
+    creditBox.value = asset()?.credit || '';
     const kind = assetKind(asset()) || 'image';
     altPop.querySelector('label').textContent = kind === 'image' ? 'Alt text' : 'Description';
     altHint.textContent = kind === 'image' ? ALT_HINT : `Describe the ${kind} for readers who can't see or hear it.`;
@@ -181,10 +203,28 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
   }
   altBtn.addEventListener('click', () => (altPop.hidden ? openAlt() : closeAlt()));
   altDone.addEventListener('click', () => closeAlt());
-  altBox.addEventListener('input', () => {
-    if (!cur) return;
-    const id = cur.assetId;
-    store.update((s) => { if (s.assets[id]) s.assets[id].alt = altBox.value; }, { from: 'canvas-media', coalesce: `canvas-alt:${session}` });
+  // Alt text, caption and credit belong to the file, so they follow it into every block that uses it.
+  for (const [box, key] of [[altBox, 'alt'], [capBox, 'caption'], [creditBox, 'credit']]) {
+    box.addEventListener('input', () => {
+      if (!cur) return;
+      const id = cur.assetId;
+      store.update((s) => { if (s.assets[id]) s.assets[id][key] = box.value; }, { from: 'canvas-media', coalesce: `canvas-${key}:${session}` });
+    });
+  }
+  // In text: move it, or take it out (the file stays in the story's files).
+  posBtns.forEach((b) => b.addEventListener('click', () => {
+    if (!cur?.place) return;
+    setTextPos(store, cur.blockId, cur.place, cur.assetId, b.dataset.pos);
+    cur.place = { ...cur.place, pos: b.dataset.pos };
+    posBtns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    announce(b.dataset.pos ? `Moved to the ${b.dataset.pos}; the text wraps round it.` : 'Full width.');
+    requestAnimationFrame(() => place());
+  }));
+  removeBtn.addEventListener('click', () => {
+    if (!cur?.place) return;
+    removeFromText(store, cur.blockId, cur.place, cur.assetId);
+    announce('Removed from the text. The file stays in your story\'s files.');
+    close();
   });
   altBox.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); closeAlt(); }
