@@ -9,13 +9,14 @@
 // scroll sequences show their steps one after another, effects are off.
 import { STORY_DETAILS, REFLECTION } from '../store.js';
 import { BLOCKS, blockLabel } from '../blocks/index.js';
-import { blockIssues } from '../packs.js';
+import { blockIssues, getPack } from '../packs.js';
 import { blockOps } from './block-ops.js';
 import { openBlockPicker } from './block-picker.js';
 import { articlePatcher } from './article-patch.js';
 import { canvasText } from './canvas-text.js';
 import { canvasSheet } from './canvas-sheet.js';
 import { canvasMedia } from './canvas-media.js';
+import { labelToolbar, toolbarKeys } from './canvas-toolbar.js';
 import { esc, prefersReducedMotion } from './dom.js';
 
 const FOCUSABLE = 'a[href], button, input, select, textarea, summary, video, audio, iframe, [tabindex]';
@@ -35,9 +36,10 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
         <button type="button" class="btn-slim" data-open="${STORY_DETAILS}">Story details</button>
         <button type="button" class="btn-slim" data-open="${REFLECTION}">Reflection</button>
         <span class="canvas-bar-grow"></span>
+        <span class="canvas-pack" hidden></span>
         <button type="button" class="btn-slim" data-preview title="Open the story in a new tab, moving as readers will see it">Preview <span aria-hidden="true">↗</span></button>
       </div>
-      <div class="canvas-scroll">
+      <div class="canvas-scroll" tabindex="0" role="region" aria-label="Story canvas. Arrow keys scroll it.">
         <div class="canvas-page il-page"></div>
         <div class="canvas-chrome">
           <div class="canvas-hover" hidden></div>
@@ -46,11 +48,13 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
             <span class="canvas-tools-name"></span>
             <button type="button" class="btn-slim" data-act="settings">Settings</button>
             <button type="button" class="btn-slim" data-act="text">Edit text</button>
+            <button type="button" class="btn-slim" data-act="media">Image</button>
             <button type="button" class="btn-slim canvas-play" data-act="play" title="Open the preview here, to see it move as readers will">Play <span aria-hidden="true">▶</span></button>
             <button type="button" class="btn-slim" data-act="up">Up</button>
             <button type="button" class="btn-slim" data-act="down">Down</button>
             <button type="button" class="btn-slim" data-act="dup">Duplicate</button>
             <button type="button" class="btn-slim btn-danger" data-act="del">Delete</button>
+            <button type="button" class="btn-slim canvas-todo" data-act="todo" hidden></button>
           </div>
           <button type="button" class="canvas-insert" aria-haspopup="dialog" hidden>+ Add</button>
         </div>
@@ -65,7 +69,6 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   const hover = $('.canvas-hover');
   const frame = $('.canvas-frame');
   const tools = $('.canvas-tools');
-  const toolsName = $('.canvas-tools-name');
   const insertBtn = $('.canvas-insert');
   const ops = blockOps(store, { announce, toast, from: 'canvas' });
   const draw = articlePatcher();
@@ -116,6 +119,12 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     }).join('');
     $('[data-open="story-details"]').setAttribute('aria-pressed', String(sel === STORY_DETAILS));
     $('[data-open="reflection"]').setAttribute('aria-pressed', String(sel === REFLECTION));
+    // The course pack in use, if any (the Classic view shows it in its block list).
+    const pack = getPack();
+    const packEl = $('.canvas-pack');
+    packEl.hidden = !pack.path;
+    packEl.textContent = pack.name || '';
+    packEl.title = pack.path ? `Course pack: ${pack.name}. Its prompts, blocks and checks apply to this story.` : '';
   }
 
   // Where an element sits inside the scrolling canvas.
@@ -144,20 +153,12 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     media.place();
     if (!isBlock(id)) return;
     const i = ops.indexOf(id);
-    const name = `Block ${i + 1}, ${blockLabel(blocks()[i].type)}`;
-    tools.setAttribute('aria-label', name);
-    toolsName.textContent = `${i + 1} · ${blockLabel(blocks()[i].type)}`;
-    tools.querySelector('[data-act="up"]').disabled = i === 0;
-    tools.querySelector('[data-act="down"]').disabled = i === blocks().length - 1;
-    tools.querySelector('[data-act="up"]').setAttribute('aria-label', `Move ${name} up`);
-    tools.querySelector('[data-act="down"]').setAttribute('aria-label', `Move ${name} down`);
-    tools.querySelector('[data-act="dup"]').setAttribute('aria-label', `Duplicate ${name}`);
-    tools.querySelector('[data-act="del"]').setAttribute('aria-label', `Delete ${name}`);
-    tools.querySelector('[data-act="settings"]').setAttribute('aria-label', `Settings for ${name}`);
-    tools.querySelector('[data-act="text"]').hidden = !editableIn(el);
-    tools.querySelector('[data-act="text"]').setAttribute('aria-label', `Edit the text of ${name}`);
-    tools.querySelector('[data-act="play"]').hidden = !SHOWPIECES.has(blocks()[i].type) || !playFrom;
-    tools.querySelector('[data-act="play"]').setAttribute('aria-label', `Play ${name} in the preview`);
+    const b = blocks()[i];
+    labelToolbar(tools, {
+      index: i, count: blocks().length, label: blockLabel(b.type), el,
+      hasText: Boolean(editableIn(el)), hasMedia: media.has(el), playable: SHOWPIECES.has(b.type) && Boolean(playFrom),
+      todo: BLOCKS[b.type] ? blockIssues(b, store.story) : [],
+    });
     if (!el) { tools.style.top = `${scroller.scrollTop + 8}px`; tools.style.left = '8px'; return; }
     const box = boxOf(el);
     setBox(frame, box);
@@ -192,7 +193,8 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
 
   // ---------------------------------------------------------------- typing on the page
   const text = canvasText({
-    page, holder: section.querySelector('.canvas-chrome'), scroller, boxOf, blockOf: blockFrom, store, assetUrl, importFiles, announce,
+    page, holder: section.querySelector('.canvas-main'), dockOver: section.querySelector('.canvas-bar'),
+    scroller, boxOf, blockOf: blockFrom, store, assetUrl, importFiles, announce,
     onEnd(how, blockId, el) {
       if (how === 'switch') return;
       draw.forget(el);
@@ -301,7 +303,8 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     const id = store.selected;
     if (!btn || !isBlock(id)) return;
     const act = btn.dataset.act;
-    if (act === 'settings') openSheet(btn);
+    if (act === 'settings' || act === 'todo') openSheet(btn);
+    else if (act === 'media') media.openIn(elOf(id), btn);
     else if (act === 'play') playFrom(id);
     else if (act === 'text') { const el = editableIn(elOf(id)); if (el) { scrollToSelected(); text.start(el); } }
     else if (act === 'up' || act === 'down') {
@@ -317,6 +320,8 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
       (next ? railButton(next) : railAdd)?.focus();
     }
   });
+
+  toolbarKeys(tools);
 
   // ---------------------------------------------------------------- rail and bar
   rail.addEventListener('click', (e) => {

@@ -65,8 +65,9 @@ export function attachRichEditing(body, o) {
   // ---- toolbar
   const tools = [['bold', 'B', 'Bold', 'Ctrl/Cmd+B'], ['italic', 'I', 'Italic', 'Ctrl/Cmd+I'], ['link', 'Link', 'Link', 'Ctrl/Cmd+K']];
   // Short labels so the bar fits on one line; the full name is the button's accessible name and tooltip.
-  if (mode === 'blocks') tools.push(null, ['h2', 'H', 'Subheading'], ['h3', 'h', 'Smaller subheading'], null, ['ul', '• List', 'Bullet list'], ['ol', '1. List', 'Numbered list']);
-  if (images) tools.push(null, ['image', imageLabel, imageName]);
+  if (mode === 'blocks') tools.push(null, ['h2', 'H', 'Subheading'], ['h3', 'h', 'Smaller subheading'], null, ['ul', '• List', 'Bullet list'], ['ol', '1. List', '1. List: numbered list']);
+  // Spoken names start with the visible text, so voice control users can say what they see.
+  if (images) tools.push(null, ['image', imageLabel, imageName.startsWith(imageLabel) ? imageName : `${imageLabel}: ${imageName}`]);
   // A toolbar is one Tab stop; ← → move between its buttons (Home and End jump to the ends).
   const bar = h('div', { class: 'rte-tools', role: 'toolbar', 'aria-label': `Formatting for ${label}`, 'aria-controls': id },
     tools.map((t, i) => (t ? h('button', {

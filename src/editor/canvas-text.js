@@ -1,7 +1,7 @@
 // Typing straight onto the canvas. The runtime marks each piece of text with the field it comes
 // from (data-il-edit, see slot() in the runtime). Clicking one makes it editable where it is;
-// a small bar above it names the field and, for formatted text, offers the usual formatting
-// tools. Every keystroke is saved to the story, so the settings sheet, the preview and the
+// a bar docked over the top of the canvas names the field and, for formatted text, offers the
+// usual formatting tools. Docked there it never covers the text being typed or the lines around it. Every keystroke is saved to the story, so the settings sheet, the preview and the
 // checks keep up. The canvas leaves the block alone while it is being typed in and redraws it
 // when the typing ends.
 //   Enter (one-line text) or Tab: the next piece of text in the block. Shift+Tab: the one before.
@@ -33,13 +33,13 @@ function at(data, field) {
 
 let uid = 0;
 
-// page: the canvas page; holder: where the bar goes (laid over the page); boxOf(el): where an
-// element sits in the scrolling canvas; blockOf(el): { id, type, meta, el } for a marked element;
+// page: the canvas page; holder: where the bar goes (it covers dockOver, the canvas's top bar,
+// while typing); boxOf(el): where an element sits in the scrolling canvas; blockOf(el): { id, type, meta, el } for a marked element;
 // onEnd(how, blockId, el): after typing stops ('escape', 'done', 'tab-out', 'back-out', 'blur',
 // 'undo', or 'switch' when moving on to another piece of text in the same block).
 // openSettings(blockId): the Settings button on the bar (the block's own toolbar is hidden while typing).
 // onStart(): typing has started (the canvas hides the block's toolbar).
-export function canvasText({ page, holder, scroller, boxOf, blockOf, store, assetUrl, importFiles, announce, onStart, onEnd, openSettings }) {
+export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, store, assetUrl, importFiles, announce, onStart, onEnd, openSettings }) {
   const format = h('div', { class: 'canvas-format', hidden: true, role: 'group' });
   holder.append(format);
   let cur = null;
@@ -147,7 +147,10 @@ export function canvasText({ page, holder, scroller, boxOf, blockOf, store, asse
 
     const done = h('button', { type: 'button', class: 'btn-slim canvas-format-done', onclick: () => stop('done') }, 'Done');
     const settings = h('button', { type: 'button', class: 'btn-slim', onclick: () => { stop('settings'); openSettings(c.blockId); } }, 'Settings');
-    format.replaceChildren(h('span', { class: 'canvas-format-name' }, c.label), ...(bar ? [bar] : []), settings, done, ...(pop ? [pop] : []));
+    // The formatting row scrolls sideways on a narrow screen; Settings and Done always stay in
+    // view at the end. The link and media pop-ups hang below the bar.
+    const row = h('div', { class: 'canvas-format-row' }, h('span', { class: 'canvas-format-name' }, c.label), ...(bar ? [bar] : []));
+    format.replaceChildren(row, h('div', { class: 'canvas-format-end' }, settings, done), ...(pop ? [pop] : []));
     format.setAttribute('aria-label', `Typing in ${c.label}`);
     format.hidden = false;
     el.focus({ preventScroll: true });
@@ -191,16 +194,11 @@ export function canvasText({ page, holder, scroller, boxOf, blockOf, store, asse
     onEnd(how, c.blockId, el);
   }
 
-  // The bar sits just above the text, and stays in view while a long text scrolls past.
+  // The bar is docked over the canvas's top bar, the same height, so nothing moves.
   function place() {
     if (!cur || format.hidden) return;
-    const box = boxOf(cur.el);
-    const hgt = format.offsetHeight;
-    const top = Math.max(box.top - hgt - 10, scroller.scrollTop + 6);
-    format.style.top = `${Math.min(top, box.top + box.height + 6)}px`;
-    format.style.left = `${Math.max(6, Math.min(box.left, scroller.clientWidth - format.offsetWidth - 6))}px`;
+    format.style.minHeight = `${dockOver.offsetHeight}px`;
   }
-  scroller.addEventListener('scroll', place, { passive: true });
 
   return {
     start,

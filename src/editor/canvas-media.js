@@ -2,6 +2,8 @@
 //   Replace…  choose a new file; this block uses it instead (other blocks keep the old one).
 //   Alt text  write the description for readers who can't see it, right there.
 //   Settings  the block's settings, for the caption, credit, licence and the rest.
+//   ‹ ›       the block's other images (a scroll sequence, a text column, a gallery…).
+// From the keyboard: the block toolbar's Image button opens it; arrow keys move along it; Esc closes it.
 // The runtime marks every image and video with data-il-asset="<asset id>" (exports too: the
 // mark is harmless there).
 import { h } from './dom.js';
@@ -26,6 +28,9 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
   const altBtn = h('button', { type: 'button', class: 'btn-slim', 'aria-expanded': 'false' }, 'Alt text');
   const settingsBtn = h('button', { type: 'button', class: 'btn-slim' }, 'Settings');
   const closeBtn = h('button', { type: 'button', class: 'btn-slim canvas-media-close', 'aria-label': 'Close the image tools' }, '×');
+  const prevBtn = h('button', { type: 'button', class: 'btn-slim canvas-media-step', 'aria-label': 'Previous image in this block' }, '‹');
+  const nextBtn = h('button', { type: 'button', class: 'btn-slim canvas-media-step', 'aria-label': 'Next image in this block' }, '›');
+  const count = h('span', { class: 'canvas-media-count' });
   const input = h('input', { type: 'file', class: 'sr-only', tabindex: '-1', 'aria-hidden': 'true' });
   const altId = `cv-alt-${Math.random().toString(36).slice(2, 8)}`;
   const altBox = h('textarea', { id: altId, rows: 3 });
@@ -35,11 +40,16 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
     h('label', { for: altId }, 'Alt text'), altHint, altBox, h('div', { class: 'canvas-media-alt-row' }, altDone));
   altBox.setAttribute('aria-describedby', altHint.id);
   const bar = h('div', { class: 'canvas-media', role: 'toolbar', hidden: true },
-    name, replaceBtn, altBtn, settingsBtn, closeBtn, input, altPop);
+    prevBtn, count, nextBtn, name, replaceBtn, altBtn, settingsBtn, closeBtn, input, altPop);
   holder.append(bar);
 
   let cur = null; // { assetId, blockId, nth: which of this block's copies of the file }
   let session = 0;
+  let returnTo = null; // where focus goes when the bar closes from the keyboard
+
+  // A block's images and videos, in page order (not the ones inside its text: typing has those).
+  const mediaIn = (blockEl) => [...blockEl.querySelectorAll('[data-il-asset]')].filter((e) => !e.closest('[data-il-edit]'));
+  const blockEl = () => (cur ? page.querySelector(`[id="${CSS.escape(cur.blockId)}"]`) : null);
 
   const asset = () => (cur ? store.story.assets[cur.assetId] : null);
   // The element again after a redraw: the same file, the same copy, in the same block.
@@ -60,9 +70,15 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
     return null;
   }
 
-  function show(el) {
+  function show(el, { focus = false } = {}) {
     const info = blockOf(el);
     if (!info || info.meta) { hide(); return false; }
+    const all = mediaIn(info.el);
+    const at = all.indexOf(el);
+    prevBtn.hidden = nextBtn.hidden = count.hidden = all.length < 2;
+    prevBtn.disabled = at <= 0;
+    nextBtn.disabled = at < 0 || at >= all.length - 1;
+    count.textContent = `${at + 1} of ${all.length}`;
     const id = el.dataset.ilAsset;
     const same = [...info.el.querySelectorAll(`[data-il-asset="${CSS.escape(id)}"]`)];
     cur = { assetId: id, blockId: info.id, nth: Math.max(0, same.indexOf(el)) };
@@ -75,10 +91,24 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
     input.accept = kind === 'video' ? 'video/*,.mov' : ACCEPT.image;
     closeAlt(false);
     bar.hidden = false;
-    bar.setAttribute('aria-label', `${kind === 'video' ? 'Video' : 'Image'}: ${name.textContent}`);
+    bar.setAttribute('aria-label', `${kind === 'video' ? 'Video' : 'Image'}${all.length > 1 ? ` ${at + 1} of ${all.length}` : ''}: ${name.textContent}`);
+    if (focus) {
+      el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      announce(`${bar.getAttribute('aria-label')}. ${a && !String(a.alt || '').trim() ? 'It has no alt text yet. ' : ''}Arrow keys move between the tools; Escape closes them.`);
+    }
     place();
     return true;
   }
+  // Steps to the block's previous or next image, keeping focus on the same button if it can.
+  function step(delta, btn) {
+    const all = blockEl() ? mediaIn(blockEl()) : [];
+    const el = all[all.indexOf(elOf()) + delta];
+    if (!el) return;
+    show(el, { focus: true });
+    requestAnimationFrame(() => { place(); (btn.disabled ? (btn === prevBtn ? nextBtn : prevBtn) : btn).focus(); });
+  }
+  prevBtn.addEventListener('click', () => step(-1, prevBtn));
+  nextBtn.addEventListener('click', () => step(1, nextBtn));
   function hide() {
     if (!cur && bar.hidden) return;
     cur = null;
@@ -160,24 +190,50 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); closeAlt(); }
   });
   bar.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!altPop.hidden) closeAlt();
+      else close();
+      return;
+    }
+    // Arrow keys along the bar's own buttons (not inside the alt text box).
+    if (altPop.contains(e.target)) return;
+    const buttons = [...bar.children].filter((b) => b.tagName === 'BUTTON' && !b.hidden && !b.disabled);
+    const i = buttons.indexOf(document.activeElement);
+    const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: buttons.length - 1 }[e.key];
+    if (to === undefined || i < 0) return;
     e.preventDefault();
-    e.stopPropagation();
-    if (!altPop.hidden) closeAlt();
-    else hide();
+    buttons[(to + buttons.length) % buttons.length].focus();
   });
+  // Closes the bar; focus goes back where it came from if it was in the bar.
+  function close() {
+    const had = bar.contains(document.activeElement);
+    hide();
+    if (had && returnTo?.isConnected) returnTo.focus();
+  }
 
   settingsBtn.addEventListener('click', () => { const id = cur?.blockId; if (id) openSettings(id); });
-  closeBtn.addEventListener('click', () => hide());
+  closeBtn.addEventListener('click', () => close());
 
   return {
     // A click on the page: show the bar for the image or video under it, or hide it.
     click(x, y) {
+      returnTo = null;
       const el = at(x, y);
       return el ? show(el) : (hide(), false);
     },
     show,
     hide,
+    // From the keyboard: the first image in a block, with focus on the bar. from: where Esc returns.
+    openIn(blockElement, from) {
+      const first = mediaIn(blockElement)[0];
+      if (!first || !show(first, { focus: true })) return false;
+      returnTo = from;
+      requestAnimationFrame(() => { place(); replaceBtn.focus(); });
+      return true;
+    },
+    has: (blockElement) => Boolean(blockElement) && mediaIn(blockElement).length > 0,
     place,
     contains: (el) => bar.contains(el),
     get blockId() { return cur ? cur.blockId : null; },
