@@ -208,6 +208,7 @@ export function nested(ctx, get, focusId) {
   const id = `${ctx.block.id}:${focusId}`;
   return {
     ...ctx,
+    get story() { return ctx.story; },
     block: { id, data: get(ctx.block.data) || {} },
     edit: (fn, opts = {}) => ctx.edit((data, story) => fn(get(data), story), opts),
     set: (key, value, opts = {}) => ctx.edit((data) => { get(data)[key] = value; }, {

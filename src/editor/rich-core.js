@@ -179,7 +179,8 @@ export function mediaFigure(ctx, look = 'panel') {
     return `<figure class="rte-img${look === 'page' ? ' il-inline-img' : ''}${figureClass(look, pos)}${video ? ' rte-video' : ''}" contenteditable="false"`
       + ` data-look="${look}" data-asset="${ref}" data-pos="${pos}" data-name="${name}">`
       + `${media}${caption}`
-      + `<span class="rte-img-tools" role="group" aria-label="${video ? 'Video' : 'Image'} position">`
+      + `<span class="rte-img-tools" role="group" aria-label="${video ? 'Video' : 'Image'}">`
+      + `<button type="button" data-details>${video ? 'Description' : 'Alt text'}</button>`
       + `<button type="button" data-pos="left" aria-pressed="${pos === 'left'}">Left</button><button type="button" data-pos="" aria-pressed="${!pos}">Full</button>`
       + `<button type="button" data-pos="right" aria-pressed="${pos === 'right'}">Right</button>${remove}</span></figure>`;
   };

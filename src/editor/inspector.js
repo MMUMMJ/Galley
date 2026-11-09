@@ -28,7 +28,7 @@ export function mountInspector(panel, store, deps) {
     }, opts(o));
     return {
       block,
-      story: store.story,
+      get story() { return store.story; }, // always current: a file added a moment ago must be found
       edit,
       set: (key, value, o = {}) => edit((data) => { data[key] = value; }, { ...o, coalesce: `${id}:${key}` }),
       setAsset: (assetId, key, value) => store.update((s) => {

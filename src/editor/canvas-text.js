@@ -23,7 +23,7 @@ const nameOf = (type, field) => {
 
 // A field is a key in the block's data, or a path into it (steps.2.text: a scroll step's text).
 // Returns the object that holds the text and the key within it.
-function at(data, field) {
+export function fieldSpot(data, field) {
   const parts = field.split('.');
   const key = parts.pop();
   let obj = data;
@@ -47,14 +47,14 @@ export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, s
   const stored = (c) => {
     if (c.meta) return store.story.meta[c.field] ?? '';
     const b = store.story.blocks.find((x) => x.id === c.blockId);
-    const spot = b && at(b.data, c.field);
+    const spot = b && fieldSpot(b.data, c.field);
     return spot ? spot.obj[spot.key] ?? '' : '';
   };
   const write = (c, value) => {
     if (value === stored(c)) return;
     store.update((s) => {
       if (c.meta) s.meta[c.field] = value;
-      else { const b = s.blocks.find((x) => x.id === c.blockId); const spot = b && at(b.data, c.field); if (spot) spot.obj[spot.key] = value; }
+      else { const b = s.blocks.find((x) => x.id === c.blockId); const spot = b && fieldSpot(b.data, c.field); if (spot) spot.obj[spot.key] = value; }
     }, { from: 'canvas-type', coalesce: `canvas:${c.session}` }); // each spell of typing is its own undo step
   };
   const isEmpty = (el) => !el.textContent.trim() && !el.querySelector(MEDIA);
@@ -113,10 +113,13 @@ export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, s
       });
     } else {
       const ctx = {
-        story: store.story,
+        // Always the current story: a file added while typing must be found when the text is tidied.
+        get story() { return store.story; },
+        setAsset: (assetId, k, value) => store.update((s) => { if (s.assets[assetId]) s.assets[assetId][k] = value; },
+          { from: 'canvas-type', coalesce: `canvas-asset:${assetId}:${k}` }),
         assetUrl, importFiles, announce,
         // Media added from the bar: fn sets data[key], so it gets the object that holds this text.
-        edit: (fn) => store.update((s) => { const b = s.blocks.find((x) => x.id === c.blockId); const spot = b && at(b.data, c.field); if (spot) fn(spot.obj, s); }, { from: 'canvas-type' }),
+        edit: (fn) => store.update((s) => { const b = s.blocks.find((x) => x.id === c.blockId); const spot = b && fieldSpot(b.data, c.field); if (spot) fn(spot.obj, s); }, { from: 'canvas-type' }),
       };
       const figure = mediaFigure(ctx, 'page');
       const shape = { base: Number(el.dataset.ilBase) || 2, bare: c.mode === 'inline' };
@@ -126,7 +129,7 @@ export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, s
       const editor = attachRichEditing(el, {
         id: el.id, label: c.label, mode: c.mode, images: c.mode === 'blocks', ctx, key: c.field.split('.').pop(), focusKey: `canvas:${c.blockId}:${c.field}`,
         figure, ...shape, inside,
-        save: () => { ctx.story = store.story; write(c, c.mode === 'lines' ? editor.value().join('\n') : editor.value()); },
+        save: () => write(c, c.mode === 'lines' ? editor.value().join('\n') : editor.value()),
       });
       c.tidy = editor.tidy;
       c.output = () => (c.mode === 'lines' ? editor.value().join('\n') : editor.value());

@@ -97,6 +97,39 @@ export function attachRichEditing(body, o) {
 
   const closePop = (refocus = true) => { pop.hidden = true; pop.replaceChildren(); if (refocus) restore(); };
   const linkAround = () => { let n = getSelection().anchorNode; while (n && n !== body) { if (n.tagName === 'A') return n; n = n.parentNode; } return null; };
+  // Alt text, caption and credit for an image or video in the text. They belong to the file,
+  // so they follow it into every block that uses it. Saved as they're typed.
+  function openDetails(fig) {
+    const assetId = fig.dataset.asset;
+    const a = ctx.story.assets[assetId];
+    if (!a || !ctx.setAsset) return;
+    const video = assetKind(a) === 'video';
+    const field = (k, labelText, hint, rows) => {
+      const fid = `${id}-${k}-${assetId}`;
+      const box = h(rows ? 'textarea' : 'input', { id: fid, ...(rows ? { rows } : { type: 'text' }), value: a[k] || '', oninput: (e) => ctx.setAsset(assetId, k, e.target.value) });
+      if (rows) box.value = a[k] || '';
+      return h('div', { class: 'rte-details-field' }, h('label', { for: fid }, labelText), hint ? h('p', { class: 'field-hint' }, hint) : null, box);
+    };
+    const index = [...body.querySelectorAll(MEDIA)].indexOf(fig);
+    // Back to the text, with the cursor on the line after the picture (tidying redraws the figure).
+    const done = () => {
+      closePop(false);
+      tidy();
+      save();
+      body.focus();
+      const line = body.querySelectorAll(MEDIA)[index]?.nextElementSibling;
+      if (line) { const r = document.createRange(); r.selectNodeContents(line); r.collapse(false); getSelection().removeAllRanges(); getSelection().addRange(r); }
+    };
+    pop.replaceChildren(h('div', { class: 'rte-details' },
+      h('p', { class: 'rte-pop-title' }, a.name || (video ? 'Video' : 'Image')),
+      field('alt', video ? 'Description' : 'Alt text', video ? 'Describe the video for readers who can\'t see or hear it.' : 'Describe what the image shows, for readers who can\'t see it. This is not the caption.', 2),
+      field('caption', 'Caption', 'Shown under it. Adds context the picture can\'t.', 2),
+      field('credit', 'Credit', 'Who made it, e.g. "Photo: Sam Example".'),
+      h('div', { class: 'button-row' }, h('button', { type: 'button', class: 'btn btn-primary', onclick: done }, 'Done'))));
+    pop.hidden = false;
+    pop.querySelector('textarea').focus();
+  }
+
   function openLink() {
     keep();
     const existing = linkAround();
@@ -205,7 +238,8 @@ export function attachRichEditing(body, o) {
     const b = e.target.closest('.rte-img-tools button');
     if (!b) return;
     const fig = b.closest('figure');
-    if (b.hasAttribute('data-remove')) {
+    if (b.hasAttribute('data-details')) openDetails(fig);
+    else if (b.hasAttribute('data-remove')) {
       fig.remove();
       save({ rerender: true });
       ctx.announce(fig.dataset.embed ? 'Embed removed from the text.' : 'Removed from the text. The file stays in your story\'s files.');
