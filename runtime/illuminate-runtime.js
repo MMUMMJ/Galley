@@ -295,6 +295,10 @@
     return `<${tag}${attrs}${marks}>${value ? html : ''}</${tag}>`;
   }
 
+  // A scroll step's text card. On the canvas its field is a path into the block: steps.2.text.
+  const stepCard = (ctx, i, html, cls) => slot(ctx, 'div', ` class="${cls}"`, html, html,
+    { field: `steps.${i}.text`, mode: 'blocks', ph: `Step ${i + 1}: type the text for this step`, base: 2 + ctx.offset });
+
   const BLOCKS = {
     header(b, d, ctx) {
       const m = ctx.meta;
@@ -455,7 +459,7 @@
     // Static: image then text, step by step. Enhanced: sticky image panel, steps scroll past.
     scrolly(b, d, ctx) {
       const steps = (Array.isArray(d.steps) ? d.steps : []).filter(isObj);
-      if (!steps.some((st) => str(st.text).trim() || ctx.asset(st.media))) return placeholder(b, ctx, 'Add steps to this scroll sequence');
+      if (!(ctx.edit && steps.length) && !steps.some((st) => str(st.text).trim() || ctx.asset(st.media))) return placeholder(b, ctx, 'Add steps to this scroll sequence');
       // side: image beside the text; overlay: text cards over a full-screen image;
       // column: one continuous column of text over full-screen images that crossfade.
       const layout = d.layout === 'overlay' || d.layout === 'column' ? d.layout : 'side';
@@ -476,9 +480,11 @@
         const stepCls = stAlign && stAlign !== 'center' ? ` il-scrolly__step--${stAlign}` : '';
         // An empty step draws no card (an empty card is a stray box over the image). With no
         // image either, the step is left out of the page; the editor preview still flags it.
-        const card = text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '');
+        // On the canvas the card is always there, ready to type in.
+        const card = ctx.edit ? stepCard(ctx, i, text, 'il-scrolly__card')
+          : text || ctx.preview ? `<div class="il-scrolly__card">${text || '<p class="il-placeholder">This step has no text yet</p>'}</div>` : '';
         if (!fig && !card) return '';
-        return `<div class="il-scrolly__step${stepCls}" data-il-step="${i}">${fig}${card ? `<div class="il-scrolly__card">${card}</div>` : ''}</div>`;
+        return `<div class="il-scrolly__step${stepCls}" data-il-step="${i}">${fig}${card}</div>`;
       }).join('');
       // Overlay: each step's card can sit on the left, centre or right.
       // Text column: the column sits on the left, centre or right. Side by side: text on the right (default) or left.
@@ -498,7 +504,7 @@
     scrollpoints(b, d, ctx) {
       const a = ctx.asset(d.asset);
       const steps = (Array.isArray(d.steps) ? d.steps : []).filter(isObj);
-      if ((!a || kindOf(a) !== 'image') && !steps.some((st) => str(st.text).trim())) {
+      if ((!a || kindOf(a) !== 'image') && !(ctx.edit && steps.length) && !steps.some((st) => str(st.text).trim())) {
         return placeholder(b, ctx, 'Choose an image and add steps to these scrollpoints');
       }
       const fig = a && kindOf(a) === 'image'
@@ -515,9 +521,10 @@
           ? ` data-il-focus="${clampNum(st.x, 0, 100, 40)},${clampNum(st.y, 0, 100, 40)},${clampNum(st.w, 5, 100, 30)},${clampNum(st.h, 5, 100, 30)}"`
           : '';
         // As in scroll sequences: no card for an empty step, and no step at all if it doesn't zoom either.
-        const card = text || (ctx.preview ? '<p class="il-placeholder">This step has no text yet</p>' : '');
+        const card = ctx.edit ? stepCard(ctx, i, text, 'il-scrolly__card')
+          : text || ctx.preview ? `<div class="il-scrolly__card">${text || '<p class="il-placeholder">This step has no text yet</p>'}</div>` : '';
         if (!focusAttr && !card) return '';
-        return `<div class="il-scrolly__step il-scrollpoints__step${stepCls}" data-il-step="${i}"${focusAttr}>${card ? `<div class="il-scrolly__card">${card}</div>` : ''}</div>`;
+        return `<div class="il-scrolly__step il-scrollpoints__step${stepCls}" data-il-step="${i}"${focusAttr}>${card}</div>`;
       }).join('');
       return `<section class="il-scrolly il-scrolly--overlay il-scrollpoints" id="${esc(b.id)}" data-il-scrollpoints aria-label="Scrollpoints">`
         + `${fig}<div class="il-scrolly__steps">${html}</div></section>`;
