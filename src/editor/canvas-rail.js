@@ -1,5 +1,5 @@
 // The canvas's rail: a numbered button per block (amber when it needs work), the Story details
-// and Reflection buttons' pressed state, and the course pack's name.
+// and Reflection buttons' pressed state, the course pack's name, and the empty story's welcome.
 import { STORY_DETAILS, REFLECTION } from '../store.js';
 import { BLOCKS, blockLabel } from '../blocks/index.js';
 import { blockIssues, getPack } from '../packs.js';
@@ -19,6 +19,7 @@ export function drawRail(rail, section, store) {
   }).join('');
   $(`[data-open="${STORY_DETAILS}"]`).setAttribute('aria-pressed', String(sel === STORY_DETAILS));
   $(`[data-open="${REFLECTION}"]`).setAttribute('aria-pressed', String(sel === REFLECTION));
+  $('.canvas-empty').hidden = list.length > 0;
   // The course pack in use, if any (the Classic view shows it in its block list).
   const pack = getPack();
   const packEl = $('.canvas-pack');

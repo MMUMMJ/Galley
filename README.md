@@ -11,6 +11,8 @@ The build is planned phase by phase in [BUILD-PLAN.md](BUILD-PLAN.md).
 
 Use it at **https://mmummj.github.io/Galley/**.
 
+See what it can do in **[the demo story](https://mmummj.github.io/Galley/demo/)**, a tour of every kind of block made in Galley itself. [Open it in the editor](https://mmummj.github.io/Galley/?demo) to see how it's built, or choose **File & Export → Open the demo story** at any time.
+
 ### Why Galley?
 
 In letterpress printing, a galley was the shallow metal tray where typesetters collected and arranged lines of type before locking them up for the press.
@@ -43,6 +45,22 @@ The logos, colours and type are in [galley-brand/](galley-brand/README.md). The 
 - Media in the text: Text blocks, Columns and scroll steps can hold images and videos inside the text (full width, or floated left or right with the text wrapping round) and embedded links (YouTube, Vimeo, Spotify, SoundCloud play in the story; other sites show as a link card). The toolbar's **Media** button adds them. Saved as a line of its own: `![name](asset:id "left")` for a file, `![Embed](https://…)` for an embed.
 - Columns block: two or three columns of text, either **separate** (each column written on its own, e.g. two sides of a story) or **flowing** (one text running from column to column, like print). Two columns sit side by side down to 560px wide and three down to 720px; narrower screens get one column, in order.
 - Editor redesign: a File menu (New story, Open…, Export) with Undo, Redo and Checks; compact one-line block cards whose actions show only on the selected block; Write / Look / Notes tabs in the inspector; and a formatted text editor (bold, italics, links, subheadings, lists, images) so students never type Markdown. Pasting from Word or the web keeps only that formatting. **+ Add block** opens a picker with a card and a small animation for each block type the pack allows (still pictures under reduced motion).
+
+## The demo story
+
+`demo/` is the demo story, saved the way Galley's **Save to folder** saves any story: `index.html` (the published page, at `/Galley/demo/`), `story.json` and `assets/`. The editor's **Open the demo story** (and the address `?demo`) loads the same files.
+
+To change it, open the demo in Galley, make the changes, choose **Save to folder…**, pick this repository's `demo/` folder, then commit. Galley rewrites all three parts.
+
+Some pictures and sounds are placeholders for real media. Each block's **Notes** says so; click the file on the canvas and choose **Replace…**:
+
+- the header's background video (moving type)
+- the Gallery's four pictures
+- the sound clip (a computer voice standing in for an interview)
+- the Text column's three backgrounds
+- the Before and after pair (marked-up and corrected proofs)
+
+The screenshots and the screen recording show Galley itself. Retake them if the editor changes a lot.
 
 ## Prompt packs
 
@@ -110,13 +128,14 @@ src/                editor (plain ES modules, no build step)
   media.js          image downscaling, video and audio checks
   zip-write.js      hand-written ZIP writer (stored entries)
   zip-read.js       ZIP reader (stored or deflate, ZIP64)
-  open.js           opens an exported ZIP, HTML page or story JSON
+  open.js           opens an exported ZIP, HTML page or story JSON, or the demo's folder
   blocks/           one module per block type
   editor/           editor UI panels and styles
   adapters/         savers and exporters
   checks/           one module per check (questions, never marks)
 runtime/            reader-facing renderer, inlined into every export
 packs/              prompt packs
+demo/               the demo story: a saved folder, published at /Galley/demo/
 test/fixtures/      sample stories
 ```
 

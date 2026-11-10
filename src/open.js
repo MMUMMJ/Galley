@@ -17,6 +17,20 @@ export async function openFile(file) {
   return finish(raw, blobs);
 }
 
+// A story published on the web as a saved folder (index.html, story.json, assets/), such as the
+// demo story at demo/. base: the folder's address, ending in a slash.
+export async function openFolderAt(base) {
+  const res = await fetch(new URL('story.json', new URL(base, document.baseURI)), { cache: 'no-cache' });
+  if (!res.ok) throw new Error('The story couldn\'t be downloaded. Check your connection and try again.');
+  const raw = parseJson(await res.text());
+  const blobs = new Map();
+  await Promise.all(Object.entries(raw.assets || {}).map(async ([id, asset]) => {
+    const file = await fetch(new URL(window.Galley.assetPath(id, asset), new URL(base, document.baseURI))).catch(() => null);
+    if (file && file.ok) blobs.set(id, await file.blob());
+  }));
+  return finish(raw, blobs);
+}
+
 function parseJson(text) {
   try { return JSON.parse(text); } catch { throw new Error('This file isn\'t a valid Galley story.'); }
 }

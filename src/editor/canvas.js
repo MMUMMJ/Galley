@@ -29,7 +29,7 @@ const SHOWPIECES = new Set(['scrolly', 'textcolumn', 'scrollpoints', 'number', '
 const moves = (b, story) => SHOWPIECES.has(b.type) || (b.effect && b.effect !== 'none')
   || (b.type === 'header' && assetKind(story.assets[b.data.media]) === 'video');
 
-export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, importFiles, announce, toast, playFrom }) {
+export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, importFiles, announce, toast, playFrom, openDemo }) {
   section.innerHTML = `
     <h2 class="sr-only" id="canvas-heading">Story canvas</h2>
     <nav class="canvas-rail" aria-label="Blocks">
@@ -45,6 +45,10 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
         <button type="button" class="btn-slim" data-preview title="Open the story in a new tab, moving as readers will see it">Preview <span aria-hidden="true">↗</span></button>
       </div>
       <div class="canvas-scroll" tabindex="0" role="region" aria-label="Story canvas. Arrow keys scroll it.">
+        <div class="canvas-empty" hidden>
+          <p><strong>Your story is empty.</strong> Start it with <strong>+ Add</strong>, on the left.</p>
+          <p>New to Galley? <button type="button" class="btn" data-demo>Open the demo story</button> It shows every kind of block, and you can change anything in it.</p>
+        </div>
         <div class="canvas-page il-page"></div>
         <div class="canvas-chrome">
           <div class="canvas-hover" hidden></div>
@@ -343,6 +347,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     store.select(btn.dataset.open, 'canvas');
     openSheet(btn);
   }));
+  $('[data-demo]').addEventListener('click', () => openDemo?.());
   $('[data-preview]').addEventListener('click', () => document.getElementById('preview-popout')?.click());
 
   // ---------------------------------------------------------------- keeping up with the story

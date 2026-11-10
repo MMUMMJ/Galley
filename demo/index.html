@@ -1,0 +1,2068 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stories that move: a tour of Galley</title>
+<meta name="description" content="A demo story made in Galley, the scrollytelling editor for MMU journalism students. It shows every kind of block.">
+<meta name="author" content="MMU Journalism">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Stories that move: a tour of Galley">
+<meta property="og:description" content="A tour of Galley, made in Galley: every kind of block, from text to scroll sequences.">
+<meta property="og:locale" content="en_GB">
+<meta property="og:image" content="assets/a_share-galley-share-image.png">
+<meta property="og:image:alt" content="The Galley logo, a tray of type, on paper-coloured background.">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="article:published_time" content="2026-11-10T12:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-10T12:00:00.000Z">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Stories that move: a tour of Galley">
+<meta name="twitter:description" content="A tour of Galley, made in Galley: every kind of block, from text to scroll sequences.">
+<meta name="twitter:image" content="assets/a_share-galley-share-image.png">
+<meta name="twitter:image:alt" content="The Galley logo, a tray of type, on paper-coloured background.">
+<meta name="generator" content="Galley 1.17.1">
+<style>
+/*! Galley runtime styles. Inlined into every export. */
+
+.il-page { margin: 0; background: #fdfcfa; }
+
+.il-story {
+  --il-text: #1a1a1a;
+  --il-muted: #575757;
+  --il-rule: #d9d5cc;
+  --il-bg: #fdfcfa;
+  --il-accent: #8a1c3c;
+  --il-link: #0b5394;
+  --il-focus: #1a5fb4;
+  --il-surface: #ffffff; /* cards and buttons; set per colour scheme */
+  /* The scheme's own colours, kept so cards inside a coloured band can return to them. */
+  --il-base-text: var(--il-text);
+  --il-base-link: var(--il-link);
+  --il-base-muted: var(--il-muted);
+  --il-base-accent: var(--il-accent);
+  --il-base-rule: var(--il-rule);
+  --il-serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --il-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --il-measure: 40rem;
+  --il-gutter: 16px;
+  --il-grid:
+    [full-start] minmax(var(--il-gutter), 1fr)
+    [wide-start] minmax(0, 9rem)
+    [col-start] min(var(--il-measure), 100% - 2 * var(--il-gutter)) [col-end]
+    minmax(0, 9rem) [wide-end]
+    minmax(var(--il-gutter), 1fr) [full-end];
+
+  display: grid;
+  grid-template-columns: var(--il-grid);
+  padding-bottom: 5rem;
+  color: var(--il-text);
+  background: var(--il-bg);
+  font: 400 1.1875rem/1.65 var(--il-serif);
+  -webkit-text-size-adjust: 100%;
+  overflow-wrap: break-word;
+  overflow-x: clip; /* slide effects must never cause sideways scrolling (clip keeps sticky working) */
+}
+
+.il-story *, .il-story *::before, .il-story *::after { box-sizing: border-box; }
+
+/* Layout: every block sits in the reading column unless it asks to be wider. */
+.il-story > *, .il-part > * { grid-column: col; min-width: 0; }
+.il-story > * + *, .il-part > * + * { margin-top: 2rem; }
+/* Full-bleed sections (headers, enhanced scroll sequences, scrollpoints, coloured bands)
+   meet edge-to-edge with no gap between them, so scrolling flows seamlessly. */
+.il-story > :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]) + :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]),
+.il-part > :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]) + :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]),
+.il-story > .il-scrolly.is-enhanced, .il-part > .il-scrolly.is-enhanced,
+.il-story > [data-il-band], .il-part > [data-il-band] { margin-top: 0; }
+.il-story > :not(.il-header--full):not(.il-scrolly.is-enhanced):not([data-il-band]) + :is(.il-scrolly.is-enhanced, [data-il-band]),
+.il-part > :not(.il-header--full):not(.il-scrolly.is-enhanced):not([data-il-band]) + :is(.il-scrolly.is-enhanced, [data-il-band]) { margin-top: 2.25rem; }
+.il-story > :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]) + :not(.il-header--full):not(.il-scrolly.is-enhanced):not([data-il-band]),
+.il-part > :is(.il-header--full, .il-scrolly.is-enhanced, [data-il-band]) + :not(.il-header--full):not(.il-scrolly.is-enhanced):not([data-il-band]) { margin-top: 2.25rem; }
+.il-part { grid-column: full; display: grid; grid-template-columns: var(--il-grid); }
+.il-story > .il-w-wide, .il-part > .il-w-wide { grid-column: wide; }
+.il-story > .il-w-full, .il-part > .il-w-full { grid-column: full; }
+
+.il-story :focus-visible { outline: 3px solid var(--il-focus); outline-offset: 3px; }
+
+.il-story a { color: var(--il-link); text-decoration-thickness: 1px; text-underline-offset: 0.15em; }
+.il-story a:hover { text-decoration-thickness: 2px; }
+.il-story img, .il-story video { display: block; max-width: 100%; height: auto; }
+:where(.il-story figure) { margin: 0; }
+.il-story figcaption {
+  margin-top: 0.6rem;
+  font: 0.875rem/1.45 var(--il-sans);
+  color: var(--il-muted);
+}
+.il-credit { font-size: 0.8125rem; letter-spacing: 0.01em; }
+.il-w-full > figcaption { padding-inline: var(--il-gutter); }
+
+/* ---------- header */
+.il-kicker {
+  margin: 0 0 0.75rem;
+  font: 700 0.8125rem/1.3 var(--il-sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--il-accent);
+}
+.il-title { margin: 0; font: 800 clamp(2rem, 5vw, 3.25rem)/1.08 var(--il-sans); letter-spacing: -0.015em; }
+.il-standfirst { margin: 1rem 0 0; font-size: 1.3rem; line-height: 1.45; }
+.il-byline { margin: 1rem 0 0; font: 600 0.9375rem/1.4 var(--il-sans); }
+.il-header__credit { margin: 0.5rem 0 0; font: 0.75rem/1.3 var(--il-sans); color: var(--il-muted); }
+
+.il-header--full {
+  grid-column: full;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 60vh;
+  min-height: 60svh;
+  background: #1b1b1b;
+  color: #fff;
+}
+.il-header--full.il-header--media { min-height: 92vh; min-height: 92svh; }
+.il-header--full .il-header__media { position: absolute; inset: 0; z-index: -1; }
+.il-header--full .il-header__media img, .il-header--full .il-header__media video { width: 100%; height: 100%; object-fit: cover; }
+.il-header--compact .il-header__media video { width: 100%; }
+.il-header--full .il-header__text {
+  /* Wider than the body text: a big headline needs room. On a phone it still runs edge to edge. */
+  --il-header-measure: calc(var(--il-measure) + 22rem);
+  padding: 8rem max(var(--il-gutter), (100% - var(--il-header-measure)) / 2) 3rem;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.85), rgb(0 0 0 / 0.65) 55%, rgb(0 0 0 / 0));
+}
+.il-header--full .il-title { font-size: clamp(2.4rem, 6.5vw, 5.25rem); max-width: 20ch; text-wrap: balance; }
+.il-header--full .il-standfirst { max-width: 44rem; font-size: clamp(1.3rem, 1.6vw, 1.5rem); }
+.il-header--full .il-kicker { color: #f6cdd9; }
+.il-header--full .il-header__credit {
+  position: absolute; right: var(--il-gutter); bottom: 0.6rem; margin: 0; color: rgb(255 255 255 / 0.85);
+}
+
+.il-header--compact {
+  display: flex;
+  flex-direction: column;
+  padding: 3rem 0 1.5rem;
+  border-bottom: 1px solid var(--il-rule);
+}
+.il-header--compact .il-header__media { order: 2; margin-top: 1.5rem; }
+.il-header--compact .il-header__credit { order: 3; }
+.il-part > .il-header--compact { margin-top: 3.5rem; }
+.il-part .il-title { font-size: clamp(1.75rem, 4vw, 2.5rem); }
+
+/* ---------- text */
+.il-text > :first-child { margin-top: 0; }
+.il-text p { margin: 0 0 1.1em; }
+.il-text h2, .il-text h3, .il-text h4, .il-text h5, .il-text h6 {
+  margin: 2.2rem 0 0.75rem;
+  font-family: var(--il-sans);
+  line-height: 1.2;
+}
+.il-text h2 { font-size: 1.6rem; }
+.il-text h3 { font-size: 1.3rem; }
+.il-text h4, .il-text h5, .il-text h6 { font-size: 1.1rem; }
+.il-text ul, .il-text ol { margin: 0 0 1.1em; padding-left: 1.4em; }
+.il-text li + li { margin-top: 0.35em; }
+.il-text > :last-child { margin-bottom: 0; }
+
+/* ---------- images inside running text (text blocks and scroll steps) */
+.il-inline-img { margin: 1.5rem 0; }
+.il-inline-img img { width: 100%; }
+.il-inline-img--left, .il-inline-img--right { width: min(45%, 17rem); margin-block: 0.35rem 1rem; }
+.il-inline-img--left { float: left; margin-right: 1.25rem; }
+.il-inline-img--right { float: right; margin-left: 1.25rem; }
+.il-text::after, .il-scrolly__card::after { content: ""; display: block; clear: both; }
+/* Videos and embeds in running text */
+.il-inline-video video { display: block; width: 100%; height: auto; background: #000; }
+.il-inline-embed { margin: 1.5rem 0; clear: both; }
+
+/* ---------- columns: separate columns, or one text flowing across columns */
+.il-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem 2.5rem; }
+.il-columns--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.il-columns--flow { display: block; column-count: 2; column-gap: 2.5rem; column-rule: 1px solid var(--il-rule, #ddd); }
+.il-columns--flow.il-columns--3 { column-count: 3; }
+/* Columns are narrow: images in them fill the column instead of floating beside the text.
+   Flowing text may split between columns, but an image, video or embed stays in one piece. */
+.il-columns .il-inline-img--left, .il-columns .il-inline-img--right { float: none; width: auto; margin: 1.25rem 0; }
+.il-columns--flow > figure { break-inside: avoid; }
+.il-columns--flow p { orphans: 2; widows: 2; }
+.il-columns--flow > :is(h2, h3, h4, h5, h6) { break-after: avoid; }
+.il-columns--flow > :first-child { margin-top: 0; }
+
+@media (max-width: 599px) {
+  /* Phones: no room for text to wrap round an image. */
+  .il-inline-img--left, .il-inline-img--right { float: none; width: auto; margin: 1.25rem 0; }
+}
+@media (max-width: 719px) {
+  /* Three columns need room: below this they sit one under another, in reading order. */
+  .il-columns--3 { grid-template-columns: minmax(0, 1fr); }
+  .il-columns--flow.il-columns--3 { column-count: 1; }
+}
+@media (max-width: 559px) {
+  /* Phones: one column. */
+  .il-columns { grid-template-columns: minmax(0, 1fr); }
+  .il-columns--flow { column-count: 1; }
+}
+
+/* ---------- quote */
+.il-quote blockquote {
+  margin: 0;
+  padding-left: 1.25rem;
+  border-left: 4px solid var(--il-accent);
+  font-size: 1.55rem;
+  line-height: 1.35;
+  font-style: italic;
+}
+.il-quote blockquote p { margin: 0 0 0.5em; }
+.il-quote blockquote p:last-child { margin-bottom: 0; }
+.il-quote .il-quote__cite { padding-left: 1.5rem; font-weight: 600; color: var(--il-text); }
+
+/* ---------- media */
+.il-media--audio audio { width: 100%; }
+.il-media--video video { width: 100%; background: #000; }
+.il-media.il-w-full img, .il-media.il-w-full video { width: 100%; }
+
+/* ---------- gallery */
+.il-gallery__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+}
+.il-gallery__link { display: block; }
+button.il-gallery__link { width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.il-gallery__link img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--il-rule); }
+.il-gallery__item figcaption { margin-top: 0.4rem; font-size: 0.8125rem; }
+.il-gallery__caption { margin-top: 1rem; }
+.il-w-full .il-gallery__grid { padding-inline: var(--il-gutter); }
+
+/* ---------- embed (link card, optional player) */
+.il-card {
+  display: block;
+  border: 1px solid var(--il-rule);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--il-surface);
+  color: inherit;
+  text-decoration: none;
+}
+.il-story a.il-card { color: inherit; text-decoration: none; }
+.il-card__img { width: 100%; aspect-ratio: 1.91 / 1; object-fit: cover; border-bottom: 1px solid var(--il-rule); }
+.il-card__body { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.9rem 1rem; font-family: var(--il-sans); }
+.il-card__title { font-weight: 700; line-height: 1.3; color: var(--il-link); text-decoration: underline; text-underline-offset: 0.15em; }
+.il-card__desc { font-size: 0.9375rem; line-height: 1.45; }
+.il-card__host { font-size: 0.8125rem; color: var(--il-muted); }
+.il-card__url { display: none; }
+.il-embed__iframe { display: block; width: 100%; border: 0; margin-bottom: 0.75rem; background: #000; }
+.il-embed__iframe--video { aspect-ratio: 16 / 9; }
+.il-embed__note { margin: 0.6rem 0 0; font: 0.875rem/1.45 var(--il-sans); color: var(--il-muted); }
+/* With a player showing, the card shrinks to a link back to the original.
+   The screenshot and its caption stay in the page for print and offline. */
+@media screen {
+  .il-embed.has-player .il-card { border: 0; border-radius: 0; background: none; }
+  .il-embed.has-player .il-card__img, .il-embed.has-player .il-card__desc, .il-embed.has-player > figcaption { display: none; }
+  .il-embed.has-player .il-card__body { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.6rem; padding: 0; }
+  .il-embed.has-player .il-card__title { font-weight: 600; }
+}
+
+.il-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  background: var(--il-surface, #fff);
+  color: var(--il-text, #1a1a1a);
+  font: 600 0.9375rem/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+}
+.il-btn:hover { background: var(--il-rule, #f0eee9); }
+.il-btn:focus-visible { outline: 3px solid #1a5fb4; outline-offset: 2px; }
+
+/* ---------- divider */
+hr.il-divider, .il-divider hr { border: 0; margin: 0; height: auto; overflow: visible; color: var(--il-muted); }
+hr.il-divider { margin-block: 3rem; text-align: center; }
+hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; letter-spacing: 0.3em; }
+.il-divider--label { margin-block: 3rem 1rem; }
+.il-divider--label hr { border-top: 1px solid var(--il-rule); }
+.il-divider__label {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  font: 700 0.8125rem/1.4 var(--il-sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--il-muted);
+}
+
+/* ---------- references */
+.il-references { margin-top: 3.5rem; padding-top: 1rem; border-top: 1px solid var(--il-rule); }
+.il-references summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+}
+.il-references summary::-webkit-details-marker { display: none; }
+.il-references summary::before {
+  content: "";
+  width: 0.55em;
+  height: 0.55em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+}
+.il-references details[open] > summary::before { transform: rotate(45deg); }
+.il-references__title { display: inline; margin: 0; font: 700 1.25rem/1.3 var(--il-sans); }
+.il-references__list { list-style: none; margin: 1rem 0 0; padding: 0; font-size: 1rem; line-height: 1.5; }
+.il-references__list li { padding-left: 2em; text-indent: -2em; margin-bottom: 0.6em; }
+
+/* ---------- scroll sequence */
+.il-sr {
+  position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+.il-story > .il-scrolly, .il-part > .il-scrolly { grid-column: full; }
+/* Static (no JavaScript, print): each step's image, then its text. */
+.il-scrolly__steps { display: grid; gap: 2.5rem; }
+.il-scrolly__step { width: min(var(--il-measure), 100% - 2 * var(--il-gutter)); margin-inline: auto; }
+.il-scrolly__media { margin-bottom: 1rem; }
+.il-scrolly__card > :first-child { margin-top: 0; }
+.il-scrolly__card > :last-child { margin-bottom: 0; }
+.il-scrolly__card p { margin: 0 0 1em; }
+/* Enhanced: one sticky panel; steps scroll past it. */
+.il-scrolly.is-enhanced { position: relative; }
+.il-scrolly.is-enhanced .il-scrolly__media {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); /* still read by screen readers */
+}
+.il-scrolly__panel { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #111; }
+.il-scrolly__frame { position: absolute; inset: 0; margin: 0; opacity: 0; }
+.il-scrolly__frame.is-active { opacity: 1; }
+.il-scrolly__frame img, .il-scrolly__frame video { width: 100%; height: 100%; max-width: none; object-fit: cover; }
+.il-scrolly__frame figcaption {
+  position: absolute; right: 0; bottom: 0; margin: 0; padding: 0.3rem 0.6rem;
+  background: rgb(0 0 0 / 0.6); color: #fff; font-size: 0.75rem;
+}
+.il-scrolly.is-enhanced .il-scrolly__steps { gap: 0; }
+.il-scrolly.is-enhanced .il-scrolly__step { display: flex; align-items: center; min-height: 85vh; min-height: 85svh; }
+.il-scrolly.is-enhanced .il-scrolly__card {
+  padding: 1.25rem 1.5rem; border-radius: 6px; background: var(--il-surface); color: var(--il-text);
+  box-shadow: 0 4px 24px rgb(0 0 0 / 0.18);
+}
+.il-scrolly--overlay.is-enhanced .il-scrolly__card { max-width: min(26rem, 78%); }
+/* Overlay (and side-by-side on narrow screens): text cards scroll over the full-bleed image. */
+.il-scrolly--overlay.is-enhanced .il-scrolly__steps {
+  position: relative; z-index: 1; margin-top: -100vh; margin-top: -100svh; padding-block: 40svh 20svh;
+}
+/* Text column: one continuous column of text scrolls over full-screen images, which
+   crossfade as each section reaches the middle of the screen. The column has a solid
+   background in the scheme's colours, so the text reads over any photograph. */
+.il-scrolly--column.is-enhanced .il-scrolly__steps {
+  position: relative; z-index: 1; margin-top: -100vh; margin-top: -100svh; padding-block: 70svh 40svh;
+}
+.il-scrolly--column.is-enhanced .il-scrolly__step {
+  display: block; min-height: 40vh; min-height: 40svh; padding: 1.75rem 2rem 0;
+  background: color-mix(in srgb, var(--il-surface) 95%, transparent); color: var(--il-text);
+}
+.il-scrolly--column.is-enhanced .il-scrolly__step:first-child { border-radius: 6px 6px 0 0; padding-top: 2.25rem; }
+.il-scrolly--column.is-enhanced .il-scrolly__step:last-child { min-height: 0; padding-bottom: 2.25rem; border-radius: 0 0 6px 6px; }
+.il-scrolly--column.is-enhanced .il-scrolly__card { padding: 0; background: none; box-shadow: none; border-radius: 0; }
+.il-scrolly--column.is-enhanced .il-scrolly__step:only-child { border-radius: 6px; } /* a text column block: one long step */
+/* Text column block: its images are listed first (the order for no JavaScript and print);
+   enhanced, they become the full-screen panel behind the text and the list is for screen readers. */
+.il-textcol__images { display: grid; gap: 1.25rem; width: min(var(--il-measure), 100% - 2 * var(--il-gutter)); margin: 0 auto 1.75rem; }
+.il-textcol__images .il-scrolly__media { margin: 0; }
+.il-textcol.is-enhanced .il-textcol__images { display: block; width: auto; margin: 0; }
+.il-scrolly--column.il-scrolly--align-left.is-enhanced .il-scrolly__step,
+.il-scrolly--column.il-scrolly--align-right.is-enhanced .il-scrolly__step { width: min(30rem, 100% - 2 * var(--il-gutter)); }
+
+/* Vignette & no-box backdrops for overlay and text column scroll sequences (like Shorthand). */
+.il-scrolly--column.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step,
+.il-scrolly--column.il-scrolly--backdrop-none.is-enhanced .il-scrolly__step,
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__card,
+.il-scrolly--overlay.il-scrolly--backdrop-none.is-enhanced .il-scrolly__card {
+  background: none; box-shadow: none; border: 0; border-radius: 0;
+  color: #fff; --il-text: #fff; --il-link: #b8d8ff; --il-muted: #e0e0e0; --il-accent: #f0b429; --il-rule: rgb(255 255 255 / 0.35);
+  text-shadow: 0 2px 14px rgb(0 0 0 / 0.85), 0 1px 3px rgb(0 0 0 / 0.9);
+}
+/* Directional vignette behind a text column: fades from the column's side across the image. */
+.il-scrolly--column.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.15) 0%, rgb(0 0 0 / 0.72) 28%, rgb(0 0 0 / 0.72) 72%, rgb(0 0 0 / 0.15) 100%);
+}
+.il-scrolly--column.il-scrolly--align-left.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::after {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.88) 0%, rgb(0 0 0 / 0.78) 38%, rgb(0 0 0 / 0.25) 68%, transparent 92%);
+}
+.il-scrolly--column.il-scrolly--align-right.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::after {
+  background: linear-gradient(270deg, rgb(0 0 0 / 0.88) 0%, rgb(0 0 0 / 0.78) 38%, rgb(0 0 0 / 0.25) 68%, transparent 92%);
+}
+/* Vignette on overlay steps: directional fade from the side each step sits on (or soft radial in the centre). */
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__card {
+  padding: 2.5rem;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at center, rgb(0 0 0 / 0.72) 0%, rgb(0 0 0 / 0.45) 60%, transparent 100%);
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--left,
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--right {
+  width: 100% !important; margin-inline: 0 !important;
+  padding-inline: max(var(--il-gutter), 6vw);
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--left .il-scrolly__card,
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__step--right .il-scrolly__card {
+  background: none; padding: 1.5rem 0;
+}
+/* Left and right steps: the vignette is on the image, not the step, so no dark band scrolls
+   with the text. Its dark side follows the step on screen (data-il-side, set by the runtime)
+   and crossfades when the next step sits on the other side. */
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::before,
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0;
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::before {
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.85) 0%, rgb(0 0 0 / 0.68) 36%, rgb(0 0 0 / 0.2) 65%, transparent 88%);
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::after {
+  background: linear-gradient(270deg, rgb(0 0 0 / 0.85) 0%, rgb(0 0 0 / 0.68) 36%, rgb(0 0 0 / 0.2) 65%, transparent 88%);
+}
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced[data-il-side="left"] .il-scrolly__panel::before,
+.il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced[data-il-side="right"] .il-scrolly__panel::after { opacity: 1; }
+@media (max-width: 479px) {
+  /* Narrow phones centre every step, so darken the whole image evenly instead of one side. */
+  .il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced .il-scrolly__panel::before { background: rgb(0 0 0 / 0.55); }
+  .il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced[data-il-side="right"] .il-scrolly__panel::before { opacity: 1; }
+  .il-scrolly--overlay.il-scrolly--backdrop-vignette.is-enhanced[data-il-side="right"] .il-scrolly__panel::after { opacity: 0; }
+}
+
+/* Overlay cards on the left or right: narrower, so the image shows beside them. */
+.il-scrolly--align-left.is-enhanced .il-scrolly__step,
+.il-scrolly--align-right.is-enhanced .il-scrolly__step,
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--left,
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--right { width: min(28rem, 100% - 2 * var(--il-gutter)); }
+.il-scrolly--align-left.is-enhanced .il-scrolly__step,
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--left { margin-left: max(var(--il-gutter), 6vw); margin-right: auto; }
+.il-scrolly--align-right.is-enhanced .il-scrolly__step,
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--right { margin-left: auto; margin-right: max(var(--il-gutter), 6vw); justify-content: flex-end; }
+/* Cards fit their text; centre them (overlay default), or hug the chosen side. */
+.il-scrolly--overlay.is-enhanced .il-scrolly__step { justify-content: center; }
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--left,
+.il-scrolly--overlay.il-scrolly--align-left.is-enhanced .il-scrolly__step { justify-content: flex-start; }
+.il-scrolly--overlay.is-enhanced .il-scrolly__step--right,
+.il-scrolly--overlay.il-scrolly--align-right.is-enhanced .il-scrolly__step { justify-content: flex-end; }
+@media (max-width: 479px) {
+  /* Narrow phones: no room to offset the cards, so they sit centred whatever the setting. */
+  .il-scrolly--align-left.is-enhanced .il-scrolly__step,
+  .il-scrolly--align-right.is-enhanced .il-scrolly__step,
+  .il-scrolly--overlay.is-enhanced .il-scrolly__step--left,
+  .il-scrolly--overlay.is-enhanced .il-scrolly__step--right {
+    width: min(var(--il-measure), 100% - 2 * var(--il-gutter)); margin-inline: auto; justify-content: center;
+  }
+}
+@media (min-width: 800px) {
+  .il-scrolly--side.is-enhanced { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  /* Text on the left: the image panel moves to the right. Only the look changes;
+     screen readers still read each step's image, then its text. */
+  .il-scrolly--side.il-scrolly--text-left.is-enhanced { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+  .il-scrolly--side.il-scrolly--text-left.is-enhanced .il-scrolly__panel { order: 2; }
+  .il-scrolly--side.il-scrolly--text-left.is-enhanced .il-scrolly__frame { padding: 1.5rem var(--il-gutter) 1.5rem 0; }
+  .il-scrolly--side.is-enhanced .il-scrolly__panel { background: var(--il-bg); }
+  /* On a coloured band, the band shows behind the image too (and its credit reads on it). */
+  .il-scrolly--side.is-enhanced[data-il-band] .il-scrolly__panel { background: transparent; }
+  .il-scrolly--side.is-enhanced .il-scrolly__frame {
+    display: flex; flex-direction: column; justify-content: center; padding: 1.5rem 0 1.5rem var(--il-gutter);
+  }
+  .il-scrolly--side.is-enhanced .il-scrolly__frame img, .il-scrolly--side.is-enhanced .il-scrolly__frame video { height: auto; max-height: calc(100svh - 6rem); object-fit: contain; }
+  .il-scrolly--side.is-enhanced .il-scrolly__frame figcaption {
+    position: static; align-self: flex-start; margin-top: 0.5rem; padding: 0; background: none; color: var(--il-muted);
+  }
+  .il-scrolly--side.is-enhanced .il-scrolly__steps { padding: 30svh var(--il-gutter) 30svh; }
+  .il-scrolly--side.is-enhanced .il-scrolly__step { width: auto; max-width: 30rem; }
+  .il-scrolly--side.is-enhanced .il-scrolly__card { background: var(--il-surface); border: 1px solid var(--il-rule); box-shadow: none; }
+  .il-scrolly--side.is-enhanced .il-scrolly__step.is-active .il-scrolly__card { border-color: var(--il-accent); }
+}
+@media (max-width: 799px) {
+  .il-scrolly--side.is-enhanced .il-scrolly__steps {
+    position: relative; z-index: 1; margin-top: -100vh; margin-top: -100svh; padding-block: 40svh 20svh;
+  }
+}
+
+/* ---------- scrollpoints: zoom & highlight regions of one image */
+.il-scrollpoints__media { width: min(var(--il-measure) + 18rem, 100% - 2 * var(--il-gutter)); /* the grid's wide column */ margin: 0 auto 1.5rem; }
+.il-scrollpoints__media img { width: 100%; }
+.il-scrollpoints.is-enhanced .il-scrollpoints__media {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+}
+.il-scrollpoints__panel { display: flex; align-items: center; justify-content: center; }
+.il-scrollpoints__stage {
+  position: relative; max-width: 94%; max-height: 90svh; transform-origin: center center;
+}
+.il-scrollpoints__stage img { display: block; max-width: 100%; max-height: 90svh; width: auto; height: auto; }
+.il-scrollpoints__box {
+  /* Drawn with shadows, not a border: divided by the zoom, so the outline looks the same width at any zoom
+     (borders get rounded to whole pixels; shadows don't). */
+  position: absolute; border-radius: calc(4px / var(--il-sp-scale, 1));
+  box-shadow: inset 0 0 0 calc(4px / var(--il-sp-scale, 1)) var(--il-accent, #f0b429),
+    0 0 0 calc(2px / var(--il-sp-scale, 1)) rgb(255 255 255 / 0.9), 0 0 0 9999px rgb(0 0 0 / 0.45);
+  pointer-events: none; opacity: 0;
+}
+.il-scrollpoints__box.is-visible { opacity: 1; }
+@media (max-width: 699px) {
+  /* Phones: each text box rests in the lower part of the screen while its step is showing,
+     leaving the top half for the highlighted area. */
+  .il-scrollpoints.is-enhanced .il-scrolly__step { align-items: flex-end; padding-bottom: 4vh; padding-bottom: 4svh; }
+}
+.il-scrollpoints__panel figcaption {
+  position: absolute; right: 0; bottom: 0; margin: 0; padding: 0.3rem 0.6rem;
+  background: rgb(0 0 0 / 0.6); color: #fff; font-size: 0.75rem;
+}
+
+/* ---------- before / after */
+.il-compare__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 599px) { .il-compare__pair { grid-template-columns: 1fr; } }
+.il-compare__side { margin: 0; }
+.il-compare__side img { width: 100%; }
+.il-compare__label { color: var(--il-text); }
+@media screen {
+  .il-compare.is-slider .il-compare__pair { display: block; position: relative; --il-pos: 50%; }
+  .il-compare.is-slider .il-compare__after { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--il-pos)); }
+  .il-compare.is-slider .il-compare__after img { height: 100%; object-fit: cover; }
+  .il-compare.is-slider .il-compare__pair::after {
+    content: ""; position: absolute; top: 0; bottom: 0; left: var(--il-pos); width: 3px; margin-left: -1.5px;
+    background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.4); pointer-events: none;
+  }
+  .il-compare.is-slider .il-compare__side figcaption {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); /* read by screen readers */
+  }
+  .il-compare__labels {
+    display: flex; justify-content: space-between; gap: 1rem; margin: 0.6rem 0 0;
+    font: 600 0.875rem/1.4 var(--il-sans); color: var(--il-text);
+  }
+  .il-compare__range { display: block; width: 100%; min-height: 44px; margin: 0.25rem 0 0; accent-color: var(--il-accent); cursor: ew-resize; }
+}
+
+/* ---------- big number */
+.il-number { text-align: center; margin-block: 3rem; }
+.il-number__figure {
+  margin: 0; color: var(--il-accent);
+  font: 800 clamp(3rem, 11vw, 6.5rem)/1 var(--il-sans); letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.il-number__unit { margin-left: 0.15em; font-size: 0.42em; letter-spacing: 0; }
+.il-number .il-number__context { max-width: 32rem; margin: 0.9rem auto 0; font: 1.25rem/1.45 var(--il-serif); color: var(--il-text); }
+.il-number .il-number__source { margin: 0.6rem 0 0; }
+.il-badge {
+  display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px;
+  background: #fff4d6; color: #5c3d00; font: 700 0.8125rem/1.4 var(--il-sans);
+}
+
+/* ---------- maker's notes appendix */
+.il-appendix {
+  margin-top: 4rem; padding: 1.5rem 1.25rem; border: 1px dashed var(--il-muted); border-radius: 6px;
+  background: var(--il-surface); font: 1rem/1.55 var(--il-sans);
+}
+.il-appendix h2 { margin: 0; font-size: 1.35rem; }
+.il-appendix h3 { margin: 1.5rem 0 0.5rem; font-size: 1.05rem; }
+.il-appendix__intro { margin: 0.4rem 0 0; color: var(--il-muted); font-style: italic; }
+.il-appendix__notes { margin: 0; padding-left: 1.4em; }
+.il-appendix__notes li + li { margin-top: 0.9rem; }
+.il-appendix__notes p { margin: 0.25rem 0 0; }
+.il-appendix__block { font-weight: 700; }
+.il-appendix__reflection dt { margin-top: 0.9rem; font-weight: 700; }
+.il-appendix__reflection dd { margin: 0.25rem 0 0; }
+.il-appendix__reflection dd p { margin: 0 0 0.5em; }
+
+/* ---------- block background band: a full-bleed colour behind one block.
+   The runtime sets --il-band and an --il-band-ink (black or white) that always reads on it. */
+.il-story > [data-il-band], .il-part > [data-il-band] {
+  /* One painted area that reaches the screen edges (the story clips the sides), with no seams. */
+  background-color: var(--il-band); /* the block itself: what accessibility checkers measure */
+  border-image: conic-gradient(var(--il-band) 0 0) fill 0 / / 0 100vmax;
+  padding-block: 2.75rem;
+  color: var(--il-band-ink);
+  --il-text: var(--il-band-ink);
+  --il-link: var(--il-band-ink);
+  --il-muted: var(--il-band-ink);
+  --il-accent: var(--il-band-ink);
+  --il-rule: var(--il-band-ink);
+}
+/* Full-bleed scroll sequences manage their own 100svh sticky panel, so a band shouldn't add vertical padding. */
+.il-story > .il-scrolly.is-enhanced[data-il-band], .il-part > .il-scrolly.is-enhanced[data-il-band] {
+  padding-block: 0;
+}
+/* Cards have their own background (the scheme's surface), so their text keeps the scheme's
+   colours rather than the band's black or white. */
+[data-il-band] .il-card, [data-il-band] .il-btn,
+[data-il-band].il-scrolly.is-enhanced:not(.il-scrolly--backdrop-vignette):not(.il-scrolly--backdrop-none) .il-scrolly__card,
+[data-il-band].il-scrolly--column.is-enhanced:not(.il-scrolly--backdrop-vignette):not(.il-scrolly--backdrop-none) .il-scrolly__step {
+  --il-text: var(--il-base-text);
+  --il-link: var(--il-base-link);
+  --il-muted: var(--il-base-muted);
+  --il-accent: var(--il-base-accent);
+  --il-rule: var(--il-base-rule);
+  color: var(--il-text);
+}
+
+/* ---------- editor preview only */
+.il-placeholder {
+  padding: 1rem;
+  border: 2px dashed var(--il-rule);
+  border-radius: 6px;
+  font: 0.9375rem/1.4 var(--il-sans);
+  color: var(--il-muted);
+}
+
+/* ---------- lightbox (lives outside .il-story, so no story variables) */
+.il-lightbox {
+  width: min(96vw, 1400px);
+  max-width: none;
+  max-height: 96vh;
+  padding: 1rem;
+  border: 0;
+  border-radius: 6px;
+  background: #111;
+  color: #f2f2f2;
+  font: 0.9375rem/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.il-lightbox::backdrop { background: rgb(0 0 0 / 0.85); }
+.il-lightbox__figure { margin: 0; }
+.il-lightbox__img { display: block; max-width: 100%; max-height: 75vh; margin: 0 auto; object-fit: contain; }
+.il-lightbox__caption { margin-top: 0.75rem; color: #e6e6e6; }
+.il-lightbox__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.il-lightbox__count { margin: 0 auto 0 0; }
+.il-lightbox .il-btn { margin-top: 0; }
+.il-lightbox :focus-visible { outline: 3px solid #8ab4f8; outline-offset: 2px; }
+.il-lightbox a { color: #9cc3ff; }
+
+/* ---------- motion: only ever decorative, and off when the reader asks */
+@media (prefers-reduced-motion: no-preference) {
+  /* Effects (Phase 6). .il-fx is added by the runtime only when motion is allowed. */
+  .il-fx { transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .il-fx:not(.is-in) { opacity: 0; }
+  .il-fx[data-il-effect="rise"]:not(.is-in) { transform: translateY(2.5rem); }
+  .il-fx[data-il-effect="slide"]:not(.is-in) { transform: translateX(-3rem); }
+  .il-fx[data-il-effect="zoom"]:not(.is-in) { transform: scale(0.94); }
+  .il-references summary::before { transition: transform 0.15s ease; }
+  .il-scrolly__frame { transition: opacity 0.45s ease; }
+  .il-scrolly__panel::before, .il-scrolly__panel::after { transition: opacity 0.6s ease; }
+  .il-scrolly--column .il-scrolly__frame { transition-duration: 0.9s; } /* a slower crossfade behind the column */
+  .il-scrollpoints__stage { transition: transform 0.75s cubic-bezier(0.22, 0.68, 0.2, 1); }
+  .il-scrollpoints__box { transition: left 0.6s ease, top 0.6s ease, width 0.6s ease, height 0.6s ease, opacity 0.35s ease; }
+  .il-lightbox[open] { animation: il-fade 0.18s ease-out; }
+  @keyframes il-fade { from { opacity: 0; } to { opacity: 1; } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .il-story *, .il-story *::before, .il-story *::after, .il-lightbox, .il-lightbox * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- print */
+@media print {
+  @page { margin: 18mm 16mm; }
+  .il-page { background: #fff; }
+  .il-story {
+    display: block;
+    padding: 0;
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+  .il-part { display: block; }
+  .il-story > * + *, .il-part > * + * { margin-top: 1.2em; }
+  .il-w-full > figcaption, .il-w-full .il-gallery__grid { padding-inline: 0; }
+
+  .il-header--full, .il-header--full.il-header--media { min-height: 0; background: none; color: #000; display: block; }
+  .il-header--full .il-header__media { position: static; z-index: auto; }
+  .il-header--full .il-header__media img, .il-header--compact .il-header__media img { max-height: 9cm; width: auto; }
+  .il-header--full .il-header__text { padding: 1em 0 0; background: none; }
+  .il-header--full .il-kicker { color: #000; }
+  .il-header--full .il-header__credit { position: static; color: #444; }
+  .il-title, .il-header--full .il-title { font-size: 24pt; }
+
+  h2, h3, h4, summary { break-after: avoid; }
+  figure, blockquote, img, li { break-inside: avoid; }
+  .il-story img { max-height: 12cm; width: auto; }
+  .il-inline-img--left, .il-inline-img--right { width: 40%; }
+  .il-gallery__grid { grid-template-columns: repeat(3, 1fr); }
+  .il-gallery__link img { width: 100%; }
+
+  .il-story a { color: #000; }
+  .il-story a[href^="http"]:not(.il-card):not(.il-autolink)::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+  .il-card { border-color: #999; }
+  .il-card__img { max-height: 6cm; }
+  .il-card__url { display: block; font-size: 0.8em; word-break: break-all; }
+
+  video, audio, iframe, .il-lightbox { display: none !important; }
+  .il-media--video::before, .il-media--audio::before {
+    display: block;
+    padding: 0.5em 0.75em;
+    border: 1px solid #999;
+    font: 10pt/1.4 system-ui, sans-serif;
+  }
+  .il-media--video::before { content: "Video: play it in the digital version of this story."; }
+  .il-media--audio::before { content: "Audio: play it in the digital version of this story."; }
+
+  .il-scrolly__panel, .il-compare__labels, .il-compare__range { display: none !important; }
+  .il-scrolly.is-enhanced { display: block; }
+  .il-scrolly.is-enhanced .il-scrolly__steps { margin: 0; padding: 0; gap: 1.2em; }
+  .il-scrolly.is-enhanced .il-scrolly__step { min-height: 0; display: block; }
+  .il-scrolly.is-enhanced .il-scrolly__media,
+  .il-scrollpoints.is-enhanced .il-scrollpoints__media { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+  .il-scrolly.is-enhanced .il-scrolly__card { padding: 0; background: none; box-shadow: none; border: 0; color: #000; text-shadow: none; }
+  .il-scrolly.is-enhanced .il-scrolly__step { background: none !important; color: #000; text-shadow: none; }
+  .il-compare__pair { grid-template-columns: 1fr 1fr; }
+  .il-number__figure { font-size: 36pt; }
+  .il-fx { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .il-story > [data-il-band], .il-part > [data-il-band] {
+    background-color: transparent; border-image: none; padding-block: 0; color: #000;
+    --il-text: #000; --il-link: #000; --il-muted: #444; --il-accent: #000; --il-rule: #999;
+  }
+  .il-page { background: #fff !important; }
+  /* Colour schemes set their colours inline; print always uses ink on white paper. */
+  .il-story {
+    --il-bg: #fff !important; --il-text: #000 !important; --il-muted: #444 !important; --il-accent: #000 !important;
+    --il-link: #000 !important; --il-rule: #999 !important; --il-surface: #fff !important;
+  }
+  .il-appendix { break-before: page; background: none; border-color: #999; }
+  .il-references summary { min-height: 0; }
+  .il-references summary::before { content: none; }
+}
+@media print {
+  /* Separate rule: browsers that don't know ::details-content ignore only this one. */
+  .il-story details::details-content { content-visibility: visible; display: block; }
+}
+
+</style>
+</head>
+<body class="il-page">
+<main>
+<article class="il-story">
+<header class="il-header il-header--full il-header--media" id="b_top"><div class="il-header__media"><video muted loop playsinline preload="metadata" data-il-bg-video src="assets/a_hero-cycle-lane-street.mp4" aria-label="Two cyclists ride towards the camera along a wide, tree-lined street with a cycle lane." data-il-asset="a_hero"></video></div><div class="il-header__text"><p class="il-kicker">A tour of Galley</p><h1 class="il-title" id="b_top-title">Stories that move</h1><p class="il-standfirst">Galley is where you build a scrolling story for the web: words, pictures, video and sound, laid out as readers will see them. This story was made in Galley, and it uses every kind of block. Scroll on to see what each one does.</p><p class="il-byline">MMU Journalism</p></div><p class="il-header__credit">Video: MMU Journalism · Used with permission</p></header>
+<div class="il-text" id="b_intro"><p>Galley is a story editor for journalism students at Manchester Metropolitan University. You write and arrange your story on the page itself, check it the way an editor would, and export it as a web page that works in Moodle, on a website, or straight from a folder.</p>
+<p>There&#39;s no code to learn. A story is a list of <strong>blocks</strong>: a headline, some text, a photo, a scroll sequence. You add them, fill them in and put them in order.</p>
+<p>Each section below names the block it shows. To see how any of it is made, <a href="https://mmummj.github.io/Galley/?demo">open this story in Galley</a>. Everything in it can be clicked, changed and undone.</p></div>
+<figure class="il-number" id="b_number" data-il-effect="zoom"><p class="il-number__figure"><span class="il-number__value" aria-hidden="true" data-il-count="14">14</span><span class="il-number__unit" aria-hidden="true">kinds of block</span><span class="il-sr">14 kinds of block</span></p><figcaption><p class="il-number__context">to build a story with, from a plain paragraph to a scroll sequence. This is one of them: a Big number.</p><p class="il-number__source">Source: <a href="https://github.com/MMUMMJ/Galley">Galley&#39;s block picker</a></p></figcaption></figure>
+<section class="il-part" aria-labelledby="b_p1-title">
+<header class="il-header il-header--compact" id="b_p1"><div class="il-header__text"><p class="il-kicker">Part one</p><h2 class="il-title" id="b_p1-title">Words</h2><p class="il-standfirst">Text, quotes and columns: the blocks most stories are made of.</p></div></header>
+<div class="il-text" id="b_text"><h3>The Text block</h3>
+<p>This is a <strong>Text</strong> block. It holds paragraphs, subheadings, lists, links and <em>emphasis</em>. You type straight onto the page, and a bar at the top gives you bold, italics, links, headings and lists.</p>
+<figure class="il-inline-img il-inline-img--right"><img src="assets/a_tray-galley-tray.svg" alt="A galley seen from above: a shallow wooden tray packed with rows of metal type, one row picked out in red." decoding="async" width="1200" height="900" data-il-asset="a_tray"><figcaption><span class="il-caption">A galley: the tray that gives Galley its name.</span> <span class="il-credit">Illustration: Galley · Own work</span></figcaption></figure>
+<p>You can drop an image, a video or an embed into the middle of your text, like the galley beside this paragraph. Click it to move it left or right, write its alt text, or take it out again.</p>
+<p>A few things that help on a screen:</p>
+<ul><li>Keep paragraphs short: two to four sentences.</li><li>Use subheadings to break up anything longer than a few paragraphs.</li><li>Link to your sources in the sentence that uses them.</li></ul>
+<p>Below the quote, a <strong>Columns</strong> block sets three short texts side by side. On a phone, they stack.</p></div>
+<figure class="il-quote" id="b_quote" data-il-effect="rise"><blockquote><p>In letterpress printing, a galley was the shallow metal tray where typesetters collected and arranged lines of type before locking them up for the press.</p></blockquote><figcaption class="il-quote__cite">Why Galley?, where the name comes from</figcaption></figure>
+<div class="il-columns il-columns--3 il-w-wide" id="b_cols"><div class="il-text il-columns__col"><p><strong>Write.</strong> Type your story straight onto the page and see it as readers will. Add blocks with <strong>+ Add</strong>, and move them with Up and Down.</p></div><div class="il-text il-columns__col"><p><strong>Check.</strong> The Checks button asks what an editor would: is that figure sourced? Does that photo have alt text? They&#39;re prompts, not marks.</p></div><div class="il-text il-columns__col"><p><strong>Publish.</strong> Export a ZIP for Moodle or a single web page, or save to a folder that stays up to date as you work.</p></div></div>
+<div class="il-divider il-divider--label" id="b_div"><hr><p class="il-divider__label">A Divider: a pause between sections</p></div>
+</section>
+<section class="il-part" aria-labelledby="b_p2-title">
+<header class="il-header il-header--compact" id="b_p2"><div class="il-header__text"><p class="il-kicker">Part two</p><h2 class="il-title" id="b_p2-title">Pictures and sound</h2><p class="il-standfirst">Photos, galleries, video, audio and embeds. Every picture needs alt text, a caption and a credit, and Galley asks for all three.</p></div></header>
+<figure class="il-media il-media--image il-w-column" id="b_phone"><img src="assets/a_phone-published-on-a-phone.png" alt="This demo story on a phone: the label &quot;A tour of Galley&quot;, the title &quot;Stories that move&quot; and the opening paragraph, in white over a street scene." decoding="async" width="780" height="928" data-il-asset="a_phone"><figcaption><span class="il-caption">What readers see: this story on a phone. Every Galley story fits small screens without extra work.</span> <span class="il-credit">Screenshot: Galley · Own work</span></figcaption></figure>
+<div class="il-text" id="b_media_text"><p>That picture is a <strong>Media</strong> block. It shows one image, video or sound clip, at the width of the text, a little wider, or the full width of the screen.</p>
+<p>A <strong>Gallery</strong> shows several pictures together, and readers can open any of them full size.</p></div>
+<figure class="il-gallery il-w-wide" id="b_gallery" data-il-gallery><ul class="il-gallery__grid" role="list"><li class="il-gallery__item"><figure><a class="il-gallery__link" href="assets/a_p_table-around-the-table.jpg" aria-label="View image 1 of 4 full size: Five students talk around a table with laptops in a small meeting room."><img src="assets/a_p_table-around-the-table.jpg" alt="Five students talk around a table with laptops in a small meeting room." decoding="async" width="1600" height="1200" data-il-asset="a_p_table"></a><figcaption><span class="il-caption">Around the table.</span> <span class="il-credit">Photo: MMU Journalism · Used with permission</span></figcaption></figure></li><li class="il-gallery__item"><figure><a class="il-gallery__link" href="assets/a_p_mics-at-the-microphones.jpg" aria-label="View image 2 of 4 full size: Two students in headphones speak into microphones in a radio studio."><img src="assets/a_p_mics-at-the-microphones.jpg" alt="Two students in headphones speak into microphones in a radio studio." decoding="async" width="1600" height="1200" data-il-asset="a_p_mics"></a><figcaption><span class="il-caption">At the microphones.</span> <span class="il-credit">Photo: MMU Journalism · Used with permission</span></figcaption></figure></li><li class="il-gallery__item"><figure><a class="il-gallery__link" href="assets/a_p_gallery-tv-gallery.jpg" aria-label="View image 3 of 4 full size: A TV studio gallery: a vision mixer and monitors in the foreground, a large screen showing a presenter on a sofa, and students at desks beyond."><img src="assets/a_p_gallery-tv-gallery.jpg" alt="A TV studio gallery: a vision mixer and monitors in the foreground, a large screen showing a presenter on a sofa, and students at desks beyond." decoding="async" width="1600" height="1200" data-il-asset="a_p_gallery"></a><figcaption><span class="il-caption">In the TV gallery.</span> <span class="il-credit">Photo: MMU Journalism · Used with permission</span></figcaption></figure></li><li class="il-gallery__item"><figure><a class="il-gallery__link" href="assets/a_p_location-filming-on-location.jpg" aria-label="View image 4 of 4 full size: Two students filming outdoors with a camera on a tripod, beside a brick building painted with a colourful mural."><img src="assets/a_p_location-filming-on-location.jpg" alt="Two students filming outdoors with a camera on a tripod, beside a brick building painted with a colourful mural." decoding="async" width="1200" height="1600" data-il-asset="a_p_location"></a><figcaption><span class="il-caption">Filming on location.</span> <span class="il-credit">Photo: MMU Journalism · Used with permission</span></figcaption></figure></li></ul><figcaption class="il-gallery__caption">A Gallery block: journalism students at work. Click any picture to see it full size.</figcaption></figure>
+<figure class="il-media il-media--video il-w-wide" id="b_video"><video controls playsinline preload="metadata" src="assets/a_package-cycle-route-package.mp4" aria-label="A news package. Cyclists ride along a tree-lined street and past a sign for Cavendish Street, and a red cycle signal shows. Campaigners gather with bikes and signs reading &quot;Cycle route saved&quot; and &quot;We did it!&quot;. Councillor Lee-Ann Igbon, Labour councillor for Hulme, is interviewed in the street. The film ends on a cycle lane painted on the road." data-il-asset="a_package"><a href="assets/a_package-cycle-route-package.mp4">Download the video</a></video><figcaption><span class="il-caption">A Media block playing a video with sound: a news package about a cycle route in Manchester.</span> <span class="il-credit">Video: MMU Journalism · Used with permission</span></figcaption></figure>
+<figure class="il-media il-media--audio il-w-column" id="b_audio"><audio controls preload="metadata" src="assets/a_audio-audio-clip.m4a" aria-label="A computer voice reads: &quot;This is a Media block playing a sound clip. In a real story, this is where you might put a short piece of an interview…&quot; The full transcript is in the text below." data-il-asset="a_audio"><a href="assets/a_audio-audio-clip.m4a">Download the audio</a></audio><figcaption><span class="il-caption">A Media block playing sound: a computer voice, standing in for an interview.</span> <span class="il-credit">Voice: macOS text to speech · Own work</span></figcaption></figure>
+<div class="il-text" id="b_transcript"><p><strong>Transcript.</strong> &quot;This is a Media block playing a sound clip. In a real story, this is where you might put a short piece of an interview, so readers hear a voice in its own words. Keep clips short, add a caption that says who is speaking, and put the full transcript in the text, so everyone can follow it.&quot;</p>
+<p>Below is an <strong>Embed</strong>. Paste a YouTube, Vimeo, Spotify or SoundCloud link and it plays inside your story. Any other web address shows as a card that links to the page, like this one.</p></div>
+<figure class="il-embed il-w-column" id="b_embed"><div class="il-embed__frame"><a class="il-card" href="https://github.com/MMUMMJ/Galley"><span class="il-card__body"><span class="il-card__title">Galley on GitHub</span><span class="il-card__desc">Galley&#39;s code, with notes on how it works and what&#39;s coming next.</span><span class="il-card__host">github.com</span><span class="il-card__url">https://github.com/MMUMMJ/Galley</span></span></a></div></figure>
+</section>
+<section class="il-part" aria-labelledby="b_p3-title">
+<header class="il-header il-header--compact" id="b_p3"><div class="il-header__text"><p class="il-kicker">Part three</p><h2 class="il-title" id="b_p3-title">Things that move</h2><p class="il-standfirst">The showpiece blocks come alive as the reader scrolls. On the canvas they sit still, so press Play on the block, or Preview, to see them move.</p></div></header>
+<section class="il-scrolly il-scrolly--side" id="b_scrolly" data-il-scrolly aria-label="Scroll sequence"><div class="il-scrolly__steps"><div class="il-scrolly__step" data-il-step="0"><figure class="il-scrolly__media"><img src="assets/a_add-adding-a-block.png" alt="Galley&#39;s block picker: a grid of illustrated cards, one for each kind of block." decoding="async" width="1770" height="1140" data-il-asset="a_add"><figcaption><span class="il-credit">Screenshot: Galley · Own work</span></figcaption></figure><div class="il-scrolly__card"><p><strong>Scroll sequence, side by side.</strong> The picture stays put while these steps scroll past. Here&#39;s how a story comes together. <strong>1. Add blocks.</strong> Press <strong>+ Add</strong> and pick one from the illustrated list.</p></div></div><div class="il-scrolly__step" data-il-step="1"><figure class="il-scrolly__media"><video muted loop playsinline preload="metadata" data-il-bg-video src="assets/a_rec-typing-on-the-canvas.mp4" aria-label="A screen recording of Galley: a paragraph is clicked, a sentence is typed at its end, and the new words are made bold." data-il-asset="a_rec"></video><figcaption><span class="il-credit">Screen recording: Galley · Own work</span></figcaption></figure><div class="il-scrolly__card"><p><strong>2. Write on the page.</strong> Click any text to type. The bar at the top has bold, italics, links, headings, and a button to add pictures to the text. A step can show a video, like this one.</p></div></div><div class="il-scrolly__step" data-il-step="2"><figure class="il-scrolly__media"><img src="assets/a_sheet-block-settings.png" alt="Galley&#39;s settings sheet open beside the story, showing an image&#39;s alt text, caption and credit fields." decoding="async" width="1770" height="1140" data-il-asset="a_sheet"><figcaption><span class="il-credit">Screenshot: Galley · Own work</span></figcaption></figure><div class="il-scrolly__card"><p><strong>3. Open the settings.</strong> Each block&#39;s Settings hold what isn&#39;t on the page: alt text, credits, layout, effects and notes.</p></div></div><div class="il-scrolly__step" data-il-step="3"><figure class="il-scrolly__media"><img src="assets/a_checks-the-checks.png" alt="Galley&#39;s Checks panel listing editor&#39;s questions, grouped under headings such as Alt text and Long stretches." decoding="async" width="1770" height="1140" data-il-asset="a_checks"><figcaption><span class="il-credit">Screenshot: Galley · Own work</span></figcaption></figure><div class="il-scrolly__card"><p><strong>4. Ask the checks.</strong> Before you publish, Checks lists the questions an editor might ask. Click one to go straight to its block.</p></div></div></div></section>
+<section class="il-scrolly il-scrolly--column il-textcol" id="b_textcol" data-il-textcol aria-label="Text over images"><div class="il-textcol__images"><figure class="il-scrolly__media"><img src="assets/a_p_newsroom-in-the-newsroom.jpg" alt="Students at computers in a newsroom, while others stand reading from sheets of paper, with a screen on the wall behind." decoding="async" width="1600" height="1200" data-il-asset="a_p_newsroom"><figcaption><span class="il-credit">Photo: MMU Journalism · Used with permission</span></figcaption></figure><figure class="il-scrolly__media"><img src="assets/a_p_writing-writing-the-story.jpg" alt="A large newsroom full of students working at rows of computers." decoding="async" width="1600" height="1200" data-il-asset="a_p_writing"><figcaption><span class="il-credit">Photo: MMU Journalism · Used with permission</span></figcaption></figure><figure class="il-scrolly__media"><img src="assets/a_p_onair-on-air.jpg" alt="A student in headphones at a radio desk full of faders, an &quot;On air&quot; sign lit beside the screen, with two more students behind." decoding="async" width="1600" height="1200" data-il-asset="a_p_onair"><figcaption><span class="il-credit">Photo: MMU Journalism · Used with permission</span></figcaption></figure></div><div class="il-scrolly__steps"><div class="il-scrolly__step"><div class="il-scrolly__card"><p><strong>Text column.</strong> One long text scrolls over full-screen pictures, and the pictures share the scroll evenly. With three pictures, each one stays for a third of the text.</p>
+<p>Use it when the words lead and the pictures set the scene. These three follow a story through the newsroom and onto the air.</p>
+<p>It starts with an idea, pitched to an editor, questioned, sharpened and handed to a reporter with a deadline.</p>
+<p>Then the story is <strong>gathered and shaped</strong>: calls made, interviews recorded, the words written, cut and rewritten until every line earns its place.</p>
+<p>Finally it <strong>goes out</strong>, on air, online or in print, checked and ready for an audience.</p>
+<p>Galley does the same job for a digital story. You gather your words, pictures and scroll effects in one place, shape them on the page, and lock them into a finished package ready to publish.</p></div></div></div></section>
+<section class="il-scrolly il-scrolly--overlay il-scrollpoints" id="b_points" data-il-scrollpoints aria-label="Scrollpoints"><figure class="il-scrollpoints__media"><img src="assets/a_canvas-the-galley-canvas.png" alt="The Galley editor: the story down the middle, numbered blocks down the left, and buttons along the top." decoding="async" width="1440" height="900" data-il-asset="a_canvas"><figcaption><span class="il-caption">The Galley canvas.</span> <span class="il-credit">Screenshot: Galley · Own work</span></figcaption></figure><div class="il-scrolly__steps"><div class="il-scrolly__step il-scrollpoints__step il-scrolly__step--left" data-il-step="0"><div class="il-scrolly__card"><p><strong>Scrollpoints</strong> explore one big picture by zooming in on parts of it. This is the Galley editor.</p></div></div><div class="il-scrolly__step il-scrollpoints__step il-scrolly__step--right" data-il-step="1" data-il-focus="0,6,16,52"><div class="il-scrolly__card"><p>The numbers down the side are your blocks. Click one to jump to it. <strong>+ Add</strong> at the bottom adds another.</p></div></div><div class="il-scrolly__step il-scrollpoints__step il-scrolly__step--left" data-il-step="2" data-il-focus="27,14,50,40"><div class="il-scrolly__card"><p>The selected block has a toolbar: Settings, Edit text, Up, Down, Duplicate and Delete, plus Image or Play when the block has a picture or moves.</p></div></div><div class="il-scrolly__step il-scrollpoints__step il-scrolly__step--right" data-il-step="3" data-il-focus="0,0,46,12"><div class="il-scrolly__card"><p>Along the top: the File &amp; Export menu, Undo and Redo, Checks, and a switch between this Canvas view and the Classic one.</p></div></div></div></section>
+<figure class="il-compare il-w-wide" id="b_compare" data-il-compare><div class="il-compare__pair"><figure class="il-compare__side il-compare__before"><img src="assets/a_before-proof-marks-before.svg" alt="A proof page covered in red correction marks." decoding="async" width="1500" height="1000" data-il-asset="a_before"><figcaption><strong class="il-compare__label">Before: Marked up</strong> <span class="il-credit">Illustration: Galley · Own work</span></figcaption></figure><figure class="il-compare__side il-compare__after"><img src="assets/a_after-proof-clean-after.svg" alt="The same page with every correction made and no marks left." decoding="async" width="1500" height="1000" data-il-asset="a_after"><figcaption><strong class="il-compare__label">After: Corrected</strong> <span class="il-credit">Illustration: Galley · Own work</span></figcaption></figure></div><figcaption class="il-compare__caption">A Before and after block: drag the handle to compare two pictures of the same thing, such as a street then and now.</figcaption></figure>
+<section class="il-scrolly il-scrolly--overlay" id="b_overlay" data-il-scrolly aria-label="Scroll sequence"><div class="il-scrolly__steps"><div class="il-scrolly__step il-scrolly__step--left" data-il-step="0"><figure class="il-scrolly__media"><img src="assets/a_p_studio-radio-studio.jpg" alt="A busy radio studio: students and a tutor gather round the desk and microphones." decoding="async" width="1600" height="1200" data-il-asset="a_p_studio"><figcaption><span class="il-credit">Photo: MMU Journalism · Used with permission</span></figcaption></figure><div class="il-scrolly__card"><p><strong>Scroll sequence, overlay.</strong> The same block with its other layout: the picture fills the screen and the text scrolls over it in boxes.</p></div></div><div class="il-scrolly__step il-scrolly__step--right" data-il-step="1"><figure class="il-scrolly__media"><img src="assets/a_p_studio-radio-studio.jpg" alt="A busy radio studio: students and a tutor gather round the desk and microphones." decoding="async" width="1600" height="1200" data-il-asset="a_p_studio"><figcaption><span class="il-credit">Photo: MMU Journalism · Used with permission</span></figcaption></figure><div class="il-scrolly__card"><p>It suits big, atmospheric pictures. Keep each step short, sixty words at most, so the picture still does the work.</p></div></div><div class="il-scrolly__step" data-il-step="2"><figure class="il-scrolly__media"><img src="assets/a_p_desk-at-the-desk.jpg" alt="A tutor leans in to help a student at a radio desk while another student watches. A &quot;Mic live&quot; sign glows." decoding="async" width="1600" height="1200" data-il-asset="a_p_desk"><figcaption><span class="il-credit">Photo: MMU Journalism · Used with permission</span></figcaption></figure><div class="il-scrolly__card"><p>Readers scroll at their own pace. If they&#39;ve turned movement off on their device, the steps simply sit one after another.</p></div></div></div></section>
+<div class="il-text" id="b_effects" data-il-band style="--il-band:#eddddf;--il-band-ink:#000000" data-il-effect="fade"><p><strong>Effects and bands.</strong> This paragraph fades in as you reach it, and sits on a coloured band. Both are under <strong>Look</strong> in a block&#39;s settings.</p>
+<p>Use them sparingly: a story where everything moves is tiring to read. Readers who turn off movement on their device see everything, just without the motion.</p></div>
+</section>
+<section class="il-part" aria-labelledby="b_p4-title">
+<header class="il-header il-header--compact" id="b_p4"><div class="il-header__text"><p class="il-kicker">Part four</p><h2 class="il-title" id="b_p4-title">Your turn</h2><p class="il-standfirst">Make this story yours, or start your own.</p></div></header>
+<div class="il-text" id="b_turn"><h3>Change anything</h3>
+<p>This demo is yours to play with. Click anything, type over it, move blocks around or delete them. <strong>Undo</strong> puts things back, and <strong>File &amp; Export, then Open the demo story</strong> brings back a fresh copy whenever you want one.</p>
+<h3>Start your own</h3>
+<p>Choose <strong>File &amp; Export, then New story</strong>. If your module has a course pack, you may start with a ready-made outline and prompts written by your tutor.</p>
+<h3>Publish</h3>
+<p>Export a <strong>ZIP</strong> for Moodle, or a single <strong>web page</strong> to share. Galley saves your work in your browser as you go. To keep a copy somewhere safer, use <strong>Save to folder</strong> and choose a folder in OneDrive.</p>
+<p>Scrolling stories like this one have been around since the <em>New York Times</em> published Snow Fall (Branch, 2012). The list below is a <strong>References</strong> block, and Checks makes sure every citation in your text has a reference to match.</p></div>
+<section class="il-references" id="b_refs" aria-labelledby="b_refs-title"><details open><summary><h3 class="il-references__title" id="b_refs-title">References</h3></summary><ul class="il-references__list"><li>Branch, J. (2012) &#39;Snow Fall: the avalanche at Tunnel Creek&#39;, <em>The New York Times</em>, 20 December. Available at: <a class="il-autolink" href="https://www.nytimes.com/projects/2012/snow-fall/">https://www.nytimes.com/projects/2012/snow-fall/</a> (Accessed: 10 November 2026).</li></ul></details></section>
+</section>
+</article>
+</main>
+<script type="application/json" id="galley-source">{"schemaVersion":2,"runtimeVersion":"1.17.1","meta":{"title":"Stories that move: a tour of Galley","standfirst":"","byline":"MMU Journalism","seoTitle":"Stories that move: a tour of Galley","seoDescription":"A demo story made in Galley, the scrollytelling editor for MMU journalism students. It shows every kind of block.","shareImage":"a_share","shareText":"A tour of Galley, made in Galley: every kind of block, from text to scroll sequences.","pack":null,"created":"2026-11-10T12:00:00.000Z","modified":"2026-11-10T12:00:00.000Z","appendix":false,"theme":"house"},"blocks":[{"id":"b_top","type":"header","effect":"none","effectNote":"","note":"The background is the opening shot of the news package further down. Notes like this one are for you and your tutor. Readers never see them, unless you choose to add them to the end of your export (Story details, then Appendix).","background":null,"data":{"variant":"full","kicker":"A tour of Galley","title":"Stories that move","standfirst":"Galley is where you build a scrolling story for the web: words, pictures, video and sound, laid out as readers will see them. This story was made in Galley, and it uses every kind of block. Scroll on to see what each one does.","byline":"MMU Journalism","media":"a_hero"}},{"id":"b_intro","type":"text","effect":"none","effectNote":"","note":"","background":null,"data":{"body":"Galley is a story editor for journalism students at Manchester Metropolitan University. You write and arrange your story on the page itself, check it the way an editor would, and export it as a web page that works in Moodle, on a website, or straight from a folder.\n\nThere's no code to learn. A story is a list of **blocks**: a headline, some text, a photo, a scroll sequence. You add them, fill them in and put them in order.\n\nEach section below names the block it shows. To see how any of it is made, [open this story in Galley](https://mmummj.github.io/Galley/?demo). Everything in it can be clicked, changed and undone."}},{"id":"b_number","type":"number","effect":"zoom","effectNote":"Zoom draws the eye to the number as it arrives. One big number per section is plenty.","note":"","background":null,"data":{"value":"14","unit":"kinds of block","context":"to build a story with, from a plain paragraph to a scroll sequence. This is one of them: a Big number.","sourceName":"Galley's block picker","sourceRef":"https://github.com/MMUMMJ/Galley"}},{"id":"b_p1","type":"header","effect":"none","effectNote":"","note":"","background":null,"data":{"variant":"compact","kicker":"Part one","title":"Words","standfirst":"Text, quotes and columns: the blocks most stories are made of.","byline":"","media":null}},{"id":"b_text","type":"text","effect":"none","effectNote":"","note":"","background":null,"data":{"body":"## The Text block\n\nThis is a **Text** block. It holds paragraphs, subheadings, lists, links and *emphasis*. You type straight onto the page, and a bar at the top gives you bold, italics, links, headings and lists.\n\n![galley-tray](asset:a_tray \"right\")\n\nYou can drop an image, a video or an embed into the middle of your text, like the galley beside this paragraph. Click it to move it left or right, write its alt text, or take it out again.\n\nA few things that help on a screen:\n\n- Keep paragraphs short: two to four sentences.\n- Use subheadings to break up anything longer than a few paragraphs.\n- Link to your sources in the sentence that uses them.\n\nBelow the quote, a **Columns** block sets three short texts side by side. On a phone, they stack."}},{"id":"b_quote","type":"quote","effect":"rise","effectNote":"","note":"","background":null,"data":{"text":"In letterpress printing, a galley was the shallow metal tray where typesetters collected and arranged lines of type before locking them up for the press.","cite":"Why Galley?","role":"where the name comes from"}},{"id":"b_cols","type":"columns","effect":"none","effectNote":"","note":"","background":null,"data":{"mode":"separate","count":3,"width":"wide","col1":"**Write.** Type your story straight onto the page and see it as readers will. Add blocks with **+ Add**, and move them with Up and Down.","col2":"**Check.** The Checks button asks what an editor would: is that figure sourced? Does that photo have alt text? They're prompts, not marks.","col3":"**Publish.** Export a ZIP for Moodle or a single web page, or save to a folder that stays up to date as you work.","body":""}},{"id":"b_div","type":"divider","effect":"none","effectNote":"","note":"","background":null,"data":{"text":"A Divider: a pause between sections"}},{"id":"b_p2","type":"header","effect":"none","effectNote":"","note":"","background":null,"data":{"variant":"compact","kicker":"Part two","title":"Pictures and sound","standfirst":"Photos, galleries, video, audio and embeds. Every picture needs alt text, a caption and a credit, and Galley asks for all three.","byline":"","media":null}},{"id":"b_phone","type":"media","effect":"none","effectNote":"","note":"","background":null,"data":{"kind":"image","asset":"a_phone","width":"column"}},{"id":"b_media_text","type":"text","effect":"none","effectNote":"","note":"","background":null,"data":{"body":"That picture is a **Media** block. It shows one image, video or sound clip, at the width of the text, a little wider, or the full width of the screen.\n\nA **Gallery** shows several pictures together, and readers can open any of them full size."}},{"id":"b_gallery","type":"gallery","effect":"none","effectNote":"","note":"","background":null,"data":{"items":["a_p_table","a_p_mics","a_p_gallery","a_p_location"],"caption":"A Gallery block: journalism students at work. Click any picture to see it full size.","width":"wide"}},{"id":"b_video","type":"media","effect":"none","effectNote":"","note":"","background":null,"data":{"kind":"video","asset":"a_package","width":"wide"}},{"id":"b_audio","type":"media","effect":"none","effectNote":"","note":"Placeholder audio: swap in a real interview clip.","background":null,"data":{"kind":"audio","asset":"a_audio","width":"column"}},{"id":"b_transcript","type":"text","effect":"none","effectNote":"","note":"","background":null,"data":{"body":"**Transcript.** \"This is a Media block playing a sound clip. In a real story, this is where you might put a short piece of an interview, so readers hear a voice in its own words. Keep clips short, add a caption that says who is speaking, and put the full transcript in the text, so everyone can follow it.\"\n\nBelow is an **Embed**. Paste a YouTube, Vimeo, Spotify or SoundCloud link and it plays inside your story. Any other web address shows as a card that links to the page, like this one."}},{"id":"b_embed","type":"embed","effect":"none","effectNote":"","note":"","background":null,"data":{"url":"https://github.com/MMUMMJ/Galley","title":"Galley on GitHub","description":"Galley's code, with notes on how it works and what's coming next.","screenshot":null,"width":"column"}},{"id":"b_p3","type":"header","effect":"none","effectNote":"","note":"","background":null,"data":{"variant":"compact","kicker":"Part three","title":"Things that move","standfirst":"The showpiece blocks come alive as the reader scrolls. On the canvas they sit still, so press Play on the block, or Preview, to see them move.","byline":"","media":null}},{"id":"b_scrolly","type":"scrolly","effect":"none","effectNote":"","note":"","background":null,"data":{"layout":"side","align":"center","textSide":"right","backdrop":"solid","steps":[{"media":"a_add","align":"center","text":"**Scroll sequence, side by side.** The picture stays put while these steps scroll past. Here's how a story comes together. **1. Add blocks.** Press **+ Add** and pick one from the illustrated list."},{"media":"a_rec","align":"center","text":"**2. Write on the page.** Click any text to type. The bar at the top has bold, italics, links, headings, and a button to add pictures to the text. A step can show a video, like this one."},{"media":"a_sheet","align":"center","text":"**3. Open the settings.** Each block's Settings hold what isn't on the page: alt text, credits, layout, effects and notes."},{"media":"a_checks","align":"center","text":"**4. Ask the checks.** Before you publish, Checks lists the questions an editor might ask. Click one to go straight to its block."}]}},{"id":"b_textcol","type":"textcolumn","effect":"none","effectNote":"","note":"","background":null,"data":{"body":"**Text column.** One long text scrolls over full-screen pictures, and the pictures share the scroll evenly. With three pictures, each one stays for a third of the text.\n\nUse it when the words lead and the pictures set the scene. These three follow a story through the newsroom and onto the air.\n\nIt starts with an idea, pitched to an editor, questioned, sharpened and handed to a reporter with a deadline.\n\nThen the story is **gathered and shaped**: calls made, interviews recorded, the words written, cut and rewritten until every line earns its place.\n\nFinally it **goes out**, on air, online or in print, checked and ready for an audience.\n\nGalley does the same job for a digital story. You gather your words, pictures and scroll effects in one place, shape them on the page, and lock them into a finished package ready to publish.","images":["a_p_newsroom","a_p_writing","a_p_onair"],"align":"center","backdrop":"solid"}},{"id":"b_points","type":"scrollpoints","effect":"none","effectNote":"","note":"","background":null,"data":{"asset":"a_canvas","steps":[{"text":"**Scrollpoints** explore one big picture by zooming in on parts of it. This is the Galley editor.","align":"auto","focus":false,"x":0,"y":0,"w":100,"h":100},{"text":"The numbers down the side are your blocks. Click one to jump to it. **+ Add** at the bottom adds another.","align":"auto","focus":true,"x":0,"y":6,"w":16,"h":52},{"text":"The selected block has a toolbar: Settings, Edit text, Up, Down, Duplicate and Delete, plus Image or Play when the block has a picture or moves.","align":"auto","focus":true,"x":27,"y":14,"w":50,"h":40},{"text":"Along the top: the File & Export menu, Undo and Redo, Checks, and a switch between this Canvas view and the Classic one.","align":"auto","focus":true,"x":0,"y":0,"w":46,"h":12}]}},{"id":"b_compare","type":"compare","effect":"none","effectNote":"","note":"Placeholder illustrations: a real then-and-now pair of photos, taken from the same spot, works best.","background":null,"data":{"before":{"asset":"a_before","label":"Marked up"},"after":{"asset":"a_after","label":"Corrected"},"caption":"A Before and after block: drag the handle to compare two pictures of the same thing, such as a street then and now.","width":"wide"}},{"id":"b_overlay","type":"scrolly","effect":"none","effectNote":"","note":"","background":null,"data":{"layout":"overlay","align":"center","textSide":"right","backdrop":"solid","steps":[{"media":"a_p_studio","align":"left","text":"**Scroll sequence, overlay.** The same block with its other layout: the picture fills the screen and the text scrolls over it in boxes."},{"media":"a_p_studio","align":"right","text":"It suits big, atmospheric pictures. Keep each step short, sixty words at most, so the picture still does the work."},{"media":"a_p_desk","align":"center","text":"Readers scroll at their own pace. If they've turned movement off on their device, the steps simply sit one after another."}]}},{"id":"b_effects","type":"text","effect":"fade","effectNote":"A gentle fade marks the end of the showpieces.","note":"","background":"tint","data":{"body":"**Effects and bands.** This paragraph fades in as you reach it, and sits on a coloured band. Both are under **Look** in a block's settings.\n\nUse them sparingly: a story where everything moves is tiring to read. Readers who turn off movement on their device see everything, just without the motion."}},{"id":"b_p4","type":"header","effect":"none","effectNote":"","note":"","background":null,"data":{"variant":"compact","kicker":"Part four","title":"Your turn","standfirst":"Make this story yours, or start your own.","byline":"","media":null}},{"id":"b_turn","type":"text","effect":"none","effectNote":"","note":"","background":null,"data":{"body":"## Change anything\n\nThis demo is yours to play with. Click anything, type over it, move blocks around or delete them. **Undo** puts things back, and **File & Export, then Open the demo story** brings back a fresh copy whenever you want one.\n\n## Start your own\n\nChoose **File & Export, then New story**. If your module has a course pack, you may start with a ready-made outline and prompts written by your tutor.\n\n## Publish\n\nExport a **ZIP** for Moodle, or a single **web page** to share. Galley saves your work in your browser as you go. To keep a copy somewhere safer, use **Save to folder** and choose a folder in OneDrive.\n\nScrolling stories like this one have been around since the *New York Times* published Snow Fall (Branch, 2012). The list below is a **References** block, and Checks makes sure every citation in your text has a reference to match."}},{"id":"b_refs","type":"references","effect":"none","effectNote":"","note":"","background":null,"data":{"title":"References","items":["Branch, J. (2012) 'Snow Fall: the avalanche at Tunnel Creek', *The New York Times*, 20 December. Available at: https://www.nytimes.com/projects/2012/snow-fall/ (Accessed: 10 November 2026)."],"collapsed":false}}],"assets":{"a_hero":{"name":"cycle-lane-street.mp4","mime":"video/mp4","bytes":1177792,"alt":"Two cyclists ride towards the camera along a wide, tree-lined street with a cycle lane.","caption":"","credit":"Video: MMU Journalism","licence":"Used with permission","width":null,"height":null},"a_tray":{"name":"galley-tray.svg","mime":"image/svg+xml","bytes":15366,"alt":"A galley seen from above: a shallow wooden tray packed with rows of metal type, one row picked out in red.","caption":"A galley: the tray that gives Galley its name.","credit":"Illustration: Galley","licence":"Own work","width":1200,"height":900},"a_phone":{"name":"published-on-a-phone.png","mime":"image/png","bytes":442079,"alt":"This demo story on a phone: the label \"A tour of Galley\", the title \"Stories that move\" and the opening paragraph, in white over a street scene.","caption":"What readers see: this story on a phone. Every Galley story fits small screens without extra work.","credit":"Screenshot: Galley","licence":"Own work","width":780,"height":928},"a_p_table":{"name":"around-the-table.jpg","mime":"image/jpeg","bytes":248063,"alt":"Five students talk around a table with laptops in a small meeting room.","caption":"Around the table.","credit":"Photo: MMU Journalism","licence":"Used with permission","width":1600,"height":1200},"a_p_mics":{"name":"at-the-microphones.jpg","mime":"image/jpeg","bytes":220968,"alt":"Two students in headphones speak into microphones in a radio studio.","caption":"At the microphones.","credit":"Photo: MMU Journalism","licence":"Used with permission","width":1600,"height":1200},"a_p_gallery":{"name":"tv-gallery.jpg","mime":"image/jpeg","bytes":286814,"alt":"A TV studio gallery: a vision mixer and monitors in the foreground, a large screen showing a presenter on a sofa, and students at desks beyond.","caption":"In the TV gallery.","credit":"Photo: MMU Journalism","licence":"Used with permission","width":1600,"height":1200},"a_p_location":{"name":"filming-on-location.jpg","mime":"image/jpeg","bytes":479201,"alt":"Two students filming outdoors with a camera on a tripod, beside a brick building painted with a colourful mural.","caption":"Filming on location.","credit":"Photo: MMU Journalism","licence":"Used with permission","width":1200,"height":1600},"a_package":{"name":"cycle-route-package.mp4","mime":"video/mp4","bytes":8729839,"alt":"A news package. Cyclists ride along a tree-lined street and past a sign for Cavendish Street, and a red cycle signal shows. Campaigners gather with bikes and signs reading \"Cycle route saved\" and \"We did it!\". Councillor Lee-Ann Igbon, Labour councillor for Hulme, is interviewed in the street. The film ends on a cycle lane painted on the road.","caption":"A Media block playing a video with sound: a news package about a cycle route in Manchester.","credit":"Video: MMU Journalism","licence":"Used with permission","width":null,"height":null},"a_rec":{"name":"typing-on-the-canvas.mp4","mime":"video/mp4","bytes":237474,"alt":"A screen recording of Galley: a paragraph is clicked, a sentence is typed at its end, and the new words are made bold.","caption":"","credit":"Screen recording: Galley","licence":"Own work","width":null,"height":null},"a_audio":{"name":"audio-clip.m4a","mime":"audio/mp4","bytes":106460,"alt":"A computer voice reads: \"This is a Media block playing a sound clip. In a real story, this is where you might put a short piece of an interview…\" The full transcript is in the text below.","caption":"A Media block playing sound: a computer voice, standing in for an interview.","credit":"Voice: macOS text to speech","licence":"Own work","width":null,"height":null},"a_add":{"name":"adding-a-block.png","mime":"image/png","bytes":418597,"alt":"Galley's block picker: a grid of illustrated cards, one for each kind of block.","caption":"","credit":"Screenshot: Galley","licence":"Own work","width":1770,"height":1140},"a_sheet":{"name":"block-settings.png","mime":"image/png","bytes":906544,"alt":"Galley's settings sheet open beside the story, showing an image's alt text, caption and credit fields.","caption":"","credit":"Screenshot: Galley","licence":"Own work","width":1770,"height":1140},"a_checks":{"name":"the-checks.png","mime":"image/png","bytes":258172,"alt":"Galley's Checks panel listing editor's questions, grouped under headings such as Alt text and Long stretches.","caption":"","credit":"Screenshot: Galley","licence":"Own work","width":1770,"height":1140},"a_p_newsroom":{"name":"in-the-newsroom.jpg","mime":"image/jpeg","bytes":290105,"alt":"Students at computers in a newsroom, while others stand reading from sheets of paper, with a screen on the wall behind.","caption":"","credit":"Photo: MMU Journalism","licence":"Used with permission","width":1600,"height":1200},"a_p_writing":{"name":"writing-the-story.jpg","mime":"image/jpeg","bytes":318772,"alt":"A large newsroom full of students working at rows of computers.","caption":"","credit":"Photo: MMU Journalism","licence":"Used with permission","width":1600,"height":1200},"a_p_onair":{"name":"on-air.jpg","mime":"image/jpeg","bytes":292534,"alt":"A student in headphones at a radio desk full of faders, an \"On air\" sign lit beside the screen, with two more students behind.","caption":"","credit":"Photo: MMU Journalism","licence":"Used with permission","width":1600,"height":1200},"a_canvas":{"name":"the-galley-canvas.png","mime":"image/png","bytes":174722,"alt":"The Galley editor: the story down the middle, numbered blocks down the left, and buttons along the top.","caption":"The Galley canvas.","credit":"Screenshot: Galley","licence":"Own work","width":1440,"height":900},"a_before":{"name":"proof-marks-before.svg","mime":"image/svg+xml","bytes":2582,"alt":"A proof page covered in red correction marks.","caption":"","credit":"Illustration: Galley","licence":"Own work","width":1500,"height":1000},"a_after":{"name":"proof-clean-after.svg","mime":"image/svg+xml","bytes":1989,"alt":"The same page with every correction made and no marks left.","caption":"","credit":"Illustration: Galley","licence":"Own work","width":1500,"height":1000},"a_p_studio":{"name":"radio-studio.jpg","mime":"image/jpeg","bytes":341439,"alt":"A busy radio studio: students and a tutor gather round the desk and microphones.","caption":"","credit":"Photo: MMU Journalism","licence":"Used with permission","width":1600,"height":1200},"a_p_desk":{"name":"at-the-desk.jpg","mime":"image/jpeg","bytes":214773,"alt":"A tutor leans in to help a student at a radio desk while another student watches. A \"Mic live\" sign glows.","caption":"","credit":"Photo: MMU Journalism","licence":"Used with permission","width":1600,"height":1200},"a_share":{"name":"galley-share-image.png","mime":"image/png","bytes":21315,"alt":"The Galley logo, a tray of type, on paper-coloured background.","caption":"","credit":"Galley brand","licence":"Own work","width":1200,"height":630}},"reflection":[{"q":"What is the Reflection tab for?","a":"Questions about how you made the story, for you and your tutor. A course pack can set its own questions. Like notes, readers only see your answers if you add the appendix when you export."},{"q":"What would you change about this demo?","a":"Try it: replace a placeholder picture with your own, rewrite a step, or add a block of your own."}]}</script>
+<script>
+/*! Galley runtime: renders a Galley story into a reader-facing page.
+ *  Inlined into every export, so it must stay self-contained: no imports, no network.
+ *  renderArticle / renderDocument produce static HTML that reads fine without JavaScript.
+ *  enhance() then adds the optional extras (gallery lightbox, embed players, print). */
+(function (root) {
+  'use strict';
+
+  const RUNTIME_VERSION = '1.17.1';
+
+  // ------------------------------------------------------------ helpers
+
+  const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ESC[c]);
+  const str = (v) => (typeof v === 'string' ? v : '');
+  const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+  const WIDTHS = ['column', 'wide', 'full'];
+
+  // ------------------------------------------------------------ colour schemes and bands
+  // Every scheme passes 4.5:1 contrast for body text, muted text, accent and links.
+  // The colours are written into the page as inline CSS variables, so this is the only copy.
+  const SCHEMES = {
+    house: { name: 'House', dark: false, mood: 'Warm paper, ink, a deep claret accent.',
+      bg: '#fdfcfa', text: '#1a1a1a', muted: '#575757', accent: '#8a1c3c', link: '#0b5394', rule: '#d9d5cc', surface: '#ffffff' },
+    wire: { name: 'Wire', dark: false, mood: 'Crisp white, slate type, a signal-orange accent.',
+      bg: '#ffffff', text: '#1b2330', muted: '#55606f', accent: '#b93d0c', link: '#1d4fd0', rule: '#dde2ea', surface: '#f5f7fa' },
+    longread: { name: 'Long read', dark: false, mood: 'Soft green-grey paper, a forest accent.',
+      bg: '#f2f5f0', text: '#1c2420', muted: '#525d56', accent: '#2c6a4d', link: '#1d5a8c', rule: '#d0d9d0', surface: '#fbfcfa' },
+    magazine: { name: 'Magazine', dark: false, mood: 'Pure white, black type, a red that shouts once.',
+      bg: '#ffffff', text: '#111111', muted: '#545454', accent: '#c4161c', link: '#b0151a', rule: '#e2e2e2', surface: '#f6f6f6' },
+    nightdesk: { name: 'Night desk', dark: true, mood: 'Charcoal, warm off-white, an amber lamp.',
+      bg: '#15181d', text: '#ece8e1', muted: '#aab0b8', accent: '#f0b429', link: '#8db9ff', rule: '#353b45', surface: '#1e2229' },
+    investigation: { name: 'Investigation', dark: true, mood: 'Deep navy, cool type, a coral alarm.',
+      bg: '#0f1a2b', text: '#e7edf6', muted: '#a6b3c6', accent: '#ff7a6b', link: '#9fc6ff', rule: '#2a3a55', surface: '#16243a' },
+  };
+  const schemeOf = (meta) => (isObj(meta) && Object.prototype.hasOwnProperty.call(SCHEMES, meta.theme) ? meta.theme : 'house');
+  const schemeVars = (id) => {
+    const c = SCHEMES[id];
+    return `--il-bg:${c.bg};--il-text:${c.text};--il-muted:${c.muted};--il-accent:${c.accent};`
+      + `--il-link:${c.link};--il-rule:${c.rule};--il-surface:${c.surface}`;
+  };
+
+  const isHex = (v) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
+  const channel = (c) => { const v = c / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  function luminance(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    return 0.2126 * channel(n >> 16) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
+  }
+  function contrast(a, b) {
+    const x = luminance(a);
+    const y = luminance(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  // Black or white, whichever reads better. Every colour gets at least 4.5:1 this way.
+  const inkFor = (bg) => (contrast(bg, '#000000') >= contrast(bg, '#ffffff') ? '#000000' : '#ffffff');
+  function mixHex(a, b, t) {
+    const pa = parseInt(a.slice(1), 16);
+    const pb = parseInt(b.slice(1), 16);
+    return '#' + [16, 8, 0].map((sh) => Math.round(((pa >> sh) & 255) * t + ((pb >> sh) & 255) * (1 - t))
+      .toString(16).padStart(2, '0')).join('');
+  }
+  // A block's background: 'tint', 'ink' or 'accent' follow the scheme; '#rrggbb' is any colour.
+  function bandColour(value, schemeId) {
+    const c = SCHEMES[schemeId] || SCHEMES.house;
+    if (value === 'tint') return mixHex(c.accent, c.bg, 0.14);
+    if (value === 'ink') return c.text;
+    if (value === 'accent') return c.accent;
+    return isHex(value) ? value.toLowerCase() : '';
+  }
+  const EFFECTS = ['fade', 'rise', 'slide', 'zoom'];
+  const widthClass = (w, fallback) => 'il-w-' + (WIDTHS.includes(w) ? w : fallback || 'column');
+
+  // Allows http(s), mailto and relative links. Drops javascript:, data: and friends.
+  function safeUrl(url) {
+    const u = str(url).trim();
+    if (!u) return '';
+    const scheme = u.match(/^([a-z][a-z0-9+.-]*):/i);
+    if (scheme && !/^(https?|mailto)$/i.test(scheme[1])) return '';
+    return u;
+  }
+
+  const MIME_EXT = {
+    'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/svg+xml': 'svg',
+    'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov',
+    'audio/mpeg': 'mp3', 'audio/mp4': 'm4a', 'audio/wav': 'wav', 'audio/x-wav': 'wav', 'audio/ogg': 'ogg',
+  };
+
+  // Where an asset lives inside an export: assets/<id>-<safe file name>.
+  function assetPath(id, asset) {
+    let name = str(asset && asset.name).normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
+      .replace(/[^a-z0-9.]+/g, '-').replace(/-+\./g, '.').replace(/^[-.]+|[-.]+$/g, '').slice(-80);
+    if (!/\.[a-z0-9]{2,5}$/.test(name)) {
+      const ext = MIME_EXT[str(asset && asset.mime)];
+      name = (name || 'file') + (ext ? '.' + ext : '');
+    }
+    return 'assets/' + id + '-' + name;
+  }
+
+  function kindOf(asset, fallback) {
+    const m = str(asset && asset.mime);
+    if (m.startsWith('video/')) return 'video';
+    if (m.startsWith('audio/')) return 'audio';
+    if (m.startsWith('image/')) return 'image';
+    return ['image', 'video', 'audio'].includes(fallback) ? fallback : 'image';
+  }
+
+  // Records which asset an element shows, so a single-file export can be re-opened.
+  const mark = (id) => ` data-il-asset="${esc(id)}"`;
+  const dims = (a) => (a && a.width > 0 && a.height > 0 ? ` width="${+a.width}" height="${+a.height}"` : '');
+
+  // ------------------------------------------------------------ mini-markdown
+  // Every non-empty line is a paragraph. "##" and "###" start headings (space optional).
+  // "- " / "* " and "1. " start list items. Inline: **bold**, *italic*, [text](url), bare URLs.
+
+  function emphasis(s) {
+    return s
+      .replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, '<strong>$1</strong>')
+      .replace(/__(?=\S)([\s\S]*?\S)__/g, '<strong>$1</strong>')
+      .replace(/(^|[^\w*])\*(?=\S)([^*]*?\S)\*(?!\w)/g, '$1<em>$2</em>')
+      .replace(/(^|[^\w_])_(?=\S)([^_]*?\S)_(?!\w)/g, '$1<em>$2</em>');
+  }
+
+  function inline(text) {
+    const slots = [];
+    const hold = (html) => '\u0000' + (slots.push(html) - 1) + '\u0000';
+    let s = str(text).replace(/\u0000/g, '');
+    // A backslash makes the next symbol literal, e.g. \* for a real asterisk.
+    // The editor writes these when a student types symbols that would otherwise format text.
+    s = s.replace(/\\([\\*_[\]#!().+\-])/g, (m, c) => hold(esc(c)));
+    s = s.replace(/\[([^\]\n]+)\]\(\s*([^)\s]+)\s*\)/g, (m, label, href) => {
+      const url = safeUrl(href);
+      const inner = emphasis(esc(label));
+      return hold(url ? `<a href="${esc(url)}">${inner}</a>` : inner);
+    });
+    s = s.replace(/\bhttps?:\/\/[^\s<]+/g, (m) => {
+      const trail = (m.match(/[.,;:!?)\]'"]+$/) || [''])[0];
+      const url = m.slice(0, m.length - trail.length);
+      return hold(`<a class="il-autolink" href="${esc(url)}">${esc(url)}</a>`) + trail;
+    });
+    return emphasis(esc(s)).replace(/\u0000(\d+)\u0000/g, (m, i) => slots[+i]);
+  }
+
+  // level: the heading level that "##" maps to.
+  // An image on its own line: ![file name](asset:<id>) or ![file name](asset:<id> "left"|"right").
+  const IMAGE_LINE = /^!\[([^\]]*)\]\(asset:([A-Za-z0-9_-]+)(?:\s+"(left|right)")?\)$/;
+  // An embed in running text: ![Embed](https://…) on a line of its own.
+  const EMBED_LINE = /^!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)$/;
+
+  // image(ref, position, kind): renders an image, video (an asset id) or embed (kind 'embed',
+  // ref is the web address) line. Without it, those lines are left out.
+  function markdown(text, level, image) {
+    const base = level || 2;
+    const out = [];
+    let list = null;
+    const closeList = () => {
+      if (!list) return;
+      out.push(`<${list.tag}>${list.items.map((i) => `<li>${inline(i)}</li>`).join('')}</${list.tag}>`);
+      list = null;
+    };
+    const addItem = (tag, text) => {
+      if (list && list.tag !== tag) closeList();
+      if (!list) list = { tag, items: [] };
+      list.items.push(text);
+    };
+    for (const raw of str(text).replace(/\r\n?/g, '\n').split('\n')) {
+      const line = raw.trim();
+      let m;
+      if (!line) closeList();
+      else if ((m = line.match(IMAGE_LINE))) {
+        closeList();
+        if (image) out.push(image(m[2], m[3] || ''));
+      } else if ((m = line.match(EMBED_LINE))) {
+        closeList();
+        if (image) out.push(image(m[2], '', 'embed'));
+      }
+      // "## Heading" or "##Heading". A single "#" needs a space, so "#hashtag" and "#1" stay text.
+      else if ((m = line.match(/^(#{2,6})\s*([^#\s].*)$/) || line.match(/^(#)\s+(.+)$/))) {
+        closeList();
+        const h = Math.min(6, base + Math.max(0, m[1].length - 2));
+        out.push(`<h${h}>${inline(m[2])}</h${h}>`);
+      } else if ((m = line.match(/^[-*•]\s+(.+)$/))) addItem('ul', m[1]);
+      else if ((m = line.match(/^\d+[.)]\s+(.+)$/))) addItem('ol', m[1]);
+      else { closeList(); out.push(`<p>${inline(line)}</p>`); }
+    }
+    closeList();
+    return out.join('\n');
+  }
+
+  // ------------------------------------------------------------ embeds
+  // Only these four providers get an inline player; everything else is a link card.
+
+  function embedInfo(url) {
+    let u;
+    try { u = new URL(url); } catch (e) { return null; }
+    if (!/^https?:$/.test(u.protocol)) return null;
+    const host = u.hostname.replace(/^(www|m)\./, '');
+    const p = u.pathname.split('/').filter(Boolean);
+    const yt = (id) => (/^[\w-]{6,20}$/.test(id || '')
+      ? { provider: 'youtube', label: 'YouTube', src: 'https://www.youtube-nocookie.com/embed/' + id } : null);
+
+    if (/^(music\.)?youtube(-nocookie)?\.com$/.test(host)) {
+      return yt(u.searchParams.get('v') || (['embed', 'shorts', 'live', 'v'].includes(p[0]) ? p[1] : ''));
+    }
+    if (host === 'youtu.be') return yt(p[0]);
+    if (host === 'vimeo.com' || host === 'player.vimeo.com') {
+      const i = p.findIndex((s) => /^\d+$/.test(s));
+      if (i < 0) return null;
+      const hash = /^[0-9a-f]{6,}$/i.test(p[i + 1] || '') ? '?h=' + p[i + 1] : '';
+      return { provider: 'vimeo', label: 'Vimeo', src: `https://player.vimeo.com/video/${p[i]}${hash}` };
+    }
+    if (host === 'open.spotify.com') {
+      const q = p.filter((s) => s !== 'embed' && !/^intl-/.test(s));
+      if (['track', 'album', 'playlist', 'episode', 'show', 'artist'].includes(q[0]) && /^[A-Za-z0-9]+$/.test(q[1] || '')) {
+        return { provider: 'spotify', label: 'Spotify', src: `https://open.spotify.com/embed/${q[0]}/${q[1]}`,
+          height: q[0] === 'track' || q[0] === 'episode' ? 152 : 352 };
+      }
+      return null;
+    }
+    if (host === 'soundcloud.com' && p.length >= 2) {
+      return { provider: 'soundcloud', label: 'SoundCloud',
+        src: 'https://w.soundcloud.com/player/?url=' + encodeURIComponent('https://soundcloud.com/' + p.join('/')),
+        height: p[1] === 'sets' ? 450 : 166 };
+    }
+    return null;
+  }
+
+  // ------------------------------------------------------------ blocks
+
+  function figcaption(a, cls) {
+    if (!a) return '';
+    const caption = str(a.caption).trim();
+    const credit = [str(a.credit).trim(), str(a.licence).trim()].filter(Boolean).join(' · ');
+    if (!caption && !credit) return '';
+    return `<figcaption${cls ? ` class="${cls}"` : ''}>${caption ? `<span class="il-caption">${inline(caption)}</span>` : ''}`
+      + `${caption && credit ? ' ' : ''}${credit ? `<span class="il-credit">${esc(credit)}</span>` : ''}</figcaption>`;
+  }
+
+  // An image placed inside running text (text blocks and scroll steps): full width,
+  // or floated left or right with the text wrapping round it. Alt text, caption and
+  // credit come from the file, as everywhere else.
+  // Images, videos and embeds placed in running text (text blocks, columns and scroll steps).
+  function inlineImage(ctx) {
+    return (ref, position, kind) => {
+      if (kind === 'embed') {
+        const url = safeUrl(ref);
+        return /^https?:\/\//i.test(url) ? embedFigure(url, ctx, { cls: 'il-inline-embed' }) : '';
+      }
+      const a = ctx.asset(ref);
+      const k = a ? kindOf(a) : '';
+      const cls = position ? ' il-inline-img--' + position : '';
+      if (k === 'video') {
+        const src = esc(ctx.url(ref));
+        const label = str(a.alt) ? ` aria-label="${esc(a.alt)}"` : '';
+        const fallback = ctx.inline ? "Your browser can't play this video." : `<a href="${src}">Download the video</a>`;
+        return `<figure class="il-inline-img il-inline-video${cls}">`
+          + `<video controls playsinline preload="metadata" src="${src}"${label}${dims(a)}${mark(ref)}>${fallback}</video>${figcaption(a)}</figure>`;
+      }
+      if (k !== 'image') return ctx.preview ? '<p class="il-placeholder">Missing image or video</p>' : '';
+      return `<figure class="il-inline-img${cls}">`
+        + `<img src="${esc(ctx.url(ref))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(ref)}>${figcaption(a)}</figure>`;
+    };
+  }
+
+  // A link card for a web address; enhance() swaps in the provider's player where there is one.
+  function embedFigure(url, ctx, { id = '', cls = '', title = '', description = '', shot = null } = {}) {
+    const info = embedInfo(url);
+    let host = '';
+    try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) { host = url; }
+    const name = title || (info ? `${info.label}: ${host}` : host);
+    const a = shot ? ctx.asset(shot) : null;
+    const data = info ? ` data-il-embed-src="${esc(info.src)}" data-il-embed-label="${esc(info.label)}" data-il-embed-provider="${info.provider}"`
+      + (info.height ? ` data-il-embed-height="${info.height}"` : '') : '';
+    return `<figure class="il-embed${cls ? ' ' + cls : ''}"${id ? ` id="${esc(id)}"` : ''}${data}><div class="il-embed__frame">`
+      + `<a class="il-card" href="${esc(url)}">`
+      + (a ? `<img class="il-card__img" src="${esc(ctx.url(shot))}" alt="${esc(a.alt)}"${dims(a)}${mark(shot)}>` : '')
+      + `<span class="il-card__body"><span class="il-card__title">${esc(name)}</span>`
+      + (description ? `<span class="il-card__desc">${esc(description)}</span>` : '')
+      + `<span class="il-card__host">${esc(host)}</span><span class="il-card__url">${esc(url)}</span></span></a></div>`
+      + (a ? figcaption(a) : '') + '</figure>';
+  }
+
+  function placeholder(b, ctx, message) {
+    return ctx.preview ? `<div class="il-placeholder" id="${esc(b.id)}" role="note">${esc(message)}</div>` : '';
+  }
+
+  // A piece of text in a block. On the editor's canvas (opts.editable) it is always drawn, even
+  // when empty, and marked with the field it comes from so the student can type straight onto
+  // the page: e = { field, mode: plain|inline|lines|blocks, ph: hint when empty, opt: only shown
+  // while the block is selected, meta: the text comes from Story details, base: heading level }.
+  // Exports and the preview never get these marks.
+  function slot(ctx, tag, attrs, value, html, e) {
+    if (!ctx.edit || !e) return value ? `<${tag}${attrs}>${html}</${tag}>` : '';
+    const marks = ` data-il-edit="${e.field}" data-il-mode="${e.mode}" data-il-ph="${esc(e.ph)}"`
+      + (e.meta ? ' data-il-meta' : '') + (e.base ? ` data-il-base="${e.base}"` : '')
+      + (value ? '' : ' data-il-empty' + (e.opt ? ' data-il-opt' : ''));
+    return `<${tag}${attrs}${marks}>${value ? html : ''}</${tag}>`;
+  }
+
+  // A scroll step's text card. On the canvas its field is a path into the block: steps.2.text.
+  const stepCard = (ctx, i, html, cls) => slot(ctx, 'div', ` class="${cls}"`, html, html,
+    { field: `steps.${i}.text`, mode: 'blocks', ph: `Step ${i + 1}: type the text for this step`, base: 2 + ctx.offset });
+
+  const BLOCKS = {
+    header(b, d, ctx) {
+      const m = ctx.meta;
+      const first = ctx.headers === 0;
+      ctx.headers++;
+      ctx.offset = first ? 0 : 1;
+      const lvl = first ? 1 : 2;
+      const variant = d.variant === 'full' || d.variant === 'compact' ? d.variant : (first ? 'full' : 'compact');
+      const title = str(d.title) || (first ? str(m.title) : '');
+      const standfirst = str(d.standfirst) || (first ? str(m.standfirst) : '');
+      const byline = str(d.byline) || (first ? str(m.byline) : '');
+      const a = ctx.asset(d.media);
+      const kind = a ? kindOf(a) : '';
+      const label = a && str(a.alt) ? ` aria-label="${esc(a.alt)}"` : '';
+      const media = a && kind === 'image'
+        ? `<div class="il-header__media"><img src="${esc(ctx.url(d.media))}" alt="${esc(a.alt)}"${dims(a)}${mark(d.media)}></div>`
+        : a && kind === 'video'
+          ? `<div class="il-header__media"><video muted loop playsinline preload="metadata" data-il-bg-video src="${esc(ctx.url(d.media))}"${label}${dims(a)}${mark(d.media)}></video></div>`
+          : '';
+      const credit = a && media ? [str(a.credit), str(a.licence)].filter(Boolean).join(' · ') : '';
+      // Text shown from Story details (the opening header, or a story with no header block).
+      const top = b.id === 'il-top';
+      const meta = (key) => top || (first && !str(d[key]) && Boolean(str(m[key])));
+      return `<header class="il-header il-header--${variant}${media ? ' il-header--media' : ''}" id="${esc(b.id)}">${media}`
+        + '<div class="il-header__text">'
+        + slot(ctx, 'p', ' class="il-kicker"', str(d.kicker), esc(d.kicker), top ? null : { field: 'kicker', mode: 'plain', ph: 'Kicker', opt: true })
+        + slot(ctx, `h${lvl}`, ` class="il-title" id="${esc(b.id)}-title"`, title, esc(title), { field: 'title', mode: 'plain', ph: 'Headline', meta: meta('title') })
+        + slot(ctx, 'p', ' class="il-standfirst"', standfirst, inline(standfirst), { field: 'standfirst', mode: 'inline', ph: 'Standfirst: one or two sentences that sell the story', meta: meta('standfirst') })
+        + slot(ctx, 'p', ' class="il-byline"', byline, esc(byline), { field: 'byline', mode: 'plain', ph: 'By …', opt: true, meta: meta('byline') })
+        + '</div>'
+        + (credit ? `<p class="il-header__credit">${esc(credit)}</p>` : '')
+        + '</header>';
+    },
+
+    text(b, d, ctx) {
+      const html = markdown(d.body, 2 + ctx.offset, inlineImage(ctx));
+      if (!html && !ctx.edit) return placeholder(b, ctx, 'Empty text block');
+      return slot(ctx, 'div', ` class="il-text" id="${esc(b.id)}"`, html, html, { field: 'body', mode: 'blocks', ph: 'Start writing…', base: 2 + ctx.offset });
+    },
+
+    // Columns: separate columns written one by one, or one text flowing across columns like print.
+    // Phones always get one column.
+    columns(b, d, ctx) {
+      const n = d.count === 3 ? 3 : 2;
+      const width = d.width === 'column' ? 'il-w-column' : 'il-w-wide';
+      const media = inlineImage(ctx);
+      const lvl = 2 + ctx.offset;
+      if (d.mode === 'flow') {
+        const html = markdown(d.body, lvl, media);
+        if (!html && !ctx.edit) return placeholder(b, ctx, 'Empty columns block');
+        return slot(ctx, 'div', ` class="il-text il-columns il-columns--flow il-columns--${n} ${width}" id="${esc(b.id)}"`, html, html,
+          { field: 'body', mode: 'blocks', ph: 'Start writing: the text flows from one column into the next', base: lvl });
+      }
+      const cols = [d.col1, d.col2, d.col3].slice(0, n).map((t) => markdown(t, lvl, media));
+      if (ctx.edit) {
+        return `<div class="il-columns il-columns--${n} ${width}" id="${esc(b.id)}">`
+          + cols.map((c, i) => slot(ctx, 'div', ' class="il-text il-columns__col"', c, c, { field: `col${i + 1}`, mode: 'blocks', ph: `Column ${i + 1}`, base: lvl })).join('')
+          + '</div>';
+      }
+      if (!cols.some(Boolean)) return placeholder(b, ctx, 'Empty columns block');
+      return `<div class="il-columns il-columns--${n} ${width}" id="${esc(b.id)}">`
+        + cols.map((c) => (c || ctx.preview ? `<div class="il-text il-columns__col">${c || '<p class="il-placeholder">This column is empty</p>'}</div>` : '')).join('')
+        + '</div>';
+    },
+
+    quote(b, d, ctx) {
+      const lines = str(d.text).split(/\n+/).map((s) => s.trim()).filter(Boolean);
+      if (ctx.edit) {
+        const cite = str(d.cite).trim();
+        const role = str(d.role).trim();
+        return `<figure class="il-quote" id="${esc(b.id)}">`
+          + slot(ctx, 'blockquote', '', lines.length, lines.map((l) => `<p>${inline(l)}</p>`).join(''), { field: 'text', mode: 'lines', ph: 'Type the quote, without quotation marks' })
+          + '<figcaption class="il-quote__cite">'
+          + slot(ctx, 'span', '', cite, esc(cite), { field: 'cite', mode: 'plain', ph: 'Who said it' })
+          + `<span class="il-quote__sep">${cite && role ? ', ' : ' '}</span>`
+          + slot(ctx, 'span', '', role, esc(role), { field: 'role', mode: 'plain', ph: 'Their role', opt: true })
+          + '</figcaption></figure>';
+      }
+      if (!lines.length) return placeholder(b, ctx, 'Empty quote');
+      const who = [str(d.cite).trim(), str(d.role).trim()].filter(Boolean).map(esc).join(', ');
+      return `<figure class="il-quote" id="${esc(b.id)}"><blockquote>${lines.map((l) => `<p>${inline(l)}</p>`).join('')}</blockquote>`
+        + (who ? `<figcaption class="il-quote__cite">${who}</figcaption>` : '') + '</figure>';
+    },
+
+    media(b, d, ctx) {
+      const a = ctx.asset(d.asset);
+      if (!a) return placeholder(b, ctx, 'Choose a file for this media block');
+      const src = esc(ctx.url(d.asset));
+      const kind = kindOf(a, d.kind);
+      const m = mark(d.asset);
+      // Single-file pages hold the file once only, so no download link repeating it.
+      const fallback = (what) => (ctx.inline ? `Your browser can't play this ${what}.` : `<a href="${src}">Download the ${what}</a>`);
+      const label = str(a.alt) ? ` aria-label="${esc(a.alt)}"` : '';
+      let el;
+      if (kind === 'video') {
+        el = `<video controls playsinline preload="metadata" src="${src}"${label}${dims(a)}${m}>${fallback('video')}</video>`;
+      } else if (kind === 'audio') {
+        el = `<audio controls preload="metadata" src="${src}"${label}${m}>${fallback('audio')}</audio>`;
+      } else {
+        el = `<img src="${src}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${m}>`;
+      }
+      const width = kind === 'audio' ? 'il-w-column' : widthClass(d.width);
+      return `<figure class="il-media il-media--${kind} ${width}" id="${esc(b.id)}">${el}${figcaption(a)}</figure>`;
+    },
+
+    gallery(b, d, ctx) {
+      const items = (Array.isArray(d.items) ? d.items : [])
+        .map((id) => ({ id, a: ctx.asset(id) }))
+        .filter((x) => x.a && kindOf(x.a) === 'image');
+      if (!items.length) return placeholder(b, ctx, 'Add images to this gallery');
+      const n = items.length;
+      const lis = items.map((x, i) => {
+        const src = esc(ctx.url(x.id));
+        const name = `View image ${i + 1} of ${n} full size` + (str(x.a.alt) ? ': ' + x.a.alt : '');
+        const img = `<img src="${src}" alt="${esc(x.a.alt)}" decoding="async"${dims(x.a)}${mark(x.id)}>`;
+        // Single-file pages: no link (it would store the image twice); enhance() adds a button instead.
+        const inner = ctx.inline ? img : `<a class="il-gallery__link" href="${src}" aria-label="${esc(name)}">${img}</a>`;
+        return `<li class="il-gallery__item"><figure>${inner}${figcaption(x.a)}</figure></li>`;
+      }).join('');
+      return `<figure class="il-gallery ${widthClass(d.width, 'wide')}" id="${esc(b.id)}" data-il-gallery>`
+        + `<ul class="il-gallery__grid" role="list">${lis}</ul>`
+        + (str(d.caption) ? `<figcaption class="il-gallery__caption">${inline(d.caption)}</figcaption>` : '') + '</figure>';
+    },
+
+    embed(b, d, ctx) {
+      const url = safeUrl(d.url);
+      if (!/^https?:\/\//i.test(url)) return placeholder(b, ctx, 'Embed: paste a YouTube, Vimeo, Spotify or web link in Settings');
+      return embedFigure(url, ctx, {
+        id: b.id, cls: widthClass(d.width), title: str(d.title), description: str(d.description), shot: d.screenshot,
+      });
+    },
+
+    divider(b, d, ctx) {
+      const text = str(d.text).trim();
+      if (ctx.edit) {
+        const label = slot(ctx, 'p', ' class="il-divider__label"', text, inline(text), { field: 'text', mode: 'inline', ph: 'Add a label (optional)', opt: true });
+        return text ? `<div class="il-divider il-divider--label" id="${esc(b.id)}"><hr>${label}</div>`
+          : `<div class="il-divider-edit" id="${esc(b.id)}"><hr class="il-divider">${label}</div>`;
+      }
+      if (!text) return `<hr class="il-divider" id="${esc(b.id)}">`;
+      return `<div class="il-divider il-divider--label" id="${esc(b.id)}"><hr><p class="il-divider__label">${inline(text)}</p></div>`;
+    },
+
+    references(b, d, ctx) {
+      const items = (Array.isArray(d.items) ? d.items : str(d.items).split('\n'))
+        .map((s) => str(s).trim()).filter(Boolean);
+      if (!items.length) return placeholder(b, ctx, 'No references yet');
+      const lvl = 2 + ctx.offset;
+      const hid = esc(b.id) + '-title';
+      return `<section class="il-references" id="${esc(b.id)}" aria-labelledby="${hid}"><details${d.collapsed === true ? '' : ' open'}>`
+        + `<summary><h${lvl} class="il-references__title" id="${hid}">${esc(str(d.title) || 'References')}</h${lvl}></summary>`
+        + `<ul class="il-references__list">${items.map((i) => `<li>${inline(i)}</li>`).join('')}</ul></details></section>`;
+    },
+
+    // ---- Showpiece blocks. Each renders complete, readable HTML; enhance() adds the effect.
+
+    // Scroll sequence: steps of text, each optionally bringing in a new image.
+    // Static: image then text, step by step. Enhanced: sticky image panel, steps scroll past.
+    scrolly(b, d, ctx) {
+      const steps = (Array.isArray(d.steps) ? d.steps : []).filter(isObj);
+      if (!(ctx.edit && steps.length) && !steps.some((st) => str(st.text).trim() || ctx.asset(st.media))) return placeholder(b, ctx, 'Add steps to this scroll sequence');
+      // side: image beside the text; overlay: text cards over a full-screen image.
+      // (One continuous column of text over images is its own block: textcolumn.)
+      const layout = d.layout === 'overlay' ? 'overlay' : 'side';
+      const fallbackAlign = d.align === 'left' || d.align === 'right' ? d.align : 'center';
+      const html = steps.map((st, i) => {
+        const a = ctx.asset(st.media);
+        const kind = a ? kindOf(a) : '';
+        const label = a && str(a.alt) ? ` aria-label="${esc(a.alt)}"` : '';
+        const fig = a && kind === 'image'
+          ? `<figure class="il-scrolly__media"><img src="${esc(ctx.url(st.media))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(st.media)}>${figcaption(a)}</figure>`
+          : a && kind === 'video'
+            ? `<figure class="il-scrolly__media"><video muted loop playsinline preload="metadata" data-il-bg-video src="${esc(ctx.url(st.media))}"${label}${dims(a)}${mark(st.media)}></video>${figcaption(a)}</figure>`
+            : '';
+        const text = markdown(st.text, 2 + ctx.offset, inlineImage(ctx));
+        const stAlign = layout === 'overlay'
+          ? (st.align === 'left' || st.align === 'center' || st.align === 'right' ? st.align : fallbackAlign)
+          : '';
+        const stepCls = stAlign && stAlign !== 'center' ? ` il-scrolly__step--${stAlign}` : '';
+        // An empty step draws no card (an empty card is a stray box over the image). With no
+        // image either, the step is left out of the page; the editor preview still flags it.
+        // On the canvas the card is always there, ready to type in.
+        const card = ctx.edit ? stepCard(ctx, i, text, 'il-scrolly__card')
+          : text || ctx.preview ? `<div class="il-scrolly__card">${text || '<p class="il-placeholder">This step has no text yet</p>'}</div>` : '';
+        if (!fig && !card) return '';
+        return `<div class="il-scrolly__step${stepCls}" data-il-step="${i}">${fig}${card}</div>`;
+      }).join('');
+      // Overlay: each step's card can sit on the left, centre or right. Side by side: text on the right (default) or left.
+      const position = layout === 'side' && d.textSide === 'left' ? ' il-scrolly--text-left' : '';
+      const backdrop = layout === 'overlay' && (d.backdrop === 'vignette' || d.backdrop === 'none')
+        ? ` il-scrolly--backdrop-${d.backdrop}`
+        : '';
+      return `<section class="il-scrolly il-scrolly--${layout}${position}${backdrop}" id="${esc(b.id)}" data-il-scrolly aria-label="Scroll sequence">`
+        + `<div class="il-scrolly__steps">${html}</div></section>`;
+    },
+
+    // Text column: one continuous column of text scrolls over full-screen images. The text and
+    // the images are separate: the images share the scroll evenly (two images: the first for the
+    // first half of the text, the second for the rest). Without JavaScript, and in print, the
+    // images come first and the text follows. Uses the scroll sequence's column styles.
+    textcolumn(b, d, ctx) {
+      const ids = (Array.isArray(d.images) ? d.images : []).filter((id) => ctx.asset(id));
+      const html = markdown(d.body, 2 + ctx.offset, inlineImage(ctx));
+      if (!ctx.edit && !html && !ids.length) return placeholder(b, ctx, 'Text column: add the text and the images in Settings');
+      const figs = ids.map((id) => {
+        const a = ctx.asset(id);
+        if (kindOf(a) === 'video') {
+          const label = str(a.alt) ? ` aria-label="${esc(a.alt)}"` : '';
+          return `<figure class="il-scrolly__media"><video muted loop playsinline preload="metadata" data-il-bg-video src="${esc(ctx.url(id))}"${label}${dims(a)}${mark(id)}></video>${figcaption(a)}</figure>`;
+        }
+        return kindOf(a) === 'image'
+          ? `<figure class="il-scrolly__media"><img src="${esc(ctx.url(id))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(id)}>${figcaption(a)}</figure>`
+          : '';
+      }).join('');
+      const images = figs ? `<div class="il-textcol__images">${figs}</div>`
+        : ctx.preview ? '<p class="il-placeholder il-textcol__none">No images yet: add them in Settings</p>' : '';
+      const card = slot(ctx, 'div', ' class="il-scrolly__card"', html, html,
+        { field: 'body', mode: 'blocks', ph: 'Write the text that scrolls over the images…', base: 2 + ctx.offset });
+      const position = d.align === 'left' || d.align === 'right' ? ` il-scrolly--align-${d.align}` : '';
+      const backdrop = d.backdrop === 'vignette' || d.backdrop === 'none' ? ` il-scrolly--backdrop-${d.backdrop}` : '';
+      return `<section class="il-scrolly il-scrolly--column il-textcol${position}${backdrop}" id="${esc(b.id)}" data-il-textcol aria-label="Text over images">`
+        + `${images}<div class="il-scrolly__steps"><div class="il-scrolly__step">${card || '<div class="il-scrolly__card"></div>'}</div></div></section>`;
+    },
+
+    // Scrollpoints: one image stays on screen and zooms/pans to highlighted regions as steps scroll past.
+    scrollpoints(b, d, ctx) {
+      const a = ctx.asset(d.asset);
+      const steps = (Array.isArray(d.steps) ? d.steps : []).filter(isObj);
+      if ((!a || kindOf(a) !== 'image') && !(ctx.edit && steps.length) && !steps.some((st) => str(st.text).trim())) {
+        return placeholder(b, ctx, 'Choose an image and add steps to these scrollpoints');
+      }
+      const fig = a && kindOf(a) === 'image'
+        ? `<figure class="il-scrollpoints__media"><img src="${esc(ctx.url(d.asset))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(d.asset)}>${figcaption(a)}</figure>`
+        : (ctx.preview ? '<div class="il-placeholder">Choose an image to explore</div>' : '');
+      const clampNum = (v, min, max, fb) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(min, Math.min(max, v)) : fb);
+      const html = steps.map((st, i) => {
+        const text = markdown(st.text, 2 + ctx.offset, inlineImage(ctx));
+        // 'auto': the text goes on the side away from the highlighted area.
+        const away = st.focus && clampNum(st.x, 0, 100, 40) + clampNum(st.w, 5, 100, 30) / 2 < 50 ? 'right' : 'left';
+        const stAlign = st.align === 'auto' ? away : st.align === 'left' || st.align === 'right' ? st.align : 'center';
+        const stepCls = stAlign !== 'center' ? ` il-scrolly__step--${stAlign}` : '';
+        const focusAttr = st.focus
+          ? ` data-il-focus="${clampNum(st.x, 0, 100, 40)},${clampNum(st.y, 0, 100, 40)},${clampNum(st.w, 5, 100, 30)},${clampNum(st.h, 5, 100, 30)}"`
+          : '';
+        // As in scroll sequences: no card for an empty step, and no step at all if it doesn't zoom either.
+        const card = ctx.edit ? stepCard(ctx, i, text, 'il-scrolly__card')
+          : text || ctx.preview ? `<div class="il-scrolly__card">${text || '<p class="il-placeholder">This step has no text yet</p>'}</div>` : '';
+        if (!focusAttr && !card) return '';
+        return `<div class="il-scrolly__step il-scrollpoints__step${stepCls}" data-il-step="${i}"${focusAttr}>${card}</div>`;
+      }).join('');
+      return `<section class="il-scrolly il-scrolly--overlay il-scrollpoints" id="${esc(b.id)}" data-il-scrollpoints aria-label="Scrollpoints">`
+        + `${fig}<div class="il-scrolly__steps">${html}</div></section>`;
+    },
+
+    // Before/after: two labelled images. Static: side by side. Enhanced: one slider.
+    compare(b, d, ctx) {
+      const side = (key, word) => {
+        const s = isObj(d[key]) ? d[key] : {};
+        const a = ctx.asset(s.asset);
+        if (!a || kindOf(a) !== 'image') return '';
+        const credit = [str(a.credit), str(a.licence)].filter(Boolean).join(' · ');
+        const label = str(s.label).trim();
+        return `<figure class="il-compare__side il-compare__${key}"><img src="${esc(ctx.url(s.asset))}" alt="${esc(a.alt)}" decoding="async"${dims(a)}${mark(s.asset)}>`
+          + `<figcaption><strong class="il-compare__label">${esc(word)}${label ? ': ' + esc(label) : ''}</strong>`
+          + (credit ? ` <span class="il-credit">${esc(credit)}</span>` : '') + '</figcaption></figure>';
+      };
+      const before = side('before', 'Before');
+      const after = side('after', 'After');
+      if (!before || !after) return placeholder(b, ctx, 'Choose a before and an after image');
+      return `<figure class="il-compare ${widthClass(d.width, 'wide')}" id="${esc(b.id)}" data-il-compare>`
+        + `<div class="il-compare__pair">${before}${after}</div>`
+        + (str(d.caption) ? `<figcaption class="il-compare__caption">${inline(d.caption)}</figcaption>` : '') + '</figure>';
+    },
+
+    // Big number: always in the HTML at its final value; enhance() may count up to it.
+    number(b, d, ctx) {
+      const value = str(d.value).trim();
+      if (ctx.edit) {
+        const unitText = str(d.unit).trim();
+        return `<figure class="il-number" id="${esc(b.id)}"><p class="il-number__figure">`
+          + slot(ctx, 'span', ` class="il-number__value" data-il-count="${esc(value)}"`, value, esc(value), { field: 'value', mode: 'plain', ph: '0' })
+          + slot(ctx, 'span', ' class="il-number__unit"', unitText, esc(unitText), { field: 'unit', mode: 'plain', ph: 'unit', opt: true })
+          + '</p><figcaption>'
+          + slot(ctx, 'p', ' class="il-number__context"', str(d.context).trim(), inline(d.context), { field: 'context', mode: 'inline', ph: 'Why does this number matter?' })
+          + '<p class="il-number__source">Source: '
+          + slot(ctx, 'span', '', str(d.sourceName).trim(), esc(d.sourceName), { field: 'sourceName', mode: 'plain', ph: 'Who published the figure' })
+          + '<span class="il-number__sep">, </span>'
+          + slot(ctx, 'span', '', str(d.sourceRef).trim(), esc(d.sourceRef), { field: 'sourceRef', mode: 'plain', ph: 'link or reference', opt: true })
+          + '</p></figcaption></figure>';
+      }
+      if (!value) return placeholder(b, ctx, 'Add a number');
+      const unit = str(d.unit).trim();
+      const name = str(d.sourceName).trim();
+      const ref = str(d.sourceRef).trim();
+      const refUrl = /^https?:\/\//i.test(ref) ? safeUrl(ref) : '';
+      const source = name
+        ? (refUrl ? `<a href="${esc(refUrl)}">${esc(name)}</a>` : esc(name) + (ref ? `, ${inline(ref)}` : ''))
+        : (ref ? inline(ref) : '');
+      return `<figure class="il-number" id="${esc(b.id)}">`
+        + `<p class="il-number__figure"><span class="il-number__value" aria-hidden="true" data-il-count="${esc(value)}">${esc(value)}</span>`
+        + (unit ? `<span class="il-number__unit" aria-hidden="true">${esc(unit)}</span>` : '')
+        + `<span class="il-sr">${esc(value)}${unit ? ' ' + esc(unit) : ''}</span></p>`
+        + '<figcaption>'
+        + (str(d.context).trim() ? `<p class="il-number__context">${inline(d.context)}</p>` : '')
+        + (source ? `<p class="il-number__source">Source: ${source}</p>` : (ctx.preview ? '<p class="il-number__source"><span class="il-badge">Unsourced</span></p>' : ''))
+        + '</figcaption></figure>';
+    },
+  };
+
+  // ------------------------------------------------------------ article + document
+
+  // opts.assetUrl(id, asset) -> URL string. Defaults to the export layout (assets/...).
+  // opts.mode 'preview' shows placeholders for empty or broken blocks; 'export' (default) skips them.
+  function renderArticle(story, opts) {
+    const o = opts || {};
+    const s = isObj(story) ? story : {};
+    const assets = isObj(s.assets) ? s.assets : {};
+    const ctx = {
+      meta: isObj(s.meta) ? s.meta : {},
+      scheme: schemeOf(s.meta),
+      preview: o.mode === 'preview',
+      edit: o.mode === 'preview' && o.editable === true, // the editor's canvas: see slot()
+      inline: o.inline === true, // single-file export: assets are data: URLs
+      headers: 0,
+      offset: 0,
+      asset: (id) => (typeof id === 'string' && isObj(assets[id]) ? assets[id] : null),
+      url: (id) => (o.assetUrl ? o.assetUrl(id, assets[id]) : assetPath(id, assets[id])),
+    };
+    const blocks = (Array.isArray(s.blocks) ? s.blocks : []).filter(isObj);
+    const out = [];
+    if (!blocks.some((b) => b.type === 'header') && (str(ctx.meta.title) || str(ctx.meta.standfirst))) {
+      out.push(BLOCKS.header({ id: 'il-top' }, { variant: 'compact' }, ctx));
+    }
+    let inPart = false;
+    for (const b of blocks) {
+      const fn = BLOCKS[b.type];
+      if (!fn) { out.push(placeholder(b, ctx, `Unknown block type "${b.type}"`)); continue; }
+      const d = isObj(b.data) ? b.data : {};
+      if (b.type === 'header' && ctx.headers > 0) {
+        if (inPart) out.push('</section>');
+        out.push(str(d.title) ? `<section class="il-part" aria-labelledby="${esc(b.id)}-title">` : '<section class="il-part">');
+        inPart = true;
+      }
+      let html;
+      try { html = fn(b, d, ctx); } catch (e) { html = placeholder(b, ctx, 'This block could not be shown'); }
+      // Effects are only a marker in the HTML; the runtime's CSS and IntersectionObserver do the rest.
+      if (html && EFFECTS.includes(b.effect)) {
+        html = html.replace(` id="${esc(b.id)}"`, ` id="${esc(b.id)}" data-il-effect="${b.effect}"`);
+      }
+      // A coloured band behind the block. Full-screen headers keep their own dark background.
+      const band = b.type === 'header' && d.variant !== 'compact' ? '' : bandColour(b.background, ctx.scheme);
+      if (html && band) {
+        html = html.replace(` id="${esc(b.id)}"`, ` id="${esc(b.id)}" data-il-band style="--il-band:${band};--il-band-ink:${inkFor(band)}"`);
+      }
+      out.push(html);
+    }
+    if (inPart) out.push('</section>');
+    if (isObj(ctx.meta) && ctx.meta.appendix === true) out.push(appendix(blocks, s.reflection));
+    const scheme = ctx.scheme === 'house' ? '' : ` data-il-scheme="${ctx.scheme}" style="${schemeVars(ctx.scheme)}"`;
+    return `<article class="il-story"${scheme}>\n${out.filter(Boolean).join('\n')}\n</article>`;
+  }
+
+  // The maker's notes appendix (Phase 7): the student's notes on blocks and effects, and
+  // their reflection answers, after the story and clearly marked as not part of it.
+  const TYPE_LABELS = {
+    header: 'Header', text: 'Text', columns: 'Columns', quote: 'Quote', media: 'Media', gallery: 'Gallery', embed: 'Embed',
+    divider: 'Divider', references: 'References', scrolly: 'Scroll sequence', textcolumn: 'Text column', scrollpoints: 'Scrollpoints', compare: 'Before/after slider', number: 'Big number',
+  };
+  function appendix(blocks, reflection) {
+    const notes = blocks.map((b, i) => {
+      const note = str(b.note).trim();
+      const fx = EFFECTS.includes(b.effect) ? str(b.effectNote).trim() : '';
+      if (!note && !fx) return '';
+      return `<li><p class="il-appendix__block">Block ${i + 1}: ${esc(TYPE_LABELS[b.type] || b.type)}</p>`
+        + (note ? markdown(note, 4) : '')
+        + (fx ? `<p><em>Movement (${esc(b.effect)}):</em> ${inline(fx)}</p>` : '') + '</li>';
+    }).filter(Boolean);
+    const answers = (Array.isArray(reflection) ? reflection : [])
+      .filter((r) => isObj(r) && str(r.q).trim() && str(r.a).trim())
+      .map((r) => `<dt>${esc(r.q)}</dt><dd>${markdown(r.a, 4)}</dd>`);
+    if (!notes.length && !answers.length) return '';
+    return '<aside class="il-appendix" aria-labelledby="il-appendix-title">'
+      + '<h2 id="il-appendix-title">Maker\'s notes</h2>'
+      + '<p class="il-appendix__intro">Notes from the maker about how this story was made. Not part of the story.</p>'
+      + (notes.length ? `<h3>Notes on blocks</h3><ol class="il-appendix__notes">${notes.join('')}</ol>` : '')
+      + (answers.length ? `<h3>Reflection</h3><dl class="il-appendix__reflection">${answers.join('')}</dl>` : '')
+      + '</aside>';
+  }
+
+  // Markdown-free text for meta tags.
+  // Formatting marks go; escaped symbols (\*) stay as the symbol.
+  const plain = (text) => str(text).replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\\([\\*_[\]#!().+\-])|[*_]/g, (m, c) => c || '').replace(/\s+/g, ' ').trim();
+
+  // Description, author, Open Graph and Twitter-card tags.
+  // og:url is left out: an offline submission has no public address.
+  function headTags(story, o, title) {
+    const m = isObj(story && story.meta) ? story.meta : {};
+    const assets = isObj(story && story.assets) ? story.assets : {};
+    const desc = plain(m.seoDescription) || plain(m.standfirst);
+    const share = plain(m.shareText) || desc;
+    const author = str(m.byline).replace(/^\s*by\s+/i, '').trim();
+    const img = typeof m.shareImage === 'string' && isObj(assets[m.shareImage]) ? assets[m.shareImage] : null;
+    // A single-file page would have to repeat the whole image as a data: URL; leave it out there.
+    const imgUrl = img && !o.inline ? (o.assetUrl ? o.assetUrl(m.shareImage, img) : assetPath(m.shareImage, img)) : '';
+    const tag = (attr, name, content) => (content ? `<meta ${attr}="${name}" content="${esc(content)}">\n` : '');
+    const time = (v) => (str(v) && !Number.isNaN(Date.parse(v)) ? new Date(v).toISOString() : '');
+    return tag('name', 'description', desc)
+      + tag('name', 'author', author)
+      + tag('property', 'og:type', 'article')
+      + tag('property', 'og:title', title)
+      + tag('property', 'og:description', share)
+      + tag('property', 'og:locale', 'en_GB')
+      + tag('property', 'og:image', imgUrl)
+      + (imgUrl ? tag('property', 'og:image:alt', str(img.alt))
+        + (img.width > 0 && img.height > 0 ? tag('property', 'og:image:width', String(+img.width)) + tag('property', 'og:image:height', String(+img.height)) : '') : '')
+      + tag('property', 'article:published_time', time(m.created))
+      + tag('property', 'article:modified_time', time(m.modified))
+      + tag('name', 'twitter:card', imgUrl ? 'summary_large_image' : 'summary')
+      + tag('name', 'twitter:title', title)
+      + tag('name', 'twitter:description', share)
+      + tag('name', 'twitter:image', imgUrl)
+      + (imgUrl ? tag('name', 'twitter:image:alt', str(img.alt)) : '');
+  }
+
+  // A complete, self-contained page. Pass opts.css / opts.js as text to inline them
+  // (what the exporter does), or opts.cssHref / opts.jsSrc to link them.
+  function renderDocument(story, opts) {
+    const o = opts || {};
+    const m = isObj(story && story.meta) ? story.meta : {};
+    const firstHeader = (Array.isArray(story && story.blocks) ? story.blocks : [])
+      .find((b) => isObj(b) && b.type === 'header' && isObj(b.data) && str(b.data.title));
+    const title = str(m.seoTitle) || str(m.title) || (firstHeader ? firstHeader.data.title : '') || 'Untitled story';
+    const json = JSON.stringify(Object.assign({}, story, { runtimeVersion: RUNTIME_VERSION })).replace(/</g, '\\u003c');
+    const boot = '<script>window.Galley && window.Galley.enhance(document);</' + 'script>';
+    const css = o.css != null ? `<style>\n${String(o.css).replace(/<\/style/gi, '<\\/style')}\n</style>`
+      : o.cssHref ? `<link rel="stylesheet" href="${esc(o.cssHref)}">` : '';
+    const js = o.js != null ? `<script>\n${String(o.js).replace(/<\/script/gi, '<\\/script')}\n</` + `script>\n${boot}`
+      : o.jsSrc ? `<script src="${esc(o.jsSrc)}"></` + `script>\n${boot}` : '';
+    return '<!doctype html>\n<html lang="en-GB">\n<head>\n<meta charset="utf-8">\n'
+      + '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+      + `<title>${esc(title)}</title>\n`
+      + headTags(story, o, title)
+      + `<meta name="generator" content="Galley ${RUNTIME_VERSION}">\n${css}\n</head>\n`
+      + `<body class="il-page"${schemeOf(m) === 'house' ? '' : ` style="background:${SCHEMES[schemeOf(m)].bg}"`}>\n<main>\n${renderArticle(story, o)}\n</main>\n`
+      + `<script type="application/json" id="galley-source">${json}</` + 'script>\n'
+      + (o.bodyEnd ? o.bodyEnd + '\n' : '')
+      + `${js}\n</body>\n</html>\n`;
+  }
+
+  // ------------------------------------------------------------ enhancements
+
+  function lightbox(doc) {
+    if (doc.ilLightbox) return doc.ilLightbox;
+    const dlg = doc.createElement('dialog');
+    dlg.className = 'il-lightbox';
+    dlg.setAttribute('aria-label', 'Image viewer');
+    dlg.innerHTML = '<figure class="il-lightbox__figure"><img class="il-lightbox__img" alt="">'
+      + '<figcaption class="il-lightbox__caption"></figcaption></figure>'
+      + '<div class="il-lightbox__bar"><p class="il-lightbox__count" aria-live="polite"></p>'
+      + '<button type="button" class="il-btn" data-il="prev">Previous</button>'
+      + '<button type="button" class="il-btn" data-il="next">Next</button>'
+      + '<button type="button" class="il-btn" data-il="close">Close</button></div>';
+    doc.body.appendChild(dlg);
+    const $ = (sel) => dlg.querySelector(sel);
+    const st = { items: [], i: 0, opener: null };
+    const show = (i) => {
+      const n = st.items.length;
+      st.i = (i + n) % n;
+      const it = st.items[st.i];
+      $('.il-lightbox__img').src = it.src;
+      $('.il-lightbox__img').alt = it.alt;
+      $('.il-lightbox__caption').innerHTML = it.caption;
+      $('.il-lightbox__count').textContent = `Image ${st.i + 1} of ${n}`;
+    };
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg) return dlg.close();
+      const btn = e.target.closest('[data-il]');
+      if (!btn) return;
+      const act = btn.getAttribute('data-il');
+      if (act === 'close') dlg.close();
+      else show(st.i + (act === 'next' ? 1 : -1));
+    });
+    dlg.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); show(st.i + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); show(st.i - 1); }
+    });
+    dlg.addEventListener('close', () => { if (st.opener) st.opener.focus(); });
+    doc.ilLightbox = {
+      open(items, i, opener) {
+        st.items = items;
+        st.opener = opener;
+        const single = items.length < 2;
+        $('[data-il="prev"]').hidden = single;
+        $('[data-il="next"]').hidden = single;
+        show(i);
+        dlg.showModal();
+        $(single ? '[data-il="close"]' : '[data-il="next"]').focus();
+      },
+    };
+    return doc.ilLightbox;
+  }
+
+  function setupGallery(g, doc) {
+    const win = doc.defaultView;
+    if (!win || typeof win.HTMLDialogElement !== 'function') return; // plain links still open each image
+    const figures = Array.from(g.querySelectorAll('.il-gallery__item > figure'));
+    const n = figures.length;
+    const items = [];
+    const links = figures.map((fig, i) => {
+      const img = fig.querySelector('img');
+      const alt = img ? img.getAttribute('alt') : '';
+      let a = fig.querySelector('.il-gallery__link');
+      if (!a && img) {
+        // Single-file pages have no link around each image; a button opens the viewer instead.
+        a = doc.createElement('button');
+        a.type = 'button';
+        a.className = 'il-gallery__link';
+        a.setAttribute('aria-label', `View image ${i + 1} of ${n} full size` + (alt ? ': ' + alt : ''));
+        img.replaceWith(a);
+        a.appendChild(img);
+      }
+      const fc = fig.querySelector('figcaption');
+      items.push({ src: (a && a.getAttribute('href')) || (img ? img.currentSrc || img.src : ''), alt, caption: fc ? fc.innerHTML : '' });
+      return a;
+    }).filter(Boolean);
+    links.forEach((a, i) => {
+      a.setAttribute('aria-haspopup', 'dialog');
+      a.addEventListener('click', (e) => {
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        lightbox(doc).open(items, i, a);
+      });
+    });
+  }
+
+  // Embedded players for YouTube, Vimeo, Spotify and SoundCloud. The link card (with its
+  // archived screenshot) is in the HTML; the player is added on top of it when the page opens.
+  // Without JavaScript, offline, and in print, the card is what readers get.
+  function setupEmbed(fig, doc) {
+    const frame = fig.querySelector('.il-embed__frame');
+    const card = fig.querySelector('.il-card');
+    const win = doc.defaultView;
+    if (!frame || !card || !win) return;
+    const label = fig.getAttribute('data-il-embed-label');
+    // YouTube refuses to play inside a page opened from a file (it shows "Error 153"),
+    // so readers get the link there, with a note saying why.
+    if (fig.getAttribute('data-il-embed-provider') === 'youtube' && doc.location && doc.location.protocol === 'file:') {
+      const note = doc.createElement('p');
+      note.className = 'il-embed__note';
+      note.textContent = 'YouTube doesn\'t play videos inside a story opened from a file. Use the link to watch it on YouTube.';
+      frame.after(note);
+      return;
+    }
+    const insert = () => {
+      if (fig.querySelector('.il-embed__iframe')) return;
+      const f = doc.createElement('iframe');
+      f.className = 'il-embed__iframe';
+      f.src = fig.getAttribute('data-il-embed-src');
+      f.title = `${card.querySelector('.il-card__title').textContent} (${label} player)`;
+      f.setAttribute('loading', 'lazy');
+      f.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write');
+      f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+      const h = fig.getAttribute('data-il-embed-height');
+      if (h) f.style.height = h + 'px';
+      else f.classList.add('il-embed__iframe--video');
+      frame.insertBefore(f, card);
+      fig.classList.add('has-player');
+    };
+    // Offline, a player would only show an error page: keep the card until the connection is back.
+    if (win.navigator && win.navigator.onLine === false) win.addEventListener('online', insert, { once: true });
+    else insert();
+  }
+
+
+  // Collapsed references open for printing, then close again.
+  function setupPrint(doc) {
+    const win = doc.defaultView;
+    if (!win || doc.ilPrint) return;
+    doc.ilPrint = true;
+    win.addEventListener('beforeprint', () => {
+      (doc.ilFinalisers || []).forEach((finish) => finish());
+      doc.querySelectorAll('.il-story details:not([open])').forEach((d) => { d.open = true; d.dataset.ilPrintOpened = ''; });
+    });
+    win.addEventListener('afterprint', () => {
+      doc.querySelectorAll('[data-il-print-opened]').forEach((d) => { d.open = false; delete d.dataset.ilPrintOpened; });
+    });
+  }
+
+  const reducedMotion = (doc) => {
+    const win = doc.defaultView;
+    return !win || !win.matchMedia || win.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  };
+
+  // Scroll sequence: copies each step's image into one sticky panel and shows the image
+  // for whichever step is in the middle of the screen. The step's own image stays in the
+  // page (hidden on screen, shown in print), so nothing depends on the effect.
+  function setupScrolly(section, doc) {
+    const win = doc.defaultView;
+    if (!win || typeof win.IntersectionObserver !== 'function') return;
+    const steps = Array.from(section.querySelectorAll('.il-scrolly__step'));
+    const panel = doc.createElement('div');
+    panel.className = 'il-scrolly__panel';
+    const frames = [];
+    let current = -1;
+    const frameFor = steps.map((step) => {
+      const fig = step.querySelector('.il-scrolly__media');
+      if (fig) {
+        const frame = fig.cloneNode(true);
+        frame.className = 'il-scrolly__frame';
+        frame.setAttribute('aria-hidden', 'true'); // the step's own figure is the accessible copy
+        panel.appendChild(frame);
+        frames.push(frame);
+        current = frames.length - 1;
+      }
+      return current; // steps without an image keep the previous one
+    });
+    if (!frames.length) return;
+    section.insertBefore(panel, section.firstChild);
+    section.classList.add('is-enhanced');
+    const motionOk = !reducedMotion(doc);
+    const show = (i) => {
+      const f = Math.max(0, frameFor[i]);
+      frames.forEach((fr, j) => {
+        const active = j === f;
+        fr.classList.toggle('is-active', active);
+        const vid = fr.querySelector('video');
+        if (vid) {
+          if (active && motionOk) vid.play?.().catch(() => {});
+          else vid.pause?.();
+        }
+      });
+      steps.forEach((st, j) => st.classList.toggle('is-active', j === i));
+      // Which side the step on screen sits: an overlay's vignette darkens that side of the image.
+      const cls = steps[i] ? steps[i].classList : null;
+      section.setAttribute('data-il-side', cls && cls.contains('il-scrolly__step--left') ? 'left'
+        : cls && cls.contains('il-scrolly__step--right') ? 'right' : 'center');
+    };
+    show(0);
+    const io = new win.IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) show(steps.indexOf(e.target)); });
+    }, { rootMargin: '-50% 0px -50% 0px' });
+    steps.forEach((st) => io.observe(st));
+  }
+
+  // Text column: the images share the text evenly. Which one shows depends on how far the
+  // middle of the screen has got through the text: with three images, the first third of the
+  // text has the first image, and so on.
+  function setupTextColumn(section, doc) {
+    const win = doc.defaultView;
+    if (!win || typeof win.IntersectionObserver !== 'function') return;
+    const figs = Array.from(section.querySelectorAll('.il-textcol__images > .il-scrolly__media'));
+    const text = section.querySelector('.il-scrolly__step');
+    if (!figs.length || !text) return;
+    const panel = doc.createElement('div');
+    panel.className = 'il-scrolly__panel';
+    const frames = figs.map((fig) => {
+      const frame = fig.cloneNode(true);
+      frame.className = 'il-scrolly__frame';
+      frame.setAttribute('aria-hidden', 'true'); // the figure in the text column's list is the accessible copy
+      panel.appendChild(frame);
+      return frame;
+    });
+    section.insertBefore(panel, section.firstChild);
+    section.classList.add('is-enhanced');
+    const motionOk = !reducedMotion(doc);
+    let current = -1;
+    const show = (i) => {
+      if (i === current) return;
+      current = i;
+      frames.forEach((fr, j) => {
+        fr.classList.toggle('is-active', j === i);
+        const vid = fr.querySelector('video');
+        if (vid) {
+          if (j === i && motionOk) vid.play?.().catch(() => {});
+          else vid.pause?.();
+        }
+      });
+    };
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const r = text.getBoundingClientRect();
+      const through = (win.innerHeight / 2 - r.top) / Math.max(1, r.height);
+      show(Math.max(0, Math.min(frames.length - 1, Math.floor(through * frames.length))));
+    };
+    const onScroll = () => { if (!queued) { queued = true; win.requestAnimationFrame(update); } };
+    update();
+    if (frames.length < 2) return;
+    // Only listen while the column is on screen.
+    let on = false;
+    new win.IntersectionObserver((entries) => {
+      const visible = entries.some((e) => e.isIntersecting);
+      if (visible && !on) { win.addEventListener('scroll', onScroll, { passive: true }); win.addEventListener('resize', onScroll); onScroll(); }
+      if (!visible && on) { win.removeEventListener('scroll', onScroll); win.removeEventListener('resize', onScroll); }
+      on = visible;
+    }).observe(section);
+  }
+
+  // Scrollpoints: one sticky image panel zooms and pans to each step's highlighted region.
+  function setupScrollpoints(section, doc) {
+    const win = doc.defaultView;
+    if (!win || typeof win.IntersectionObserver !== 'function') return;
+    const fig = section.querySelector('.il-scrollpoints__media');
+    const steps = Array.from(section.querySelectorAll('.il-scrollpoints__step'));
+    if (!fig || !steps.length) return;
+    const panel = doc.createElement('div');
+    panel.className = 'il-scrolly__panel il-scrollpoints__panel';
+    const stage = doc.createElement('div');
+    stage.className = 'il-scrollpoints__stage';
+    const clone = fig.querySelector('img')?.cloneNode(true);
+    if (!clone) return;
+    clone.setAttribute('aria-hidden', 'true');
+    const box = doc.createElement('div');
+    box.className = 'il-scrollpoints__box';
+    box.setAttribute('aria-hidden', 'true');
+    stage.appendChild(clone);
+    stage.appendChild(box);
+    panel.appendChild(stage);
+    const cap = fig.querySelector('figcaption');
+    if (cap) panel.appendChild(cap.cloneNode(true));
+    section.insertBefore(panel, section.firstChild);
+    section.classList.add('is-enhanced');
+
+    const show = (i) => {
+      steps.forEach((st, j) => st.classList.toggle('is-active', j === i));
+      const raw = steps[i]?.getAttribute('data-il-focus');
+      if (!raw) {
+        box.classList.remove('is-visible');
+        stage.style.transform = 'none';
+        stage.style.setProperty('--il-sp-scale', '1');
+        return;
+      }
+      const [x, y, w, h] = raw.split(',').map(Number);
+      box.style.left = `${x}%`;
+      box.style.top = `${y}%`;
+      box.style.width = `${w}%`;
+      box.style.height = `${h}%`;
+      box.classList.add('is-visible');
+      // Zoom so the highlighted area sits in the free part of the screen: beside the text box
+      // when the box is on the left or right, otherwise in the middle. Under reduced motion the
+      // image jumps there without animating (the transition is only set when motion is allowed).
+      const W = stage.offsetWidth;
+      const H = stage.offsetHeight;
+      if (!W || !H) return;
+      const pw = panel.clientWidth;
+      const ph = panel.clientHeight;
+      const region = { left: 0, right: pw, top: 0, bottom: ph };
+      const card = steps[i].querySelector('.il-scrolly__card');
+      const side = steps[i].classList.contains('il-scrolly__step--left') ? 'left'
+        : steps[i].classList.contains('il-scrolly__step--right') ? 'right' : '';
+      if (card && side && pw >= 700) {
+        const pr = panel.getBoundingClientRect();
+        const cr = card.getBoundingClientRect();
+        const gap = 32;
+        if (side === 'left') region.left = Math.min(pw * 0.7, cr.right - pr.left + gap);
+        else region.right = Math.max(pw * 0.3, cr.left - pr.left - gap);
+      } else if (pw < 700) {
+        // Phones: the text box is full width and rests low on the screen (see the CSS), so the
+        // highlighted area goes in the top half.
+        region.bottom = ph * 0.52;
+      }
+      const rw = region.right - region.left;
+      const rh = region.bottom - region.top;
+      const hw = (w / 100) * W;
+      const hh = (h / 100) * H;
+      // Fill about three-quarters of the free space; shrink the image if the area is too big for it.
+      const scale = Math.max(0.5, Math.min(2.8, (rw * 0.75) / hw, (rh * 0.75) / hh));
+      // Where the highlight's centre should land, in the stage's own coordinates.
+      const tx = region.left + rw / 2 - stage.offsetLeft;
+      const ty = region.top + rh / 2 - stage.offsetTop;
+      // transform-origin is the stage's centre (cx, cy): a point p lands at c + scale × (p − c + shift).
+      const cx = W / 2;
+      const cy = H / 2;
+      const dx = (tx - cx) / scale - ((x + w / 2) / 100) * W + cx;
+      const dy = (ty - cy) / scale - ((y + h / 2) / 100) * H + cy;
+      stage.style.transform = `scale(${scale.toFixed(3)}) translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+      stage.style.setProperty('--il-sp-scale', scale.toFixed(3)); // keeps the highlight's border the same width
+    };
+    let current = 0;
+    show(0);
+    const io = new win.IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { current = steps.indexOf(e.target); show(current); } });
+    }, { rootMargin: '-50% 0px -50% 0px' });
+    steps.forEach((st) => io.observe(st));
+    // The free space changes with the window (or a phone turning sideways).
+    let resizeTimer = 0;
+    win.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => show(current), 150); });
+    if (!clone.complete) clone.addEventListener('load', () => show(current), { once: true }); // its size is known only once loaded
+  }
+
+  function setupBgVideos(videos, doc) {
+    const win = doc.defaultView;
+    if (!videos.length || !win) return;
+    if (reducedMotion(doc)) {
+      videos.forEach((v) => v.pause?.());
+      return;
+    }
+    if (typeof win.IntersectionObserver !== 'function') {
+      videos.forEach((v) => v.play?.().catch(() => {}));
+      return;
+    }
+    const io = new win.IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) e.target.play?.().catch(() => {});
+        else e.target.pause?.();
+      });
+    });
+    videos.forEach((v) => io.observe(v));
+  }
+
+  // Before/after slider. Skipped under reduced motion: the images stay side by side.
+  function setupCompare(fig, doc) {
+    if (reducedMotion(doc)) return;
+    const pair = fig.querySelector('.il-compare__pair');
+    const before = fig.querySelector('.il-compare__before');
+    const after = fig.querySelector('.il-compare__after');
+    if (!pair || !before || !after) return;
+    const label = (el) => {
+      const name = (el.querySelector('.il-compare__label') || {}).textContent || '';
+      const credit = (el.querySelector('.il-credit') || {}).textContent || '';
+      return credit ? `${name} (${credit})` : name;
+    };
+    const bar = doc.createElement('p');
+    bar.className = 'il-compare__labels';
+    bar.setAttribute('aria-hidden', 'true'); // the figcaptions stay as the accessible labels
+    bar.innerHTML = `<span>◀ ${esc(label(before))}</span><span>${esc(label(after))} ▶</span>`;
+    const input = doc.createElement('input');
+    input.type = 'range';
+    input.min = '0';
+    input.max = '100';
+    input.value = '50';
+    input.className = 'il-compare__range';
+    input.setAttribute('aria-label', 'Before and after comparison. Move left to see more of the after image, right to see more of the before image.');
+    const update = () => {
+      pair.style.setProperty('--il-pos', input.value + '%');
+      input.setAttribute('aria-valuetext', `${input.value}% before, ${100 - input.value}% after`);
+    };
+    input.addEventListener('input', update);
+    update();
+    pair.after(bar, input);
+    fig.classList.add('is-slider');
+  }
+
+  // Big number: counts up from zero each time it scrolls into view.
+  // Skipped under reduced motion; printing always shows the final value.
+  function parseCount(text) {
+    const m = String(text).match(/^(.*?)(\d[\d,]*(?:\.\d+)?)(.*)$/);
+    if (!m) return null;
+    const decimals = (m[2].split('.')[1] || '').length;
+    const commas = m[2].includes(',');
+    const target = parseFloat(m[2].replace(/,/g, ''));
+    if (!Number.isFinite(target)) return null;
+    const fmt = (x) => m[1] + (commas
+      ? x.toLocaleString('en-GB', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+      : x.toFixed(decimals)) + m[3];
+    return { target, fmt };
+  }
+
+  function setupNumber(el, doc) {
+    const win = doc.defaultView;
+    const final = el.getAttribute('data-il-count');
+    const parsed = parseCount(final);
+    if (!parsed || !win || reducedMotion(doc) || typeof win.IntersectionObserver !== 'function') return;
+    let frame = 0;
+    let armed = true; // ready to count the next time the number comes into view
+    const finish = () => { win.cancelAnimationFrame(frame); el.textContent = final; };
+    (doc.ilFinalisers = doc.ilFinalisers || []).push(finish);
+    el.textContent = parsed.fmt(0);
+    const count = () => {
+      const start = win.performance.now();
+      const tick = (now) => {
+        const t = Math.min(1, (now - start) / 1200);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = t < 1 ? parsed.fmt(parsed.target * eased) : final;
+        if (t < 1) frame = win.requestAnimationFrame(tick);
+      };
+      frame = win.requestAnimationFrame(tick);
+    };
+    // Counts up each time it comes into view. Once it has left the screen completely,
+    // it quietly resets to zero (out of sight) so it can count again next time.
+    const io = new win.IntersectionObserver((entries) => {
+      const e = entries[entries.length - 1];
+      if (e.intersectionRatio >= 0.6 && armed) {
+        armed = false;
+        count();
+      } else if (!e.isIntersecting && !armed) {
+        win.cancelAnimationFrame(frame);
+        el.textContent = parsed.fmt(0);
+        armed = true;
+      }
+    }, { threshold: [0, 0.6] });
+    io.observe(el);
+  }
+
+  // Effects: a block with data-il-effect fades, rises, slides or zooms in the first time it
+  // scrolls into view. The hidden starting state only exists in CSS under
+  // prefers-reduced-motion: no-preference, and only once this has added .il-fx,
+  // so without JavaScript, with reduced motion, or in print, nothing is ever hidden.
+  function setupEffects(elements, doc) {
+    const win = doc.defaultView;
+    if (!elements.length || !win || reducedMotion(doc) || typeof win.IntersectionObserver !== 'function') return;
+    const io = new win.IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('is-in');
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    elements.forEach((el) => {
+      el.classList.add('il-fx');
+      io.observe(el);
+    });
+  }
+
+  // Single-file pages hold video and audio as data: URLs, which some browsers
+  // (notably Safari) can't seek in or play. A blob: URL of the same bytes plays everywhere.
+  function dataToBlobUrl(media) {
+    if (typeof fetch !== 'function' || typeof URL.createObjectURL !== 'function') return;
+    fetch(media.getAttribute('src'))
+      .then((r) => r.blob())
+      .then((blob) => { media.src = URL.createObjectURL(blob); })
+      .catch(() => { /* keep the data: URL */ });
+  }
+
+  // Safe to call more than once: each element is only enhanced the first time.
+  function enhance(scope) {
+    const rootNode = scope || root.document;
+    if (!rootNode) return;
+    const doc = rootNode.ownerDocument || rootNode;
+    doc.documentElement.classList.add('il-js');
+    const fresh = (sel) => Array.from(rootNode.querySelectorAll(sel + ':not([data-il-ready])'))
+      .map((el) => { el.setAttribute('data-il-ready', ''); return el; });
+    fresh('[data-il-gallery]').forEach((g) => setupGallery(g, doc));
+    fresh('[data-il-embed-src]').forEach((e) => setupEmbed(e, doc));
+    fresh('video[src^="data:"], audio[src^="data:"]').forEach(dataToBlobUrl);
+    fresh('[data-il-scrolly]').forEach((el) => setupScrolly(el, doc));
+    fresh('[data-il-textcol]').forEach((el) => setupTextColumn(el, doc));
+    fresh('[data-il-scrollpoints]').forEach((el) => setupScrollpoints(el, doc));
+    fresh('.il-header__media [data-il-bg-video]').forEach((v) => setupBgVideos([v], doc));
+    fresh('[data-il-compare]').forEach((el) => setupCompare(el, doc));
+    fresh('[data-il-count]').forEach((el) => setupNumber(el, doc));
+    setupEffects(Array.from(rootNode.querySelectorAll('[data-il-effect]:not(.il-fx)')), doc);
+    setupPrint(doc);
+  }
+
+  const api = Object.freeze({
+    RUNTIME_VERSION, renderArticle, renderDocument, enhance, embedInfo, markdown, inline, assetPath,
+    SCHEMES, bandColour, inkFor, contrast,
+  });
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+  root.Galley = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script>window.Galley && window.Galley.enhance(document);</script>
+</body>
+</html>

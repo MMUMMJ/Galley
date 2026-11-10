@@ -1,7 +1,7 @@
 // Export menu (built from the adapter registry) and Open.
 import { ADAPTERS } from '../adapters/registry.js';
 import { formatMB } from '../adapters/export-shared.js';
-import { openFile } from '../open.js';
+import { openFile, openFolderAt } from '../open.js';
 import { putAsset } from '../assets.js';
 import { syncStoryPack } from '../packs.js';
 import { STORY_DETAILS } from '../store.js';
@@ -16,8 +16,12 @@ function download(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
-// fileBtn opens the File menu, which already holds New story and Open…; exporters are added after them.
-export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, getBlob, announce, toast, setStatus }) {
+// The demo story: a tour of every block, published at demo/ as a saved folder.
+export const DEMO_FOLDER = 'demo/';
+
+// fileBtn opens the File menu, which already holds New story, Open… and the demo; exporters are
+// added after them. Returns { openDemo }.
+export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, demoBtn, getBlob, announce, toast, setStatus }) {
   const exporters = Object.values(ADAPTERS.exporters);
   menu.append(...exporters.map((ex) => h('li', {},
     h('button', { type: 'button', class: 'menu-option', onclick: () => run(ex) },
@@ -85,16 +89,22 @@ export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, getBlo
     },
   });
   openBtn.after(input);
-  openBtn.addEventListener('click', () => {
-    if (store.story.blocks.length && !window.confirm('Open a story?\n\nIt will replace the story you are working on. '
-      + 'You can bring the current one back with Undo until you close or reload this page.')) return;
-    input.click();
-  });
+  const replaceOk = (what) => !store.story.blocks.length || window.confirm(`Open ${what}?\n\nIt will replace the story you are working on. `
+    + 'You can bring the current one back with Undo until you close or reload this page.');
+  openBtn.addEventListener('click', () => { if (replaceOk('a story')) input.click(); });
 
+  // Opens the demo story in the editor, to explore and change.
+  async function openDemo() {
+    if (!replaceOk('the demo story')) return;
+    await open({ name: 'the demo story', read: () => openFolderAt(DEMO_FOLDER) });
+  }
+  demoBtn?.addEventListener('click', openDemo);
+
+  // file: a File the student picked, or { name, read() } for a story fetched from the web.
   async function open(file) {
     setStatus(`Opening ${file.name}…`);
     try {
-      const { story, blobs, missing } = await openFile(file);
+      const { story, blobs, missing } = await (file.read ? file.read() : openFile(file));
       try {
         await syncStoryPack(story);
       } catch (err) {
@@ -114,4 +124,5 @@ export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, getBlo
       setStatus('');
     }
   }
+  return { openDemo };
 }

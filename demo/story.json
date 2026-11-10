@@ -1,0 +1,717 @@
+{
+  "schemaVersion": 2,
+  "runtimeVersion": "1.17.1",
+  "meta": {
+    "title": "Stories that move: a tour of Galley",
+    "standfirst": "",
+    "byline": "MMU Journalism",
+    "seoTitle": "Stories that move: a tour of Galley",
+    "seoDescription": "A demo story made in Galley, the scrollytelling editor for MMU journalism students. It shows every kind of block.",
+    "shareImage": "a_share",
+    "shareText": "A tour of Galley, made in Galley: every kind of block, from text to scroll sequences.",
+    "pack": null,
+    "created": "2026-11-10T12:00:00.000Z",
+    "modified": "2026-11-10T12:00:00.000Z",
+    "appendix": false,
+    "theme": "house"
+  },
+  "blocks": [
+    {
+      "id": "b_top",
+      "type": "header",
+      "effect": "none",
+      "effectNote": "",
+      "note": "The background is the opening shot of the news package further down. Notes like this one are for you and your tutor. Readers never see them, unless you choose to add them to the end of your export (Story details, then Appendix).",
+      "background": null,
+      "data": {
+        "variant": "full",
+        "kicker": "A tour of Galley",
+        "title": "Stories that move",
+        "standfirst": "Galley is where you build a scrolling story for the web: words, pictures, video and sound, laid out as readers will see them. This story was made in Galley, and it uses every kind of block. Scroll on to see what each one does.",
+        "byline": "MMU Journalism",
+        "media": "a_hero"
+      }
+    },
+    {
+      "id": "b_intro",
+      "type": "text",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "body": "Galley is a story editor for journalism students at Manchester Metropolitan University. You write and arrange your story on the page itself, check it the way an editor would, and export it as a web page that works in Moodle, on a website, or straight from a folder.\n\nThere's no code to learn. A story is a list of **blocks**: a headline, some text, a photo, a scroll sequence. You add them, fill them in and put them in order.\n\nEach section below names the block it shows. To see how any of it is made, [open this story in Galley](https://mmummj.github.io/Galley/?demo). Everything in it can be clicked, changed and undone."
+      }
+    },
+    {
+      "id": "b_number",
+      "type": "number",
+      "effect": "zoom",
+      "effectNote": "Zoom draws the eye to the number as it arrives. One big number per section is plenty.",
+      "note": "",
+      "background": null,
+      "data": {
+        "value": "14",
+        "unit": "kinds of block",
+        "context": "to build a story with, from a plain paragraph to a scroll sequence. This is one of them: a Big number.",
+        "sourceName": "Galley's block picker",
+        "sourceRef": "https://github.com/MMUMMJ/Galley"
+      }
+    },
+    {
+      "id": "b_p1",
+      "type": "header",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "variant": "compact",
+        "kicker": "Part one",
+        "title": "Words",
+        "standfirst": "Text, quotes and columns: the blocks most stories are made of.",
+        "byline": "",
+        "media": null
+      }
+    },
+    {
+      "id": "b_text",
+      "type": "text",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "body": "## The Text block\n\nThis is a **Text** block. It holds paragraphs, subheadings, lists, links and *emphasis*. You type straight onto the page, and a bar at the top gives you bold, italics, links, headings and lists.\n\n![galley-tray](asset:a_tray \"right\")\n\nYou can drop an image, a video or an embed into the middle of your text, like the galley beside this paragraph. Click it to move it left or right, write its alt text, or take it out again.\n\nA few things that help on a screen:\n\n- Keep paragraphs short: two to four sentences.\n- Use subheadings to break up anything longer than a few paragraphs.\n- Link to your sources in the sentence that uses them.\n\nBelow the quote, a **Columns** block sets three short texts side by side. On a phone, they stack."
+      }
+    },
+    {
+      "id": "b_quote",
+      "type": "quote",
+      "effect": "rise",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "text": "In letterpress printing, a galley was the shallow metal tray where typesetters collected and arranged lines of type before locking them up for the press.",
+        "cite": "Why Galley?",
+        "role": "where the name comes from"
+      }
+    },
+    {
+      "id": "b_cols",
+      "type": "columns",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "mode": "separate",
+        "count": 3,
+        "width": "wide",
+        "col1": "**Write.** Type your story straight onto the page and see it as readers will. Add blocks with **+ Add**, and move them with Up and Down.",
+        "col2": "**Check.** The Checks button asks what an editor would: is that figure sourced? Does that photo have alt text? They're prompts, not marks.",
+        "col3": "**Publish.** Export a ZIP for Moodle or a single web page, or save to a folder that stays up to date as you work.",
+        "body": ""
+      }
+    },
+    {
+      "id": "b_div",
+      "type": "divider",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "text": "A Divider: a pause between sections"
+      }
+    },
+    {
+      "id": "b_p2",
+      "type": "header",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "variant": "compact",
+        "kicker": "Part two",
+        "title": "Pictures and sound",
+        "standfirst": "Photos, galleries, video, audio and embeds. Every picture needs alt text, a caption and a credit, and Galley asks for all three.",
+        "byline": "",
+        "media": null
+      }
+    },
+    {
+      "id": "b_phone",
+      "type": "media",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "kind": "image",
+        "asset": "a_phone",
+        "width": "column"
+      }
+    },
+    {
+      "id": "b_media_text",
+      "type": "text",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "body": "That picture is a **Media** block. It shows one image, video or sound clip, at the width of the text, a little wider, or the full width of the screen.\n\nA **Gallery** shows several pictures together, and readers can open any of them full size."
+      }
+    },
+    {
+      "id": "b_gallery",
+      "type": "gallery",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "items": [
+          "a_p_table",
+          "a_p_mics",
+          "a_p_gallery",
+          "a_p_location"
+        ],
+        "caption": "A Gallery block: journalism students at work. Click any picture to see it full size.",
+        "width": "wide"
+      }
+    },
+    {
+      "id": "b_video",
+      "type": "media",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "kind": "video",
+        "asset": "a_package",
+        "width": "wide"
+      }
+    },
+    {
+      "id": "b_audio",
+      "type": "media",
+      "effect": "none",
+      "effectNote": "",
+      "note": "Placeholder audio: swap in a real interview clip.",
+      "background": null,
+      "data": {
+        "kind": "audio",
+        "asset": "a_audio",
+        "width": "column"
+      }
+    },
+    {
+      "id": "b_transcript",
+      "type": "text",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "body": "**Transcript.** \"This is a Media block playing a sound clip. In a real story, this is where you might put a short piece of an interview, so readers hear a voice in its own words. Keep clips short, add a caption that says who is speaking, and put the full transcript in the text, so everyone can follow it.\"\n\nBelow is an **Embed**. Paste a YouTube, Vimeo, Spotify or SoundCloud link and it plays inside your story. Any other web address shows as a card that links to the page, like this one."
+      }
+    },
+    {
+      "id": "b_embed",
+      "type": "embed",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "url": "https://github.com/MMUMMJ/Galley",
+        "title": "Galley on GitHub",
+        "description": "Galley's code, with notes on how it works and what's coming next.",
+        "screenshot": null,
+        "width": "column"
+      }
+    },
+    {
+      "id": "b_p3",
+      "type": "header",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "variant": "compact",
+        "kicker": "Part three",
+        "title": "Things that move",
+        "standfirst": "The showpiece blocks come alive as the reader scrolls. On the canvas they sit still, so press Play on the block, or Preview, to see them move.",
+        "byline": "",
+        "media": null
+      }
+    },
+    {
+      "id": "b_scrolly",
+      "type": "scrolly",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "layout": "side",
+        "align": "center",
+        "textSide": "right",
+        "backdrop": "solid",
+        "steps": [
+          {
+            "media": "a_add",
+            "align": "center",
+            "text": "**Scroll sequence, side by side.** The picture stays put while these steps scroll past. Here's how a story comes together. **1. Add blocks.** Press **+ Add** and pick one from the illustrated list."
+          },
+          {
+            "media": "a_rec",
+            "align": "center",
+            "text": "**2. Write on the page.** Click any text to type. The bar at the top has bold, italics, links, headings, and a button to add pictures to the text. A step can show a video, like this one."
+          },
+          {
+            "media": "a_sheet",
+            "align": "center",
+            "text": "**3. Open the settings.** Each block's Settings hold what isn't on the page: alt text, credits, layout, effects and notes."
+          },
+          {
+            "media": "a_checks",
+            "align": "center",
+            "text": "**4. Ask the checks.** Before you publish, Checks lists the questions an editor might ask. Click one to go straight to its block."
+          }
+        ]
+      }
+    },
+    {
+      "id": "b_textcol",
+      "type": "textcolumn",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "body": "**Text column.** One long text scrolls over full-screen pictures, and the pictures share the scroll evenly. With three pictures, each one stays for a third of the text.\n\nUse it when the words lead and the pictures set the scene. These three follow a story through the newsroom and onto the air.\n\nIt starts with an idea, pitched to an editor, questioned, sharpened and handed to a reporter with a deadline.\n\nThen the story is **gathered and shaped**: calls made, interviews recorded, the words written, cut and rewritten until every line earns its place.\n\nFinally it **goes out**, on air, online or in print, checked and ready for an audience.\n\nGalley does the same job for a digital story. You gather your words, pictures and scroll effects in one place, shape them on the page, and lock them into a finished package ready to publish.",
+        "images": [
+          "a_p_newsroom",
+          "a_p_writing",
+          "a_p_onair"
+        ],
+        "align": "center",
+        "backdrop": "solid"
+      }
+    },
+    {
+      "id": "b_points",
+      "type": "scrollpoints",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "asset": "a_canvas",
+        "steps": [
+          {
+            "text": "**Scrollpoints** explore one big picture by zooming in on parts of it. This is the Galley editor.",
+            "align": "auto",
+            "focus": false,
+            "x": 0,
+            "y": 0,
+            "w": 100,
+            "h": 100
+          },
+          {
+            "text": "The numbers down the side are your blocks. Click one to jump to it. **+ Add** at the bottom adds another.",
+            "align": "auto",
+            "focus": true,
+            "x": 0,
+            "y": 6,
+            "w": 16,
+            "h": 52
+          },
+          {
+            "text": "The selected block has a toolbar: Settings, Edit text, Up, Down, Duplicate and Delete, plus Image or Play when the block has a picture or moves.",
+            "align": "auto",
+            "focus": true,
+            "x": 27,
+            "y": 14,
+            "w": 50,
+            "h": 40
+          },
+          {
+            "text": "Along the top: the File & Export menu, Undo and Redo, Checks, and a switch between this Canvas view and the Classic one.",
+            "align": "auto",
+            "focus": true,
+            "x": 0,
+            "y": 0,
+            "w": 46,
+            "h": 12
+          }
+        ]
+      }
+    },
+    {
+      "id": "b_compare",
+      "type": "compare",
+      "effect": "none",
+      "effectNote": "",
+      "note": "Placeholder illustrations: a real then-and-now pair of photos, taken from the same spot, works best.",
+      "background": null,
+      "data": {
+        "before": {
+          "asset": "a_before",
+          "label": "Marked up"
+        },
+        "after": {
+          "asset": "a_after",
+          "label": "Corrected"
+        },
+        "caption": "A Before and after block: drag the handle to compare two pictures of the same thing, such as a street then and now.",
+        "width": "wide"
+      }
+    },
+    {
+      "id": "b_overlay",
+      "type": "scrolly",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "layout": "overlay",
+        "align": "center",
+        "textSide": "right",
+        "backdrop": "solid",
+        "steps": [
+          {
+            "media": "a_p_studio",
+            "align": "left",
+            "text": "**Scroll sequence, overlay.** The same block with its other layout: the picture fills the screen and the text scrolls over it in boxes."
+          },
+          {
+            "media": "a_p_studio",
+            "align": "right",
+            "text": "It suits big, atmospheric pictures. Keep each step short, sixty words at most, so the picture still does the work."
+          },
+          {
+            "media": "a_p_desk",
+            "align": "center",
+            "text": "Readers scroll at their own pace. If they've turned movement off on their device, the steps simply sit one after another."
+          }
+        ]
+      }
+    },
+    {
+      "id": "b_effects",
+      "type": "text",
+      "effect": "fade",
+      "effectNote": "A gentle fade marks the end of the showpieces.",
+      "note": "",
+      "background": "tint",
+      "data": {
+        "body": "**Effects and bands.** This paragraph fades in as you reach it, and sits on a coloured band. Both are under **Look** in a block's settings.\n\nUse them sparingly: a story where everything moves is tiring to read. Readers who turn off movement on their device see everything, just without the motion."
+      }
+    },
+    {
+      "id": "b_p4",
+      "type": "header",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "variant": "compact",
+        "kicker": "Part four",
+        "title": "Your turn",
+        "standfirst": "Make this story yours, or start your own.",
+        "byline": "",
+        "media": null
+      }
+    },
+    {
+      "id": "b_turn",
+      "type": "text",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "body": "## Change anything\n\nThis demo is yours to play with. Click anything, type over it, move blocks around or delete them. **Undo** puts things back, and **File & Export, then Open the demo story** brings back a fresh copy whenever you want one.\n\n## Start your own\n\nChoose **File & Export, then New story**. If your module has a course pack, you may start with a ready-made outline and prompts written by your tutor.\n\n## Publish\n\nExport a **ZIP** for Moodle, or a single **web page** to share. Galley saves your work in your browser as you go. To keep a copy somewhere safer, use **Save to folder** and choose a folder in OneDrive.\n\nScrolling stories like this one have been around since the *New York Times* published Snow Fall (Branch, 2012). The list below is a **References** block, and Checks makes sure every citation in your text has a reference to match."
+      }
+    },
+    {
+      "id": "b_refs",
+      "type": "references",
+      "effect": "none",
+      "effectNote": "",
+      "note": "",
+      "background": null,
+      "data": {
+        "title": "References",
+        "items": [
+          "Branch, J. (2012) 'Snow Fall: the avalanche at Tunnel Creek', *The New York Times*, 20 December. Available at: https://www.nytimes.com/projects/2012/snow-fall/ (Accessed: 10 November 2026)."
+        ],
+        "collapsed": false
+      }
+    }
+  ],
+  "assets": {
+    "a_hero": {
+      "name": "cycle-lane-street.mp4",
+      "mime": "video/mp4",
+      "bytes": 1177792,
+      "alt": "Two cyclists ride towards the camera along a wide, tree-lined street with a cycle lane.",
+      "caption": "",
+      "credit": "Video: MMU Journalism",
+      "licence": "Used with permission",
+      "width": null,
+      "height": null
+    },
+    "a_tray": {
+      "name": "galley-tray.svg",
+      "mime": "image/svg+xml",
+      "bytes": 15366,
+      "alt": "A galley seen from above: a shallow wooden tray packed with rows of metal type, one row picked out in red.",
+      "caption": "A galley: the tray that gives Galley its name.",
+      "credit": "Illustration: Galley",
+      "licence": "Own work",
+      "width": 1200,
+      "height": 900
+    },
+    "a_phone": {
+      "name": "published-on-a-phone.png",
+      "mime": "image/png",
+      "bytes": 442079,
+      "alt": "This demo story on a phone: the label \"A tour of Galley\", the title \"Stories that move\" and the opening paragraph, in white over a street scene.",
+      "caption": "What readers see: this story on a phone. Every Galley story fits small screens without extra work.",
+      "credit": "Screenshot: Galley",
+      "licence": "Own work",
+      "width": 780,
+      "height": 928
+    },
+    "a_p_table": {
+      "name": "around-the-table.jpg",
+      "mime": "image/jpeg",
+      "bytes": 248063,
+      "alt": "Five students talk around a table with laptops in a small meeting room.",
+      "caption": "Around the table.",
+      "credit": "Photo: MMU Journalism",
+      "licence": "Used with permission",
+      "width": 1600,
+      "height": 1200
+    },
+    "a_p_mics": {
+      "name": "at-the-microphones.jpg",
+      "mime": "image/jpeg",
+      "bytes": 220968,
+      "alt": "Two students in headphones speak into microphones in a radio studio.",
+      "caption": "At the microphones.",
+      "credit": "Photo: MMU Journalism",
+      "licence": "Used with permission",
+      "width": 1600,
+      "height": 1200
+    },
+    "a_p_gallery": {
+      "name": "tv-gallery.jpg",
+      "mime": "image/jpeg",
+      "bytes": 286814,
+      "alt": "A TV studio gallery: a vision mixer and monitors in the foreground, a large screen showing a presenter on a sofa, and students at desks beyond.",
+      "caption": "In the TV gallery.",
+      "credit": "Photo: MMU Journalism",
+      "licence": "Used with permission",
+      "width": 1600,
+      "height": 1200
+    },
+    "a_p_location": {
+      "name": "filming-on-location.jpg",
+      "mime": "image/jpeg",
+      "bytes": 479201,
+      "alt": "Two students filming outdoors with a camera on a tripod, beside a brick building painted with a colourful mural.",
+      "caption": "Filming on location.",
+      "credit": "Photo: MMU Journalism",
+      "licence": "Used with permission",
+      "width": 1200,
+      "height": 1600
+    },
+    "a_package": {
+      "name": "cycle-route-package.mp4",
+      "mime": "video/mp4",
+      "bytes": 8729839,
+      "alt": "A news package. Cyclists ride along a tree-lined street and past a sign for Cavendish Street, and a red cycle signal shows. Campaigners gather with bikes and signs reading \"Cycle route saved\" and \"We did it!\". Councillor Lee-Ann Igbon, Labour councillor for Hulme, is interviewed in the street. The film ends on a cycle lane painted on the road.",
+      "caption": "A Media block playing a video with sound: a news package about a cycle route in Manchester.",
+      "credit": "Video: MMU Journalism",
+      "licence": "Used with permission",
+      "width": null,
+      "height": null
+    },
+    "a_rec": {
+      "name": "typing-on-the-canvas.mp4",
+      "mime": "video/mp4",
+      "bytes": 237474,
+      "alt": "A screen recording of Galley: a paragraph is clicked, a sentence is typed at its end, and the new words are made bold.",
+      "caption": "",
+      "credit": "Screen recording: Galley",
+      "licence": "Own work",
+      "width": null,
+      "height": null
+    },
+    "a_audio": {
+      "name": "audio-clip.m4a",
+      "mime": "audio/mp4",
+      "bytes": 106460,
+      "alt": "A computer voice reads: \"This is a Media block playing a sound clip. In a real story, this is where you might put a short piece of an interview…\" The full transcript is in the text below.",
+      "caption": "A Media block playing sound: a computer voice, standing in for an interview.",
+      "credit": "Voice: macOS text to speech",
+      "licence": "Own work",
+      "width": null,
+      "height": null
+    },
+    "a_add": {
+      "name": "adding-a-block.png",
+      "mime": "image/png",
+      "bytes": 418597,
+      "alt": "Galley's block picker: a grid of illustrated cards, one for each kind of block.",
+      "caption": "",
+      "credit": "Screenshot: Galley",
+      "licence": "Own work",
+      "width": 1770,
+      "height": 1140
+    },
+    "a_sheet": {
+      "name": "block-settings.png",
+      "mime": "image/png",
+      "bytes": 906544,
+      "alt": "Galley's settings sheet open beside the story, showing an image's alt text, caption and credit fields.",
+      "caption": "",
+      "credit": "Screenshot: Galley",
+      "licence": "Own work",
+      "width": 1770,
+      "height": 1140
+    },
+    "a_checks": {
+      "name": "the-checks.png",
+      "mime": "image/png",
+      "bytes": 258172,
+      "alt": "Galley's Checks panel listing editor's questions, grouped under headings such as Alt text and Long stretches.",
+      "caption": "",
+      "credit": "Screenshot: Galley",
+      "licence": "Own work",
+      "width": 1770,
+      "height": 1140
+    },
+    "a_p_newsroom": {
+      "name": "in-the-newsroom.jpg",
+      "mime": "image/jpeg",
+      "bytes": 290105,
+      "alt": "Students at computers in a newsroom, while others stand reading from sheets of paper, with a screen on the wall behind.",
+      "caption": "",
+      "credit": "Photo: MMU Journalism",
+      "licence": "Used with permission",
+      "width": 1600,
+      "height": 1200
+    },
+    "a_p_writing": {
+      "name": "writing-the-story.jpg",
+      "mime": "image/jpeg",
+      "bytes": 318772,
+      "alt": "A large newsroom full of students working at rows of computers.",
+      "caption": "",
+      "credit": "Photo: MMU Journalism",
+      "licence": "Used with permission",
+      "width": 1600,
+      "height": 1200
+    },
+    "a_p_onair": {
+      "name": "on-air.jpg",
+      "mime": "image/jpeg",
+      "bytes": 292534,
+      "alt": "A student in headphones at a radio desk full of faders, an \"On air\" sign lit beside the screen, with two more students behind.",
+      "caption": "",
+      "credit": "Photo: MMU Journalism",
+      "licence": "Used with permission",
+      "width": 1600,
+      "height": 1200
+    },
+    "a_canvas": {
+      "name": "the-galley-canvas.png",
+      "mime": "image/png",
+      "bytes": 174722,
+      "alt": "The Galley editor: the story down the middle, numbered blocks down the left, and buttons along the top.",
+      "caption": "The Galley canvas.",
+      "credit": "Screenshot: Galley",
+      "licence": "Own work",
+      "width": 1440,
+      "height": 900
+    },
+    "a_before": {
+      "name": "proof-marks-before.svg",
+      "mime": "image/svg+xml",
+      "bytes": 2582,
+      "alt": "A proof page covered in red correction marks.",
+      "caption": "",
+      "credit": "Illustration: Galley",
+      "licence": "Own work",
+      "width": 1500,
+      "height": 1000
+    },
+    "a_after": {
+      "name": "proof-clean-after.svg",
+      "mime": "image/svg+xml",
+      "bytes": 1989,
+      "alt": "The same page with every correction made and no marks left.",
+      "caption": "",
+      "credit": "Illustration: Galley",
+      "licence": "Own work",
+      "width": 1500,
+      "height": 1000
+    },
+    "a_p_studio": {
+      "name": "radio-studio.jpg",
+      "mime": "image/jpeg",
+      "bytes": 341439,
+      "alt": "A busy radio studio: students and a tutor gather round the desk and microphones.",
+      "caption": "",
+      "credit": "Photo: MMU Journalism",
+      "licence": "Used with permission",
+      "width": 1600,
+      "height": 1200
+    },
+    "a_p_desk": {
+      "name": "at-the-desk.jpg",
+      "mime": "image/jpeg",
+      "bytes": 214773,
+      "alt": "A tutor leans in to help a student at a radio desk while another student watches. A \"Mic live\" sign glows.",
+      "caption": "",
+      "credit": "Photo: MMU Journalism",
+      "licence": "Used with permission",
+      "width": 1600,
+      "height": 1200
+    },
+    "a_share": {
+      "name": "galley-share-image.png",
+      "mime": "image/png",
+      "bytes": 21315,
+      "alt": "The Galley logo, a tray of type, on paper-coloured background.",
+      "caption": "",
+      "credit": "Galley brand",
+      "licence": "Own work",
+      "width": 1200,
+      "height": 630
+    }
+  },
+  "reflection": [
+    {
+      "q": "What is the Reflection tab for?",
+      "a": "Questions about how you made the story, for you and your tutor. A course pack can set its own questions. Like notes, readers only see your answers if you add the appendix when you export."
+    },
+    {
+      "q": "What would you change about this demo?",
+      "a": "Try it: replace a placeholder picture with your own, rewrite a step, or add a block of your own."
+    }
+  ]
+}

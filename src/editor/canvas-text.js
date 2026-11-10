@@ -167,6 +167,13 @@ export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, s
 
   function key(e, c) {
     if (e.key === 'Escape') { e.preventDefault(); stop('escape'); return; }
+    // Home and End: to the start or end of the line (Shift selects). Done here because Chrome
+    // scrolls the whole canvas to its top or bottom when the cursor is already there.
+    if ((e.key === 'Home' || e.key === 'End') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      getSelection().modify(e.shiftKey ? 'extend' : 'move', e.key === 'End' ? 'forward' : 'backward', 'lineboundary');
+      return;
+    }
     const oneLine = c.mode === 'plain' || c.mode === 'inline';
     const tab = e.key === 'Tab' && !e.altKey && !e.ctrlKey && !e.metaKey;
     if (!(tab || (oneLine && e.key === 'Enter'))) return;

@@ -13,7 +13,8 @@ function toBlob(record) {
 
 function setCache(id, blob) {
   const prev = cache.get(id);
-  if (prev && prev.url) URL.revokeObjectURL(prev.url);
+  // Freed a little later: pictures on screen use the old address until the page redraws.
+  if (prev && prev.url) setTimeout(() => URL.revokeObjectURL(prev.url), 10000);
   cache.set(id, { blob, url: null });
 }
 

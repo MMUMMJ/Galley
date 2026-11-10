@@ -112,7 +112,7 @@ async function boot() {
   mountChecks(store, { button: $('checks'), panel: $('checks-panel'), announce, reveal: (id, from) => canvas.reveal(id, from) });
 
   // Canvas (the story with tools on it) or Classic (blocks | settings | preview). Remembered per browser.
-  const canvas = mountCanvas($('canvas'), store, { app: $('app'), sheet: $('inspector'), inspector, assetUrl, importFiles, announce, toast, playFrom: preview.playFrom });
+  const canvas = mountCanvas($('canvas'), store, { app: $('app'), sheet: $('inspector'), inspector, assetUrl, importFiles, announce, toast, playFrom: preview.playFrom, openDemo: () => fileMenu.openDemo() });
   const viewButtons = document.querySelectorAll('[data-view]');
   function setView(view, { save = true, say = false } = {}) {
     const isCanvas = view !== 'classic';
@@ -127,8 +127,8 @@ async function boot() {
   // ?view=classic or ?view=canvas in the address (a tutor's link, say) wins over the remembered choice.
   const asked = new URLSearchParams(location.search).get('view');
   setView(asked === 'classic' || asked === 'canvas' ? asked : (await getSettings()).view === 'classic' ? 'classic' : 'canvas', { save: false });
-  mountFileMenu(store, {
-    fileBtn: $('file'), menu: $('file-menu'), openBtn: $('open'), getBlob, announce, toast,
+  const fileMenu = mountFileMenu(store, {
+    fileBtn: $('file'), menu: $('file-menu'), openBtn: $('open'), demoBtn: $('open-demo'), getBlob, announce, toast,
     setStatus: (text) => { statusLine.textContent = text; },
   });
 
@@ -146,6 +146,14 @@ async function boot() {
   if (savers.length) statusLine.textContent = story.blocks.length ? 'Story restored from this browser' : '';
   if (packChanged || (!before && story.blocks.length)) autosave.markDirty(); // save the pack's changes
   document.documentElement.dataset.ready = 'true';
+  // ?demo in the address (the demo page's "Open in Galley" link) opens the demo story. It comes
+  // out of the address, so reloading doesn't open it again.
+  const params = new URLSearchParams(location.search);
+  if (params.has('demo')) {
+    params.delete('demo');
+    history.replaceState(null, '', `${location.pathname}${params.size ? `?${params}` : ''}${location.hash}`);
+    await fileMenu.openDemo();
+  }
 }
 
 boot().catch((err) => {
