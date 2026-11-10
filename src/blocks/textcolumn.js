@@ -12,7 +12,7 @@ export const wordsIn = (md) => plainText(md || '').split(/\s+/).filter(Boolean).
 export default {
   type: 'textcolumn',
   label: 'Text column',
-  description: 'One column of text scrolls over full-screen images. The images share the scroll evenly. Showpiece.',
+  description: 'One column of text scrolls over full-screen images. The images are evenly distributed across the length of the scroll. Showpiece.',
   defaults: () => blockDefaults('textcolumn'),
   prompt: 'Which image belongs with which part of the text? The images change at even points through the text, '
     + 'so put them in the order the reader meets the ideas.',

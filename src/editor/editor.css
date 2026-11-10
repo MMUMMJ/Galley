@@ -887,7 +887,7 @@ fieldset.field legend { padding: 0 4px; }
 .canvas-page .il-textcol .il-scrolly__step::before { content: "Text"; }
 .canvas-page .il-textcol__images { display: flex; flex-wrap: wrap; gap: 8px; counter-reset: il-img; margin-top: 1.5rem; margin-bottom: 0; }
 .canvas-page .il-textcol__images::before {
-  content: "Images behind the text, in order: they share the text evenly"; flex-basis: 100%;
+  content: "Images behind the text, in order: they are evenly distributed across the length of the scroll"; flex-basis: 100%;
   font: 700 0.75rem/1.3 system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: var(--il-muted);
 }
 .canvas-page .il-textcol__images .il-scrolly__media { position: relative; flex: 1 1 140px; max-width: 220px; counter-increment: il-img; }
