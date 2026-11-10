@@ -1,11 +1,20 @@
+# System and editor files
 .DS_Store
+.vscode/
+.idea/
+*.swp
 
-# Local demo exports, not part of Illuminate
-shdemo/
-SHdemo-illuminate/
-SHdemo-illuminate.zip
+# Development only, kept on the developer's machine: the build plan, and the
+# test pages with their sample stories
+BUILD-PLAN.md
+test/
 
-# Original media supplied for the demo story (the demo uses resized copies in demo/assets/)
+# Original media for the demo story (demo/assets/ holds the resized copies)
 media/
+
+# The offline Shorthand story and its recreation in Galley
+shdemo/
 shdemo-galley/
-shdemo-galley.zip
+
+# Exported or zipped stories
+*.zip
