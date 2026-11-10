@@ -13,6 +13,8 @@ export function textSources(story) {
   const out = [];
   const add = (block, text, kind, extra = {}) => {
     if (typeof text === 'string' && text.trim()) out.push({ blockId: block.id, text, kind, ...extra });
+    // An embed placed in the text is a web address of its own (a search results page, say).
+    if (kind === 'body' && typeof text === 'string') for (const m of text.matchAll(INLINE_EMBED)) out.push({ blockId: block.id, text: m[1], kind: 'url', ...extra });
   };
   for (const b of story.blocks) {
     const d = b.data || {};
@@ -61,7 +63,10 @@ export function assetUses(story) {
 }
 
 export const INLINE_IMAGE = /^\s*!\[[^\]]*\]\(asset:([A-Za-z0-9_-]+)(?:\s+"(?:left|right)")?\)\s*$/gm;
-const stripImages = (text) => String(text || '').replace(INLINE_IMAGE, '');
+// An embed placed in text: ![Embed](https://…) on a line of its own. It's a video or post, not a
+// word or a link to a source.
+export const INLINE_EMBED = /^\s*!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)\s*$/gm;
+const stripImages = (text) => String(text || '').replace(INLINE_IMAGE, '').replace(INLINE_EMBED, '');
 
 const MD_LINK = /\[[^\]]*\]\(\s*([^)\s]+)\s*\)/g;
 const BARE_URL = /\bhttps?:\/\/[^\s<>)\]]+/g;

@@ -1,5 +1,6 @@
 // Header controls: undo, redo, new story, and the save status line.
 import { startStory } from '../packs.js';
+import { STORY_DETAILS } from '../store.js';
 
 export function mountToolbar(store, { undoBtn, redoBtn, newBtn, announce }) {
   const sync = () => {
@@ -15,7 +16,8 @@ export function mountToolbar(store, { undoBtn, redoBtn, newBtn, announce }) {
     const ok = window.confirm('Start a new, empty story?\n\nYour current story will be replaced. '
       + 'You can bring it back with Undo until you close or reload this page.');
     if (!ok) return;
-    store.update(() => startStory(), { select: null, from: 'toolbar' });
+    const next = startStory();
+    store.update(() => next, { select: next.blocks[0]?.id ?? STORY_DETAILS, from: 'toolbar' });
     announce('New story started. Use Undo to bring back the previous one.');
   });
 

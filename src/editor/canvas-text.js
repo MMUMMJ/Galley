@@ -82,7 +82,8 @@ export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, s
     getSelection().addRange(range);
   }
 
-  // Starts typing in el. at: { x, y } (a click) or nothing (cursor at the end).
+  // Starts typing in el. at: { x, y } (a click) or nothing (cursor at the end); { resume } carries
+  // on a spell of typing whose element was redrawn: the same undo step, nothing announced.
   function start(el, at = {}) {
     if (cur?.el === el) return;
     if (cur) stop('switch');
@@ -90,7 +91,7 @@ export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, s
     if (!info) return;
     const c = { el, field: el.dataset.ilEdit, mode: el.dataset.ilMode, meta: info.meta || el.hasAttribute('data-il-meta'), blockId: info.id, type: info.type, blockEl: info.el };
     c.label = nameOf(c.type, c.field);
-    c.session = ++uid;
+    c.session = at.resume || ++uid;
     cur = c;
     const value = stored(c);
     const id = `cv-text-${++uid}`;
@@ -130,6 +131,7 @@ export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, s
         id: el.id, label: c.label, mode: c.mode, images: c.mode === 'blocks', ctx, key: c.field.split('.').pop(), focusKey: `canvas:${c.blockId}:${c.field}`,
         figure, ...shape, inside,
         save: () => write(c, c.mode === 'lines' ? editor.value().join('\n') : editor.value()),
+        onChange: () => c.onEmpty?.(),
       });
       c.tidy = editor.tidy;
       c.output = () => (c.mode === 'lines' ? editor.value().join('\n') : editor.value());
@@ -160,7 +162,7 @@ export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, s
     caretAt(el, at.x, at.y);
     onStart();
     place();
-    announce(`Typing in ${c.label}. Press Escape when you're done.`);
+    if (!at.resume) announce(`Typing in ${c.label}. Press Escape when you're done.`);
   }
 
   function key(e, c) {
@@ -212,5 +214,6 @@ export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, s
     get current() { return cur ? cur.el : null; },
     get blockId() { return cur ? cur.blockId : null; },
     get field() { return cur ? cur.field : null; },
+    get session() { return cur ? cur.session : null; },
   };
 }

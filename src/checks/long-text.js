@@ -18,10 +18,10 @@ export default {
       run = 0;
       start = null;
     };
-    const HEADING = /^\s*(?:#{2,6}\s*\S|#\s+\S|!\[[^\]]*\]\(asset:).*$/m;
+    const HEADING = /^\s*(?:#{2,6}\s*\S|#\s+\S|!\[[^\]]*\]\((?:asset:|https?:\/\/)).*$/m;
     for (const b of story.blocks) {
       if (b.type !== 'text') { finish(); continue; }
-      // A subheading or an image inside the text counts as a break.
+      // A subheading, image or embed inside the text counts as a break.
       (b.data.body || '').split(HEADING).forEach((chunk, k) => {
         if (k > 0) finish();
         if (start === null) start = b.id;

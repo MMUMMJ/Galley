@@ -27,10 +27,10 @@ function focusPicker(sub, ctx, stepIndex) {
 
   const inputs = {};
   const setBox = (nx, ny, nw, nh) => {
-    const cx = clamp(nx, 0, 100 - nw);
-    const cy = clamp(ny, 0, 100 - nh);
     const cw = clamp(nw, 5, 100);
     const ch = clamp(nh, 5, 100);
+    const cx = clamp(nx, 0, 100 - cw);
+    const cy = clamp(ny, 0, 100 - ch);
     box.style.left = `${cx}%`;
     box.style.top = `${cy}%`;
     box.style.width = `${cw}%`;
@@ -38,7 +38,8 @@ function focusPicker(sub, ctx, stepIndex) {
     for (const [k, v] of [['x', cx], ['y', cy], ['w', cw], ['h', ch]]) {
       if (inputs[k]) inputs[k].value = String(Math.round(v));
     }
-    sub.edit((d) => { d.x = cx; d.y = cy; d.w = cw; d.h = ch; });
+    // One undo step for a whole drag or slide, not one per movement.
+    sub.edit((d) => { d.x = cx; d.y = cy; d.w = cw; d.h = ch; }, { coalesce: `${sub.block.id}:box` });
   };
 
   if (stage) {
@@ -181,7 +182,7 @@ export default {
     const issues = [];
     if (!d.asset) issues.push('Choose an image to explore.');
     if (steps.length < 2) issues.push('Scrollpoints need at least two steps.');
-    steps.forEach((st, i) => { if (!plainText(st.text).trim()) issues.push(`Step ${i + 1} has no text. Every step needs some.`); });
+    steps.forEach((st, i) => { if (!plainText(st.text).trim() && !/asset:|\]\(https?:/.test(st.text || '')) issues.push(`Step ${i + 1} has no text. Every step needs some.`); });
     return issues;
   },
 };

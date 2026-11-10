@@ -7,7 +7,7 @@ export const SCHEMA_VERSION = 2;
 
 // Must match RUNTIME_VERSION in runtime/galley-runtime.js.
 // test/runtime.html flags any mismatch.
-export const RUNTIME_VERSION = '1.17.0';
+export const RUNTIME_VERSION = '1.17.1';
 
 export const BLOCK_TYPES = ['header', 'text', 'columns', 'quote', 'media', 'gallery', 'embed', 'divider', 'references', 'scrolly', 'textcolumn', 'scrollpoints', 'compare', 'number'];
 export const SCROLLY_LAYOUTS = ['side', 'overlay']; // the single text column is its own block (textcolumn) since schema 2

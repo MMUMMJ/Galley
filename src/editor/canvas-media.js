@@ -1,6 +1,6 @@
 // Images and videos on the canvas, wherever they are (in text too, unless it's being typed in).
 // Clicking one puts a small bar on it:
-//   Replace…  choose a new file; this block uses it instead (other blocks keep the old one).
+//   Replace…  choose a new file; this copy of the image uses it instead (others keep the old one).
 //   Alt text  its alt text, caption and credit, right there.
 //   Left · Full · Right · Remove   for one placed in text.
 //   Settings  the block's settings, for the licence and the rest.
@@ -10,19 +10,23 @@
 // mark is harmless there).
 import { h } from './dom.js';
 import { ACCEPT, assetKind } from './fields.js';
-import { textPlace, setTextPos, removeFromText, swapInText } from './canvas-media-text.js';
+import { fieldSpot } from './canvas-text.js';
+import { textPlace, setTextPos, removeFromText, swapLineInText } from './canvas-media-text.js';
+
+// Blocks that take a video as well as an image, so Replace can swap one for the other.
+const MIXED = new Set(['header', 'media', 'scrolly', 'textcolumn']);
 
 const ALT_HINT = 'Describe what the image shows, for readers who can\'t see it. This is not the caption.';
 
-// Every place in a block's data that shows this asset: media fields, and images in its text.
-function swapIn(value, from, to) {
-  if (Array.isArray(value)) return value.map((v) => swapIn(v, from, to));
-  if (value && typeof value === 'object') {
-    for (const k of Object.keys(value)) value[k] = swapIn(value[k], from, to);
-    return value;
-  }
-  if (value === from) return to;
-  return typeof value === 'string' ? swapInText(value, from, to) : value;
+// The nth media field in a block's data that holds this file (a step's image, a gallery's third
+// picture…), in the order the page shows them. Images in text are changed by swapLineInText.
+function swapNth(data, from, to, n) {
+  let i = -1;
+  const walk = (v) => Object.keys(v).some((k) => {
+    if (v[k] === from) { if (++i !== n) return false; v[k] = to; return true; }
+    return v[k] && typeof v[k] === 'object' && walk(v[k]);
+  });
+  walk(data);
 }
 
 // page, holder, scroller, boxOf, blockOf: as for canvasText. openSettings(blockId).
@@ -66,6 +70,10 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
   const blockEl = () => (cur ? page.querySelector(`[id="${CSS.escape(cur.blockId)}"]`) : null);
 
   const asset = () => (cur ? store.story.assets[cur.assetId] : null);
+
+  // Images placed in text, and some blocks, can be either kind.
+
+  const takesBoth = () => Boolean(cur && (cur.place || MIXED.has(store.story.blocks.find((b) => b.id === cur.blockId)?.type)));
   // The element again after a redraw: the same file, the same copy, in the same block.
   function elOf() {
     if (!cur) return null;
@@ -99,7 +107,9 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
     count.textContent = `${at + 1} of ${all.length}`;
     const id = el.dataset.ilAsset;
     const same = [...info.el.querySelectorAll(`[data-il-asset="${CSS.escape(id)}"]`)];
-    cur = { assetId: id, blockId: info.id, nth: Math.max(0, same.indexOf(el)), place: textPlace(el) };
+    // slot: which of the block's media fields (not in text) holding this file it is.
+    const slot = same.filter((x) => !x.closest('[data-il-edit]')).indexOf(el);
+    cur = { assetId: id, blockId: info.id, nth: Math.max(0, same.indexOf(el)), slot, place: textPlace(el) };
     posBtns.concat(removeBtn).forEach((b) => { b.hidden = !cur.place; });
     if (cur.place) posBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pos === cur.place.pos)));
     const a = asset();
@@ -108,7 +118,7 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
     altBtn.textContent = kind === 'image' ? 'Alt text' : 'Description';
     altBtn.classList.toggle('needs-alt', !String(a?.alt || '').trim());
     replaceBtn.setAttribute('aria-label', `Replace ${name.textContent}`);
-    input.accept = kind === 'video' ? 'video/*,.mov' : ACCEPT.image;
+    input.accept = takesBoth() ? ACCEPT.imageVideo : kind === 'video' ? 'video/*,.mov' : ACCEPT.image;
     closeAlt(false);
     bar.hidden = false;
     bar.setAttribute('aria-label', `${kind === 'video' ? 'Video' : 'Image'}${all.length > 1 ? ` ${at + 1} of ${all.length}` : ''}: ${name.textContent}`);
@@ -158,20 +168,28 @@ export function canvasMedia({ page, holder, scroller, boxOf, blockOf, store, imp
     const files = [...(input.files || [])];
     input.value = '';
     if (!files.length || !cur) return;
-    const { assetId: old, blockId } = cur;
+    const { assetId: old, blockId, place: spot, slot } = cur;
     const kind = assetKind(store.story.assets[old]) || 'image';
-    const [added] = await importFiles(files.slice(0, 1), [kind]);
+    const [added] = await importFiles(files.slice(0, 1), takesBoth() ? ['image', 'video'] : [kind]);
     if (!added) return;
     // The new file keeps the old one's caption, credit and alt text until they're changed:
-    // the student is usually swapping in a better shot of the same thing.
+    // the student is usually swapping in a better shot of the same thing. An image's alt text
+    // doesn't describe a video (or the other way round), so that stays behind if the kind changes.
     const before = store.story.assets[old] || {};
-    const keep = Object.fromEntries(['alt', 'caption', 'credit', 'licence'].filter((k) => before[k]).map((k) => [k, before[k]]));
+    const fields = assetKind(added.asset) === kind ? ['alt', 'caption', 'credit', 'licence'] : ['caption', 'credit', 'licence'];
+    const keep = Object.fromEntries(fields.filter((k) => before[k]).map((k) => [k, before[k]]));
     store.update((s) => {
       s.assets[added.id] = { ...added.asset, ...keep };
       const b = s.blocks.find((x) => x.id === blockId);
-      if (b) swapIn(b.data, old, added.id);
+      // Only the copy that was clicked: the same file can be used twice in a block.
+      const f = b && spot && fieldSpot(b.data, spot.field);
+      if (f) f.obj[f.key] = swapLineInText(f.obj[f.key], old, added.id, spot);
+      else if (b) swapNth(b.data, old, added.id, Math.max(0, slot));
     }, { from: 'canvas-media' });
-    cur = { ...cur, assetId: added.id };
+    // The new file is in the block once, so it's copy 0 for whatever the bar does next.
+    cur = { ...cur, assetId: added.id, nth: 0, slot: spot ? -1 : 0, place: spot ? { ...spot, nth: 0 } : null };
+    const now = assetKind(added.asset) || 'image';
+    altBtn.textContent = now === 'image' ? 'Alt text' : 'Description';
     requestAnimationFrame(() => { place(); replaceBtn.focus(); });
     announce(`Replaced with ${added.asset.name || 'the new file'}.${keep.alt ? ' Check the alt text still fits.' : ' Now add its alt text.'}`);
     if (!keep.alt) openAlt();

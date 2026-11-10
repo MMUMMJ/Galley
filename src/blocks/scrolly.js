@@ -106,7 +106,7 @@ export default {
     const steps = d.steps || [];
     const issues = [];
     if (steps.length < 2) issues.push('A scroll sequence needs at least two steps.');
-    steps.forEach((st, i) => { if (!plainText(st.text).trim()) issues.push(`Step ${i + 1} has no text. Every step needs some.`); });
+    steps.forEach((st, i) => { if (!plainText(st.text).trim() && !/asset:|\]\(https?:/.test(st.text || '')) issues.push(`Step ${i + 1} has no text. Every step needs some.`); });
     if (!steps.some((st) => st.media)) issues.push('Add an image or video: start with step 1.');
     return issues;
   },

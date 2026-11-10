@@ -7,6 +7,7 @@ import {
 import { getSettings, setSetting } from '../settings.js';
 import { putAsset, getBlob } from '../assets.js';
 import { syncStoryPack } from '../packs.js';
+import { STORY_DETAILS } from '../store.js';
 import { h } from './dom.js';
 
 export const UNSUPPORTED = 'To save straight to your OneDrive folder, use Chrome or Edge. Until then, Export is your save.';
@@ -154,7 +155,7 @@ export async function mountFolder(store, { wrap, button, menu, folderLine, expor
         toast(`${err.message} Carrying on without a pack.`, { tone: 'warning' });
       }
       for (const [id, blob] of blobs) await putAsset(id, blob);
-      store.update(() => story, { select: story.blocks[0]?.id ?? null, from: 'open-folder', keepModified: true });
+      store.update(() => story, { select: story.blocks[0]?.id ?? STORY_DETAILS, from: 'open-folder', keepModified: true });
       await connectFolder(handle);
       toast(`Opened the story in "${handle.name}" and saving there.${missing.length ? ` ${missing.length} media file(s) are missing from its assets folder: ${missing.join(', ')}.` : ''}`,
         { tone: missing.length ? 'warning' : undefined });

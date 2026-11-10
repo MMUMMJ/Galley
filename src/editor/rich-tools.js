@@ -27,6 +27,7 @@ if (HAS_PAGE) {
 //   base, bare toHtml options (heading level; inline text without a <p>)
 //   save(opts) saves the text; findBody() the element after a structural save (default: body)
 //   inside(el) also counts as part of this editor (the toolbar and pop-up always do)
+//   onChange() optional: called after a change that fires no input event (media removed)
 // Returns { bar, pop, tidy, value }.
 export function attachRichEditing(body, o) {
   const { id, label, mode, images = false, imageLabel = 'Media', imageName = 'Add an image, video or embed', ctx, key, focusKey, figure } = o;
@@ -161,6 +162,7 @@ export function attachRichEditing(body, o) {
     ctx.edit((data, story) => { if (isNew) story.assets[assetId] = asset; data[key] = md; }, { rerender: true });
     // Put the cursor on the line below the new one, ready to type.
     const fresh = findBody();
+    if (fresh) padImages(fresh); // a line to type on above an image that now starts the text
     const fig = fresh && fresh.querySelectorAll(MEDIA)[index];
     const line = fig && fig.nextElementSibling;
     if (line) {
@@ -242,6 +244,7 @@ export function attachRichEditing(body, o) {
     else if (b.hasAttribute('data-remove')) {
       fig.remove();
       save({ rerender: true });
+      o.onChange?.(); // no input event: the canvas updates its "empty" hint itself
       ctx.announce(fig.dataset.embed ? 'Embed removed from the text.' : 'Removed from the text. The file stays in your story\'s files.');
     } else {
       setFigurePos(fig, b.dataset.pos);

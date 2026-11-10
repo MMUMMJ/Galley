@@ -109,7 +109,7 @@ async function boot() {
   const inspector = mountInspector($('inspector'), store, { importFiles, assetUrl, announce });
   mountBlockList($('blocks'), store, { announce, toast, onAdded: () => inspector.focusFirstField() });
   const preview = mountPreview($('preview-frame'), store, { assetUrl });
-  mountChecks(store, { button: $('checks'), panel: $('checks-panel'), announce });
+  mountChecks(store, { button: $('checks'), panel: $('checks-panel'), announce, reveal: (id, from) => canvas.reveal(id, from) });
 
   // Canvas (the story with tools on it) or Classic (blocks | settings | preview). Remembered per browser.
   const canvas = mountCanvas($('canvas'), store, { app: $('app'), sheet: $('inspector'), inspector, assetUrl, importFiles, announce, toast, playFrom: preview.playFrom });

@@ -1,7 +1,7 @@
 // The "Images and videos in this text" list under a formatted text editor: each image's alt text,
 // caption, credit and licence. Position and Remove are on the image itself, in the editor.
 import { h } from './dom.js';
-import { assetDetails, thumb } from './fields.js';
+import { assetDetails, assetKind, thumb } from './fields.js';
 
 export const IMAGE_LINE = /^\s*!\[([^\]]*)\]\(asset:([A-Za-z0-9_-]+)(?:\s+"(left|right)")?\)\s*$/;
 
@@ -21,8 +21,8 @@ export function imageDetails(ctx, key) {
         h('div', { class: 'gallery-item-row' },
           thumb(ctx, img.id),
           h('span', { class: 'gallery-item-name' }, asset ? asset.name || 'Untitled file' : 'Missing file',
-            asset && !(asset.alt || '').trim() ? h('span', { class: 'badge' }, 'No alt text') : null)),
-        asset ? h('details', { class: 'gallery-item-details', open: !(asset.alt || '').trim() },
+            asset && assetKind(asset) !== 'video' && !(asset.alt || '').trim() ? h('span', { class: 'badge' }, 'No alt text') : null)),
+        asset ? h('details', { class: 'gallery-item-details', open: assetKind(asset) !== 'video' && !(asset.alt || '').trim() },
           h('summary', { 'data-focus': `${ctx.block.id}:${key}:img-details:${n}` }, 'Alt text, caption and credit'),
           assetDetails(ctx, img.id)) : null);
     })));

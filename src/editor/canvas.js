@@ -9,7 +9,7 @@
 // scroll sequences show their steps one after another, effects are off.
 import { STORY_DETAILS, REFLECTION } from '../store.js';
 import { BLOCKS, blockLabel } from '../blocks/index.js';
-import { blockIssues, getPack } from '../packs.js';
+import { blockIssues } from '../packs.js';
 import { blockOps } from './block-ops.js';
 import { openBlockPicker } from './block-picker.js';
 import { articlePatcher } from './article-patch.js';
@@ -17,12 +17,17 @@ import { canvasText } from './canvas-text.js';
 import { canvasSheet } from './canvas-sheet.js';
 import { canvasMedia } from './canvas-media.js';
 import { labelToolbar, toolbarKeys } from './canvas-toolbar.js';
-import { esc, prefersReducedMotion } from './dom.js';
+import { drawRail } from './canvas-rail.js';
+import { prefersReducedMotion } from './dom.js';
+import { assetKind } from './fields.js';
 
 const FOCUSABLE = 'a[href], button, input, select, textarea, summary, video, audio, iframe, [tabindex]';
 
-// Blocks whose effect only shows when the story moves: Play opens the preview at them.
+// Blocks whose effect only shows when the story moves: Play opens the preview at them. So do
+// blocks with a scroll effect, and a header with a background video (still on the canvas).
 const SHOWPIECES = new Set(['scrolly', 'textcolumn', 'scrollpoints', 'number', 'compare']);
+const moves = (b, story) => SHOWPIECES.has(b.type) || (b.effect && b.effect !== 'none')
+  || (b.type === 'header' && assetKind(story.assets[b.data.media]) === 'video');
 
 export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, importFiles, announce, toast, playFrom }) {
   section.innerHTML = `
@@ -92,10 +97,10 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
       // Rarely the typing's block is redrawn anyway (a part's header gains or loses its title):
       // carry on in the same piece of text.
       if (text.current && !text.current.isConnected) {
-        const { blockId, field } = text;
+        const { blockId, field, session } = text;
         text.stop('switch', { save: false });
         const again = editableIn(elOf(blockId === STORY_DETAILS ? 'il-top' : blockId), field);
-        if (again) text.start(again);
+        if (again) text.start(again, { resume: session });
       }
       const scheme = R.SCHEMES[store.story.meta.theme];
       page.style.background = scheme ? scheme.bg : '';
@@ -106,26 +111,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     place();
   }
 
-  function renderRail() {
-    const sel = store.selected;
-    const list = blocks();
-    const current = list.some((b) => b.id === sel) ? sel : list[0]?.id;
-    rail.innerHTML = list.map((b, i) => {
-      const issues = BLOCKS[b.type] ? blockIssues(b, store.story) : [];
-      const label = `${i + 1}, ${blockLabel(b.type)}${issues.length ? ', needs work' : ''}`;
-      return `<li><button type="button" class="rail-item${b.id === sel ? ' is-selected' : ''}${issues.length ? ' needs-work' : ''}"
-        data-id="${esc(b.id)}" aria-label="${esc(label)}" title="${esc(label)}" ${b.id === sel ? 'aria-current="true"' : ''}
-        tabindex="${b.id === current ? '0' : '-1'}">${i + 1}</button></li>`;
-    }).join('');
-    $('[data-open="story-details"]').setAttribute('aria-pressed', String(sel === STORY_DETAILS));
-    $('[data-open="reflection"]').setAttribute('aria-pressed', String(sel === REFLECTION));
-    // The course pack in use, if any (the Classic view shows it in its block list).
-    const pack = getPack();
-    const packEl = $('.canvas-pack');
-    packEl.hidden = !pack.path;
-    packEl.textContent = pack.name || '';
-    packEl.title = pack.path ? `Course pack: ${pack.name}. Its prompts, blocks and checks apply to this story.` : '';
-  }
+  const renderRail = () => drawRail(rail, section, store);
 
   // Where an element sits inside the scrolling canvas.
   function boxOf(el) {
@@ -143,7 +129,8 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   // The selection frame and its toolbar.
   function place() {
     const id = store.selected;
-    const el = isBlock(id) ? elOf(id) : null;
+    // With no header block, the story's opening (#il-top) is Story details.
+    const el = isBlock(id) ? elOf(id) : id === STORY_DETAILS ? elOf('il-top') : null;
     page.querySelectorAll('.canvas-sel').forEach((x) => { if (x !== el) x.classList.remove('canvas-sel'); });
     el?.classList.add('canvas-sel'); // shows the block's optional empty text (kicker, byline…)
     frame.hidden = !el;
@@ -151,12 +138,12 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     text.place();
     if (media.blockId && media.blockId !== id) media.hide();
     media.place();
-    if (!isBlock(id)) return;
+    if (!isBlock(id)) { if (el) setBox(frame, boxOf(el)); return; }
     const i = ops.indexOf(id);
     const b = blocks()[i];
     labelToolbar(tools, {
       index: i, count: blocks().length, label: blockLabel(b.type), el,
-      hasText: Boolean(editableIn(el)), hasMedia: media.has(el), playable: SHOWPIECES.has(b.type) && Boolean(playFrom),
+      hasText: Boolean(editableIn(el)), hasMedia: media.has(el), playable: moves(b, store.story) && Boolean(playFrom),
       todo: BLOCKS[b.type] ? blockIssues(b, store.story) : [],
     });
     if (!el) { tools.style.top = `${scroller.scrollTop + 8}px`; tools.style.left = '8px'; return; }
@@ -169,7 +156,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   }
 
   const scrollToSelected = (block = 'nearest') => {
-    const el = elOf(store.selected);
+    const el = elOf(store.selected === STORY_DETAILS ? 'il-top' : store.selected);
     if (el) el.scrollIntoView({ block, behavior: smooth() });
   };
 
@@ -365,9 +352,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     if (change.type === 'undo' || change.type === 'redo') { if (text.current) text.cancel(); media.hide(); }
     if (change.type === 'select') {
       render();
-      if (change.from !== 'canvas' && change.from !== 'rail') scrollToSelected('center');
-      // Checks send students to a block's settings.
-      if (change.from === 'checks') openSheet(railButton(store.selected) || railAdd);
+      if (change.from !== 'canvas' && change.from !== 'rail' && change.from !== 'checks') scrollToSelected('center');
       return;
     }
     // At most one redraw every 200ms while typing in the sheet.
@@ -379,6 +364,16 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   function active() { return !section.hidden; }
 
   return {
+    // Checks send students to a block's settings, even when it's already the selected one.
+    reveal(id, from) {
+      if (!active()) return false;
+      if (text.current) text.stop('away');
+      media.hide();
+      render();
+      scrollToSelected('center');
+      openSheet(from || railButton(id) || $(`[data-open="${STORY_DETAILS}"]`) || railAdd);
+      return true;
+    },
     show() {
       lastHtml = '';
       render();

@@ -26,6 +26,15 @@ export default {
       return next;
     }, `Image moved to position ${i + delta + 1} of ${items.length}.`);
 
+    // Keep focus with the image that moved (buttons are keyed by position, so the same file can
+    // be in the list twice). At the top or bottom its own arrow is disabled: the other one takes it.
+    const moveAndFollow = (i, delta) => {
+      move(i, delta);
+      const key = (dir) => `[data-focus="${CSS.escape(`${bid}:g-${dir}:${i + delta}`)}"]`;
+      const own = document.querySelector(key(delta < 0 ? 'up' : 'down'));
+      (own && !own.disabled ? own : document.querySelector(key(delta < 0 ? 'down' : 'up')))?.focus();
+    };
+
     const list = h('ol', { class: 'gallery-items' }, items.map((id, i) => {
       const asset = ctx.story.assets[id];
       const name = asset?.name || 'Missing file';
@@ -37,19 +46,19 @@ export default {
           h('span', { class: 'icon-row' },
             h('button', {
               type: 'button', class: 'btn btn-icon', 'aria-label': `Move image ${i + 1} up`, title: 'Move up',
-              disabled: i === 0, 'data-focus': `${bid}:g-up:${id}`, onclick: () => move(i, -1),
+              disabled: i === 0, 'data-focus': `${bid}:g-up:${i}`, onclick: () => moveAndFollow(i, -1),
             }, '↑'),
             h('button', {
               type: 'button', class: 'btn btn-icon', 'aria-label': `Move image ${i + 1} down`, title: 'Move down',
-              disabled: i === items.length - 1, 'data-focus': `${bid}:g-down:${id}`, onclick: () => move(i, 1),
+              disabled: i === items.length - 1, 'data-focus': `${bid}:g-down:${i}`, onclick: () => moveAndFollow(i, 1),
             }, '↓'),
             h('button', {
               type: 'button', class: 'btn btn-icon', 'aria-label': `Remove image ${i + 1} from gallery`, title: 'Remove',
-              'data-focus': `${bid}:g-del:${id}`,
+              'data-focus': `${bid}:g-del:${i}`,
               onclick: () => changeItems((next) => next.filter((_, j) => j !== i), `Image ${i + 1} removed from the gallery.`),
             }, '✕'))),
         asset ? h('details', { class: 'gallery-item-details', open: noAlt },
-          h('summary', { 'data-focus': `${bid}:g-sum:${id}` }, 'Alt text, caption and credit'),
+          h('summary', { 'data-focus': `${bid}:g-sum:${i}` }, 'Alt text, caption and credit'),
           assetDetails(ctx, id)) : null);
     }));
 

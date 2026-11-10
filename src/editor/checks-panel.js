@@ -6,7 +6,9 @@ import { getPack } from '../packs.js';
 import { STORY_DETAILS } from '../store.js';
 import { h, preserveFocus } from './dom.js';
 
-export function mountChecks(store, { button, panel, announce }) {
+// reveal(blockId, returnTo): shows the block's settings in a view that keeps them in a sheet (the
+// canvas); returns false when they're already on screen (Classic).
+export function mountChecks(store, { button, panel, announce, reveal = () => false }) {
   const probe = document.createElement('video');
   const canPlayType = (mime) => probe.canPlayType(mime);
   let results = [];
@@ -22,10 +24,15 @@ export function mountChecks(store, { button, panel, announce }) {
 
   function jump(blockId) {
     store.select(blockId, 'checks');
-    if (window.matchMedia('(max-width: 760px)').matches) close(false);
-    const inspector = document.getElementById('inspector');
-    inspector.focus();
-    inspector.scrollIntoView({ block: 'nearest' });
+    // The canvas's settings sheet opens where this panel is, so the panel closes; Close on the
+    // sheet comes back to the Checks button.
+    if (reveal(blockId, button)) close(false);
+    else {
+      if (window.matchMedia('(max-width: 760px)').matches) close(false);
+      const inspector = document.getElementById('inspector');
+      inspector.focus();
+      inspector.scrollIntoView({ block: 'nearest' });
+    }
     announce(blockId === STORY_DETAILS ? 'Showing Story details.' : `Showing ${where(store.story, blockId)}.`);
   }
 

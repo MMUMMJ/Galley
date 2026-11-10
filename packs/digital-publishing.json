@@ -3,7 +3,7 @@
   "blocks": ["header", "text", "columns", "quote", "media", "gallery", "embed", "divider", "references", "compare", "number"],
   "prompts": {
     "header": "Write the headline last. Would it make someone stop scrolling, without overselling the story? The standfirst should promise what the piece delivers.",
-    "text": "Write for the screen: lead with what's new, keep paragraphs short, and link each claim to its source in the sentence that makes it, using [text](https://…).",
+    "text": "Write for the screen: lead with what's new, keep paragraphs short, and link each claim to its source in the sentence that makes it: select the words and use the Link button.",
     "quote": "Choose a line that only this person could have said. Is it accurate, and fair to what they meant in context?",
     "embed": "Link to the original source, not a page about it. Would your editor trust it? Keep a screenshot in case it changes.",
     "references": "In this pack you source claims with links in the text. Use this list only for sources you can't link to, such as interviews or print."

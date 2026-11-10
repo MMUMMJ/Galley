@@ -37,5 +37,6 @@ export const setTextPos = (store, blockId, place, assetId, pos) => edit(store, b
 
 export const removeFromText = (store, blockId, place, assetId) => edit(store, blockId, place, assetId, () => '');
 
-// In the text, a replaced file's id changes in every line that shows it.
-export const swapInText = (text, from, to) => text.replace(new RegExp(`\\(asset:${from}(?=[\\s)])`, 'g'), `(asset:${to}`);
+// A replaced file in text: the one line that was clicked shows the new file, in the same position.
+export const swapLineInText = (text, from, to, place) => changeLine(text, from, place.nth,
+  (head, tail) => `${head.slice(0, -from.length)}${to}${place.pos ? ` "${place.pos}"` : ''}${tail.trim()}`);

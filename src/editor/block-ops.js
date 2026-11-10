@@ -34,7 +34,9 @@ export function blockOps(store, { announce, toast, from }) {
     whereText,
     // Returns the new block's id.
     add(type, at = insertIndex()) {
-      const block = createBlock(type);
+      // The first header opens the story full screen; later ones start parts, so they're compact.
+      const later = type === 'header' && blocks().slice(0, at).some((b) => b.type === 'header');
+      const block = createBlock(type, later ? { variant: 'compact' } : {});
       store.update((s) => { s.blocks.splice(at, 0, block); }, { select: block.id, from });
       announce(`${blockLabel(type)} block added at position ${at + 1}.`);
       return block.id;

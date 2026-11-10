@@ -36,6 +36,15 @@ export default {
     }, `Image moved to position ${i + delta + 1} of ${images.length}.`);
     const share = images.length > 1 ? Math.round(100 / images.length) : 100;
 
+    // Keep focus with the image that moved (buttons are keyed by position, so the same file can
+    // be in the list twice). At the top or bottom its own arrow is disabled: the other one takes it.
+    const moveAndFollow = (i, delta) => {
+      move(i, delta);
+      const key = (dir) => `[data-focus="${CSS.escape(`${bid}:tc-${dir}:${i + delta}`)}"]`;
+      const own = document.querySelector(key(delta < 0 ? 'up' : 'down'));
+      (own && !own.disabled ? own : document.querySelector(key(delta < 0 ? 'down' : 'up')))?.focus();
+    };
+
     const list = h('ol', { class: 'gallery-items' }, images.map((id, i) => {
       const asset = ctx.story.assets[id];
       const name = asset?.name || 'Missing file';
@@ -51,19 +60,19 @@ export default {
           h('span', { class: 'icon-row' },
             h('button', {
               type: 'button', class: 'btn btn-icon', 'aria-label': `Move image ${i + 1} up`, title: 'Move up',
-              disabled: i === 0, 'data-focus': `${bid}:tc-up:${id}`, onclick: () => move(i, -1),
+              disabled: i === 0, 'data-focus': `${bid}:tc-up:${i}`, onclick: () => moveAndFollow(i, -1),
             }, '↑'),
             h('button', {
               type: 'button', class: 'btn btn-icon', 'aria-label': `Move image ${i + 1} down`, title: 'Move down',
-              disabled: i === images.length - 1, 'data-focus': `${bid}:tc-down:${id}`, onclick: () => move(i, 1),
+              disabled: i === images.length - 1, 'data-focus': `${bid}:tc-down:${i}`, onclick: () => moveAndFollow(i, 1),
             }, '↓'),
             h('button', {
               type: 'button', class: 'btn btn-icon', 'aria-label': `Remove image ${i + 1}`, title: 'Remove',
-              'data-focus': `${bid}:tc-del:${id}`,
+              'data-focus': `${bid}:tc-del:${i}`,
               onclick: () => changeImages((next) => next.filter((_, j) => j !== i), `Image ${i + 1} removed. It stays in your story's files.`),
             }, '✕'))),
         asset ? h('details', { class: 'gallery-item-details', open: noAlt },
-          h('summary', { 'data-focus': `${bid}:tc-sum:${id}` }, 'Alt text, caption and credit'),
+          h('summary', { 'data-focus': `${bid}:tc-sum:${i}` }, 'Alt text, caption and credit'),
           assetDetails(ctx, id)) : null);
     }));
 
@@ -115,7 +124,7 @@ export default {
   },
   validate: (d) => {
     const issues = [];
-    if (!plainText(d.body || '').trim()) issues.push('Write the text that scrolls over the images.');
+    if (!plainText(d.body || '').trim() && !/asset:|\]\(https?:/.test(d.body || '')) issues.push('Write the text that scrolls over the images.');
     if (!(d.images || []).length) issues.push('Add an image or video to go behind the text.');
     return issues;
   },

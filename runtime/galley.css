@@ -466,7 +466,7 @@ hr.il-divider::after { content: "*\00a0\00a0*\00a0\00a0*"; font-size: 1.4rem; le
 }
 
 /* ---------- scrollpoints: zoom & highlight regions of one image */
-.il-scrollpoints__media { width: min(var(--il-wide), 100% - 2 * var(--il-gutter)); margin: 0 auto 1.5rem; }
+.il-scrollpoints__media { width: min(var(--il-measure) + 18rem, 100% - 2 * var(--il-gutter)); /* the grid's wide column */ margin: 0 auto 1.5rem; }
 .il-scrollpoints__media img { width: 100%; }
 .il-scrollpoints.is-enhanced .il-scrollpoints__media {
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);

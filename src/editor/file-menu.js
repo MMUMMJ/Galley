@@ -4,6 +4,7 @@ import { formatMB } from '../adapters/export-shared.js';
 import { openFile } from '../open.js';
 import { putAsset } from '../assets.js';
 import { syncStoryPack } from '../packs.js';
+import { STORY_DETAILS } from '../store.js';
 import { h } from './dom.js';
 
 function download(blob, filename) {
@@ -100,7 +101,7 @@ export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, getBlo
         toast(`${err.message} Carrying on without a pack.`, { tone: 'warning' });
       }
       for (const [id, blob] of blobs) await putAsset(id, blob);
-      store.update(() => story, { select: story.blocks[0]?.id ?? null, from: 'open', keepModified: true });
+      store.update(() => story, { select: story.blocks[0]?.id ?? STORY_DETAILS, from: 'open', keepModified: true });
       const title = story.meta.title || story.blocks.find((b) => b.type === 'header')?.data.title || file.name;
       const note = missing.length
         ? ` ${missing.length} media file${missing.length === 1 ? ' is' : 's are'} missing: ${missing.join(', ')}. Open the ZIP rather than index.html to bring them in.`

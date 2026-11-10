@@ -14,5 +14,5 @@ export default {
     const images = imageDetails(ctx, 'body'); // nothing when the text has no images
     if (images) el.append(images);
   },
-  validate: (d) => (plainText(d.body).trim() || /asset:/.test(d.body || '') ? [] : ['This text block is empty.']),
+  validate: (d) => (plainText(d.body).trim() || /asset:|\]\(https?:/.test(d.body || '') ? [] : ['This text block is empty.']),
 };

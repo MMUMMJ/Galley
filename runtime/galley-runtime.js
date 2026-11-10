@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
 
-  const RUNTIME_VERSION = '1.17.0';
+  const RUNTIME_VERSION = '1.17.1';
 
   // ------------------------------------------------------------ helpers
 
