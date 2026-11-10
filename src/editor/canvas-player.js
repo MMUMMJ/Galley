@@ -20,7 +20,7 @@ export function canvasPlayer({ holder, scroller, store, assetUrl, announce, labe
     if (!block) return;
     const name = label(blockId);
     const frame = h('iframe', { class: 'canvas-player-frame', title: `${name}, playing` });
-    const stop = h('button', { type: 'button', class: 'btn', onclick: () => close(true) }, 'Stop');
+    const stop = h('button', { type: 'button', class: 'btn canvas-player-stop', onclick: () => close(true) }, 'Stop');
     const full = h('button', { type: 'button', class: 'btn-slim', onclick: () => { const id = blockId; close(false); openPreview(id); } },
       'Open in preview ', h('span', { 'aria-hidden': 'true' }, '↗'));
     const still = prefersReducedMotion();
