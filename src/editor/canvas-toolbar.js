@@ -18,7 +18,7 @@ export function labelToolbar(tools, { index, count, label, el, hasText, hasMedia
   set('text', `Edit text: ${name}`, { hidden: !hasText });
   const video = el?.querySelector('[data-il-asset]')?.tagName === 'VIDEO';
   set('media', `${video ? 'Video' : 'Image'} tools for ${name}: replace, alt text`, { hidden: !hasMedia }).textContent = video ? 'Video' : 'Image';
-  set('play', `Play ${name} in the preview`, { hidden: !playable });
+  set('play', `Play ${name} here, moving as readers will see it`, { hidden: !playable });
   set('up', `Move ${name} up`, { disabled: index === 0 });
   set('down', `Move ${name} down`, { disabled: index === count - 1 });
   set('dup', `Duplicate ${name}`);

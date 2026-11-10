@@ -1,12 +1,8 @@
-// The story canvas: the story as readers will see it, with editing tools laid over it.
-//   - A rail of numbered blocks on the left (arrow keys move between them).
-//   - Click a block to select it; its toolbar (Settings, Edit text, Up, Down, Duplicate, Delete) sits on it.
-//   - Click a piece of text (headline, paragraphs, quote, number…) to type straight onto the page
-//     (canvas-text.js).
-//   - "+ Add" appears between blocks on hover and opens the illustrated block picker.
-//   - Settings open the usual Write / Look / Notes inspector as a sheet from the right.
-// The page is drawn by the runtime without enhance(), so nothing moves or hides while editing:
-// scroll sequences show their steps one after another, effects are off.
+// The story canvas: the story as readers will see it, with editing tools laid over it. A rail of
+// numbered blocks on the left; click a block for its toolbar, click text to type (canvas-text.js),
+// "+ Add" between blocks opens the block picker, Settings slide in from the right. The page is
+// drawn without enhance(), so nothing moves while editing: steps sit one after another, effects
+// are off. Play runs one block, moving, over the canvas (canvas-player.js).
 import { STORY_DETAILS, REFLECTION } from '../store.js';
 import { BLOCKS, blockLabel } from '../blocks/index.js';
 import { blockIssues } from '../packs.js';
@@ -18,13 +14,14 @@ import { canvasSheet } from './canvas-sheet.js';
 import { canvasMedia } from './canvas-media.js';
 import { labelToolbar, toolbarKeys } from './canvas-toolbar.js';
 import { drawRail } from './canvas-rail.js';
+import { canvasPlayer } from './canvas-player.js';
 import { prefersReducedMotion } from './dom.js';
 import { assetKind } from './fields.js';
 
 const FOCUSABLE = 'a[href], button, input, select, textarea, summary, video, audio, iframe, [tabindex]';
 
-// Blocks whose effect only shows when the story moves: Play opens the preview at them. So do
-// blocks with a scroll effect, and a header with a background video (still on the canvas).
+// Blocks whose effect only shows when the story moves: Play runs them in place (canvas-player.js).
+// So do blocks with a scroll effect, and a header with a background video (still on the canvas).
 const SHOWPIECES = new Set(['scrolly', 'textcolumn', 'scrollpoints', 'number', 'compare']);
 const moves = (b, story) => SHOWPIECES.has(b.type) || (b.effect && b.effect !== 'none')
   || (b.type === 'header' && assetKind(story.assets[b.data.media]) === 'video');
@@ -58,7 +55,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
             <button type="button" class="btn-slim" data-act="settings">Settings</button>
             <button type="button" class="btn-slim" data-act="text">Edit text</button>
             <button type="button" class="btn-slim" data-act="media">Image</button>
-            <button type="button" class="btn-slim canvas-play" data-act="play" title="Open the preview here, to see it move as readers will">Play <span aria-hidden="true">▶</span></button>
+            <button type="button" class="btn-slim canvas-play" data-act="play" title="Play this block here, moving as readers will see it">Play <span aria-hidden="true">▶</span></button>
             <button type="button" class="btn-slim" data-act="up">Up</button>
             <button type="button" class="btn-slim" data-act="down">Down</button>
             <button type="button" class="btn-slim" data-act="dup">Duplicate</button>
@@ -85,6 +82,9 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   const isBlock = (id) => blocks().some((b) => b.id === id);
   const elOf = (id) => (id ? page.querySelector(`[id="${CSS.escape(id)}"]`) : null);
   const smooth = () => (prefersReducedMotion() ? 'auto' : 'smooth');
+  // Play: the selected block moving, laid over the canvas until Stop.
+  const player = canvasPlayer({ holder: section.querySelector('.canvas-main'), scroller, store, assetUrl, announce,
+    label: (id) => `block ${ops.indexOf(id) + 1}, ${ops.labelOf(id)}`, openPreview: (id) => playFrom?.(id) });
 
   // ---------------------------------------------------------------- the sheet (inspector)
   const { open: openSheet } = canvasSheet({ app, sheet, inspector, active, fallback: () => rail.querySelector('[tabindex="0"]') });
@@ -299,7 +299,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     const act = btn.dataset.act;
     if (act === 'settings' || act === 'todo') openSheet(btn);
     else if (act === 'media') media.openIn(elOf(id), btn);
-    else if (act === 'play') playFrom(id);
+    else if (act === 'play') player.open(id, btn);
     else if (act === 'text') { const el = editableIn(elOf(id)); if (el) { scrollToSelected(); text.start(el); } }
     else if (act === 'up' || act === 'down') {
       ops.moveTo(id, ops.indexOf(id) + (act === 'up' ? -1 : 1));
@@ -354,6 +354,8 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   let timer = 0;
   store.subscribe((change) => {
     if (!active()) return;
+    // Any change, or choosing another block, stops the player: what it shows would be out of date.
+    if (player.blockId && (change.type !== 'select' || store.selected !== player.blockId)) player.close(false);
     if (change.type === 'undo' || change.type === 'redo') { if (text.current) text.cancel(); media.hide(); }
     if (change.type === 'select') {
       render();
@@ -386,6 +388,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
       requestAnimationFrame(() => scrollToSelected('center'));
     },
     hide() {
+      player.close(false);
       text.stop('hide');
       media.hide();
       app.classList.remove('sheet-open');
