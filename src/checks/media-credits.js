@@ -14,10 +14,14 @@ export default {
       const isImage = /^image\//.test(a.mime || 'image/');
       const name = a.name || 'This file';
       const asks = [];
-      if (!(a.alt || '').trim()) asks.push(isImage ? 'What does it show, for readers who can\'t see it? Add alt text.' : 'How would you describe it to someone who can\'t see or hear it?');
-      if (!(a.credit || '').trim()) asks.push('Who made it? Add a credit.');
-      if (!(a.licence || '').trim()) asks.push('May you use it? Choose a licence.');
-      if (asks.length) out.push({ blockId, message: `${name} (${role}): ${asks.join(' ')}` });
+      let firstField = null;
+      if (!(a.alt || '').trim()) {
+        firstField ||= 'alt';
+        asks.push(isImage ? 'What does it show, for readers who can\'t see it? Add alt text.' : 'How would you describe it to someone who can\'t see or hear it?');
+      }
+      if (!(a.credit || '').trim()) { firstField ||= 'credit'; asks.push('Who made it? Add a credit.'); }
+      if (!(a.licence || '').trim()) { firstField ||= 'licence'; asks.push('May you use it? Choose a licence.'); }
+      if (asks.length) out.push({ blockId, focusKey: `${assetId}:${firstField}`, message: `${name} (${role}): ${asks.join(' ')}` });
     }
     return out;
   },

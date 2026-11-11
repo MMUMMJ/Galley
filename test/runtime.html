@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Galley runtime fixtures</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../runtime/galley.css">
+  <style>
+    .t-bar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+      padding: 10px 16px; background: #20232a; color: #fff;
+      font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .t-bar h1 { margin: 0 8px 0 0; font-size: 1rem; }
+    .t-bar select, .t-bar button { font: inherit; min-height: 36px; }
+    .t-bar :focus-visible { outline: 3px solid #8ab4f8; outline-offset: 2px; }
+    .t-report { padding: 8px 16px; font: 14px/1.5 system-ui, sans-serif; background: #f3f1ec; border-bottom: 1px solid #d9d5cc; }
+    .t-report summary { cursor: pointer; font-weight: 600; min-height: 32px; }
+    .t-report ul { margin: 4px 0 8px; }
+    .t-ok { color: #0a6b2d; }
+    .t-bad { color: #a4001d; }
+    .t-warn { color: #7a4b00; }
+    @media print { .t-bar, .t-report { display: none; } }
+  </style>
+  <script src="../runtime/galley-runtime.js"></script>
+  <script type="module" src="runtime-harness.js"></script>
+</head>
+<body class="il-page">
+  <header class="t-bar">
+    <h1>Runtime fixtures</h1>
+    <label>Fixture <select id="t-fixture"></select></label>
+    <label><input type="checkbox" id="t-preview"> Show editor placeholders</label>
+    <button type="button" id="t-static">Open as exported page</button>
+    <button type="button" id="t-nojs">Open exported page without JavaScript</button>
+  </header>
+  <details class="t-report" id="t-report">
+    <summary id="t-summary">Model checks</summary>
+    <div id="t-report-body"></div>
+  </details>
+  <main id="t-story"><p style="padding:16px;font-family:system-ui">Loading… This page needs a local web server (see README).</p></main>
+</body>
+</html>

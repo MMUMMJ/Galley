@@ -170,14 +170,15 @@ export function mediaFigure(ctx, look = 'panel') {
     const a = given || ctx.story.assets[ref];
     if (!a) return '';
     const video = assetKind(a) === 'video';
-    const name = String(a.name || (video ? 'video' : 'image')).replace(/"/g, '');
+    // Escaped: a file name comes from the story file, which may have been made anywhere.
+    const name = attr(a.name || (video ? 'video' : 'image'));
     const media = video ? `<video src="${ctx.assetUrl(ref)}" muted preload="metadata"></video>` : `<img src="${ctx.assetUrl(ref)}" alt="">`;
     const missing = (a.alt || '').trim() ? '' : ` · <strong>${video ? 'no description' : 'no alt text'}</strong>`;
     const caption = look === 'page'
       ? ((a.caption || '').trim() || missing ? `<figcaption>${attr((a.caption || '').trim())}${missing}</figcaption>` : '')
       : `<figcaption>${video ? '▶ ' : ''}${name}${missing}</figcaption>`;
     return `<figure class="rte-img${look === 'page' ? ' il-inline-img' : ''}${figureClass(look, pos)}${video ? ' rte-video' : ''}" contenteditable="false"`
-      + ` data-look="${look}" data-asset="${ref}" data-pos="${pos}" data-name="${name}">`
+      + ` data-look="${look}" data-asset="${attr(ref)}" data-pos="${attr(pos || '')}" data-name="${name}">`
       + `${media}${caption}`
       + `<span class="rte-img-tools" role="group" aria-label="${video ? 'Video' : 'Image'}">`
       + `<button type="button" data-details>${video ? 'Description' : 'Alt text'}</button>`

@@ -1,0 +1,230 @@
+{
+ "schemaVersion": 1,
+ "runtimeVersion": "1.6.0",
+ "meta": {
+  "title": "Clean story: every check should stay silent",
+  "standfirst": "",
+  "byline": "Sample fixture",
+  "seoTitle": "",
+  "seoDescription": "",
+  "shareImage": null,
+  "shareText": "",
+  "pack": null,
+  "created": "2026-11-07T10:00:00.000Z",
+  "modified": "2026-11-07T10:00:00.000Z",
+  "appendix": false
+ },
+ "blocks": [
+  {
+   "id": "b_head",
+   "type": "header",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "variant": "full",
+    "kicker": "",
+    "title": "",
+    "standfirst": "A tidy story with nothing to ask about.",
+    "byline": "",
+    "media": "a_hero"
+   }
+  },
+  {
+   "id": "b_text",
+   "type": "text",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "body": "Around 45% of members are retired, according to the [group's survey](https://example.com/survey).\nThe group has pulled 1,240 trolleys from the canal since 2019 (Hughes 2021).\nHughes (2021) describes how the group began.\n## Why they come back\nVolunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. "
+   }
+  },
+  {
+   "id": "b_media",
+   "type": "media",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "kind": "image",
+    "asset": "a_photo",
+    "width": "wide"
+   }
+  },
+  {
+   "id": "b_video",
+   "type": "media",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "kind": "video",
+    "asset": "a_video",
+    "width": "column"
+   }
+  },
+  {
+   "id": "b_quote",
+   "type": "quote",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "text": "Nobody asked us to do this.",
+    "cite": "Rita Okafor",
+    "role": "volunteer"
+   }
+  },
+  {
+   "id": "b_num",
+   "type": "number",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "value": "1,240",
+    "unit": "trolleys",
+    "context": "pulled out since 2019.",
+    "sourceName": "Volunteers' log",
+    "sourceRef": "https://example.com/log"
+   }
+  },
+  {
+   "id": "b_cmp",
+   "type": "compare",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "before": {
+     "asset": "a_before",
+     "label": "2019"
+    },
+    "after": {
+     "asset": "a_after",
+     "label": "2026"
+    },
+    "caption": "Seven years apart.",
+    "width": "wide"
+   }
+  },
+  {
+   "id": "b_scr",
+   "type": "scrolly",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "layout": "side",
+    "steps": [
+     {
+      "media": "a_photo",
+      "text": "A short first step."
+     },
+     {
+      "media": null,
+      "text": "A short second step."
+     }
+    ]
+   }
+  },
+  {
+   "id": "b_embed",
+   "type": "embed",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "url": "https://www.bbc.co.uk/news",
+    "title": "BBC News",
+    "description": "",
+    "screenshot": "a_shot",
+    "width": "column"
+   }
+  },
+  {
+   "id": "b_refs",
+   "type": "references",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "title": "References",
+    "items": [
+     "Hughes, R. (2021) *Water under the bridge*. Manchester: Northern Press."
+    ],
+    "collapsed": false
+   }
+  }
+ ],
+ "assets": {
+  "a_hero": {
+   "name": "hero.jpg",
+   "mime": "image/jpeg",
+   "bytes": 300000,
+   "alt": "Mills at dusk.",
+   "caption": "",
+   "credit": "Sam Example",
+   "licence": "Own work",
+   "width": 1800,
+   "height": 1000
+  },
+  "a_photo": {
+   "name": "photo.jpg",
+   "mime": "image/jpeg",
+   "bytes": 250000,
+   "alt": "Volunteers on the towpath.",
+   "caption": "The towpath at Ancoats.",
+   "credit": "Sam Example",
+   "licence": "Own work",
+   "width": 1800,
+   "height": 1200
+  },
+  "a_video": {
+   "name": "clip.mp4",
+   "mime": "video/mp4",
+   "bytes": 4000000,
+   "alt": "A trolley being lifted out.",
+   "caption": "Lifting a trolley.",
+   "credit": "Sam Example",
+   "licence": "Own work",
+   "width": 1280,
+   "height": 720
+  },
+  "a_before": {
+   "name": "before.jpg",
+   "mime": "image/jpeg",
+   "bytes": 200000,
+   "alt": "The bank in 2019.",
+   "caption": "",
+   "credit": "Sam Example",
+   "licence": "Own work",
+   "width": null,
+   "height": null
+  },
+  "a_after": {
+   "name": "after.jpg",
+   "mime": "image/jpeg",
+   "bytes": 200000,
+   "alt": "The bank in 2026.",
+   "caption": "",
+   "credit": "Sam Example",
+   "licence": "Own work",
+   "width": null,
+   "height": null
+  },
+  "a_shot": {
+   "name": "shot.jpg",
+   "mime": "image/jpeg",
+   "bytes": 90000,
+   "alt": "Screenshot of BBC News.",
+   "caption": "Archived 7 November 2026.",
+   "credit": "BBC",
+   "licence": "Used with permission",
+   "width": null,
+   "height": null
+  }
+ },
+ "reflection": []
+}

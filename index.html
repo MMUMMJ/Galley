@@ -40,6 +40,7 @@
         <ul class="menu" id="file-menu" hidden>
           <li><button type="button" class="menu-option" id="new-story"><strong>New story</strong></button></li>
           <li><button type="button" class="menu-option" id="open"><strong>Open…</strong><span>A ZIP or web page exported from Galley</span></button></li>
+          <li><button type="button" class="menu-option" id="versions"><strong>Earlier versions…</strong><span>Bring back your story as it was earlier</span></button></li>
           <li><button type="button" class="menu-option" id="open-demo"><strong>Open the demo story</strong><span>A tour of every block, to explore and change</span></button></li>
           <li class="menu-sep" role="separator"></li>
         </ul>
@@ -50,8 +51,8 @@
       <button type="button" class="btn" id="checks" aria-expanded="false" aria-controls="checks-panel">Checks <span class="count"></span></button>
       <button type="button" class="btn" id="preview-show" hidden>Show preview</button>
       <div class="view-switch" role="group" aria-label="Editor view">
-        <button type="button" class="btn-slim" data-view="canvas" aria-pressed="true" title="Edit on the story itself">Canvas</button>
-        <button type="button" class="btn-slim" data-view="classic" aria-pressed="false" title="Blocks, settings and preview side by side">Classic</button>
+        <button type="button" class="btn-slim" data-view="canvas" aria-pressed="true" title="Edit directly on the story">Canvas</button>
+        <button type="button" class="btn-slim" data-view="classic" aria-pressed="false" title="Panels view: block list, settings and live preview side by side">Panels</button>
       </div>
     </div>
     <div class="status-lines">
@@ -66,6 +67,7 @@
       <p class="app-status" id="export-status"></p>
     </div>
   </header>
+  <div id="alerts" class="alert-region"></div>
 
   <noscript>
     <p class="noscript">Galley needs JavaScript turned on to edit stories.</p>
@@ -105,5 +107,6 @@
   <div id="announcer" class="sr-only" aria-live="polite"></div>
   <div id="toasts" class="toast-region" aria-live="polite"></div>
   <dialog id="choice-dialog" class="choice-dialog"></dialog>
+  <dialog id="tab-dialog" class="choice-dialog tab-dialog"></dialog>
 </body>
 </html>

@@ -1,10 +1,12 @@
 // Export menu (built from the adapter registry) and Open.
 import { ADAPTERS } from '../adapters/registry.js';
 import { formatMB } from '../adapters/export-shared.js';
+import { exportBytes } from '../checks/export-size.js';
 import { openFile, openFolderAt } from '../open.js';
 import { putAsset } from '../assets.js';
-import { syncStoryPack } from '../packs.js';
+import { syncStoryPack, getPack } from '../packs.js';
 import { STORY_DETAILS } from '../store.js';
+import { takeSnapshot } from '../snapshots.js';
 import { h } from './dom.js';
 
 function download(blob, filename) {
@@ -20,13 +22,42 @@ function download(blob, filename) {
 export const DEMO_FOLDER = 'demo/';
 
 // fileBtn opens the File menu, which already holds New story, Open… and the demo; exporters are
-// added after them. Returns { openDemo }.
-export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, demoBtn, getBlob, announce, toast, setStatus }) {
+// added after them. Returns { openDemo, exportZip }. unstored(names): files the browser wouldn't keep.
+export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, demoBtn, getBlob, announce, toast, alert = () => {}, setStatus, unstored = () => {} }) {
   const exporters = Object.values(ADAPTERS.exporters);
-  menu.append(...exporters.map((ex) => h('li', {},
+  const prepSummary = h('p', { class: 'export-prep-size' });
+  const appendixCheck = h('input', {
+    type: 'checkbox',
+    onchange: (e) => {
+      store.update((s) => { s.meta.appendix = e.target.checked; }, { from: 'file-menu' });
+      announce(e.target.checked ? 'Reflection and maker\'s notes appendix will be included in exports.' : 'Appendix excluded from exports.');
+    },
+  });
+  const prepItem = h('li', { class: 'export-prep' },
+    prepSummary,
+    h('label', { class: 'export-prep-check' },
+      appendixCheck,
+      h('span', {}, 'Include reflection & maker\'s notes appendix')));
+
+  function refreshPrep() {
+    const story = store.story;
+    const assets = Object.values(story.assets || {});
+    const bytes = exportBytes(story);
+    const limitMB = getPack().maxExportMB || 100;
+    const over = bytes > limitMB * 1024 * 1024;
+    const biggest = [...assets].sort((a, b) => (b.bytes || 0) - (a.bytes || 0))[0];
+    const bigNote = biggest && (over || (biggest.bytes || 0) >= 10 * 1024 * 1024)
+      ? ` · Largest: ${biggest.name || 'file'} (${formatMB(biggest.bytes)})`
+      : '';
+    prepSummary.textContent = `Export size: ~${formatMB(bytes)} (${assets.length} media file${assets.length === 1 ? '' : 's'})${bigNote}`;
+    prepSummary.classList.toggle('is-over', over);
+    appendixCheck.checked = story.meta.appendix === true;
+  }
+
+  menu.append(prepItem, ...exporters.map((ex) => h('li', {},
     h('button', { type: 'button', class: 'menu-option', onclick: () => run(ex) },
       h('strong', {}, `Export: ${ex.label}`), h('span', {}, ex.description)))));
-  // Any choice closes the menu (New story and Open… have their own handlers too).
+  // Any button choice closes the menu (the appendix checkbox stays open so they can export next).
   menu.addEventListener('click', (e) => { if (e.target.closest('button')) close(false); });
 
   const close = (refocus) => {
@@ -36,6 +67,7 @@ export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, demoBt
   };
   exportBtn.addEventListener('click', () => {
     if (!menu.hidden) return close();
+    refreshPrep();
     menu.hidden = false;
     exportBtn.setAttribute('aria-expanded', 'true');
     menu.querySelector('button')?.focus();
@@ -104,13 +136,15 @@ export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, demoBt
   async function open(file) {
     setStatus(`Opening ${file.name}…`);
     try {
-      const { story, blobs, missing } = await (file.read ? file.read() : openFile(file));
+      const { story, blobs, missing, errors = [] } = await (file.read ? file.read() : openFile(file));
       try {
         await syncStoryPack(story);
       } catch (err) {
         toast(`${err.message} Carrying on without a pack.`, { tone: 'warning' });
       }
-      for (const [id, blob] of blobs) await putAsset(id, blob);
+      await takeSnapshot(store.story, `Before opening ${file.name}`).catch(() => {});
+      const lost = [];
+      for (const [id, blob] of blobs) if (!(await putAsset(id, blob))) lost.push(story.assets[id]?.name || id);
       store.update(() => story, { select: story.blocks[0]?.id ?? STORY_DETAILS, from: 'open', keepModified: true });
       const title = story.meta.title || story.blocks.find((b) => b.type === 'header')?.data.title || file.name;
       const note = missing.length
@@ -118,11 +152,19 @@ export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, demoBt
         : '';
       toast(`Opened "${title}".${note}`, { tone: missing.length ? 'warning' : undefined });
       announce(`Opened ${title}.`);
+      unstored(lost);
+      // Problems Galley couldn't repair on opening: said plainly, and kept on screen until read.
+      alert('repair', null);
+      if (errors.length) {
+        const where = (e) => { const m = /^blocks\[(\d+)\]/.exec(e.path || ''); return `${m ? `Block ${Number(m[1]) + 1}: ` : ''}${e.message}`; };
+        alert('repair', `"${title}" opened, but ${errors.length === 1 ? 'one thing in it looks' : `${errors.length} things in it look`} wrong: ${errors.slice(0, 3).map(where).join(' ')}${errors.length > 3 ? ' …' : ''} Check the story before you carry on, and keep the file you opened: it hasn't been changed.`,
+          { action: 'OK', onAction: () => alert('repair', null) });
+      }
     } catch (err) {
       toast(`Couldn't open ${file.name}: ${err.message}`, { tone: 'warning' });
     } finally {
       setStatus('');
     }
   }
-  return { openDemo };
+  return { openDemo, exportZip: () => run(ADAPTERS.exporters.zip) };
 }

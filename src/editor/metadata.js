@@ -20,17 +20,25 @@ const chars = (s) => [...String(s || '')].length;
 // What will actually be used, after fallbacks. Mirrors the runtime's head tags.
 export function effectiveMeta(story) {
   const m = story.meta;
-  const headerTitle = story.blocks.find((b) => b.type === 'header' && b.data.title)?.data.title || '';
+  const firstHeader = story.blocks.find((b) => b.type === 'header');
+  const headerTitle = firstHeader?.data.title || '';
+  const headerStand = firstHeader?.data.standfirst || '';
+  const headerByline = firstHeader?.data.byline || '';
   const title = m.title || headerTitle;
+  const standfirst = m.standfirst || headerStand;
+  const byline = m.byline || headerByline;
   const seoTitle = m.seoTitle || title;
-  const seoDescription = m.seoDescription || plain(m.standfirst);
-  return { title, seoTitle, seoDescription, shareText: m.shareText || seoDescription };
+  const seoDescription = m.seoDescription || plain(standfirst);
+  return { title, standfirst, byline, seoTitle, seoDescription, shareText: m.shareText || seoDescription };
 }
+
+let seoOpen = false;
 
 // ctx: the inspector's context, re-pointed at story.meta (see inspector.js).
 export function renderMetadata(el, ctx) {
   const story = ctx.story;
   const eff = effectiveMeta(story);
+  const firstHeader = story.blocks.find((b) => b.type === 'header');
 
   const counted = (key, label, max, hint, multiline) => {
     const opts = { label, hint, placeholder: key === 'seoTitle' ? eff.title : plain(story.meta.standfirst) };
@@ -93,22 +101,44 @@ export function renderMetadata(el, ctx) {
   };
   refresh();
 
+  const hasDifferentHeader = firstHeader && firstHeader.data.title && story.meta.title && firstHeader.data.title !== story.meta.title;
+  const headerNote = firstHeader ? h('div', { class: 'meta-header-sync' },
+    hasDifferentHeader
+      ? h('p', { class: 'field-hint' }, `Your opening Header block currently shows "${firstHeader.data.title}" on the page instead of this title.`)
+      : h('p', { class: 'field-hint' }, 'Changes here also update your opening Header block.'),
+    h('div', { class: 'button-row' },
+      hasDifferentHeader && ctx.syncToHeader ? h('button', {
+        type: 'button', class: 'btn-slim',
+        onclick: () => { ctx.syncToHeader(); ctx.announce('Updated the opening Header block to match Story details.'); },
+      }, 'Use this title on the header too') : null,
+      ctx.selectBlock ? h('button', {
+        type: 'button', class: 'btn-slim',
+        onclick: () => ctx.selectBlock(firstHeader.id),
+      }, 'Go to opening Header block →') : null)) : null;
+
+  const seoDetails = h('details', { class: 'meta-seo', open: seoOpen || Boolean(story.meta.seoTitle || story.meta.seoDescription || story.meta.shareImage || story.meta.shareText) },
+    h('summary', { 'data-focus': 'meta:seo-summary' }, 'Search & social sharing (optional)'),
+    h('div', { class: 'meta-seo-body' },
+      h('fieldset', { class: 'field' }, h('legend', {}, 'Search engines'),
+        counted('seoTitle', 'SEO title', SEO_TITLE_MAX, 'What a search result shows as the link. Lead with the words people would search for.'),
+        counted('seoDescription', 'SEO description', SEO_DESCRIPTION_MAX, 'The line under the link in search results. Leave empty to use the standfirst.', true),
+        h('div', { class: 'preview-card serp', 'aria-hidden': 'true' }, h('span', { class: 'preview-label' }, 'Search result preview'), searchTitle, searchDesc)),
+      h('fieldset', { class: 'field' }, h('legend', {}, 'Sharing'),
+        shareImage,
+        textArea(ctx, 'shareText', { label: 'Share text', rows: 3, placeholder: eff.seoDescription, hint: 'The description shown with a shared link. Leave empty to use the SEO description.' }),
+        h('div', { class: 'preview-card share', 'aria-hidden': 'true' }, h('span', { class: 'preview-label' }, 'Share card preview'),
+          cardImg, h('span', { class: 'share-body' }, cardTitle, cardDesc)))));
+  seoDetails.addEventListener('toggle', () => { seoOpen = seoDetails.open; });
+
   el.append(
-    h('p', { class: 'inspector-help' }, 'The fields an editor fills in before publishing. Search engines and social media use them; readers see the first three.'),
+    h('p', { class: 'inspector-help' }, 'Your headline, standfirst, byline and colour scheme. Open Search & social sharing below if you want custom link previews.'),
     h('fieldset', { class: 'field' }, h('legend', {}, 'On the page'),
-      textInput(ctx, 'title', { label: 'Title', hint: 'Your headline. The first header shows it unless you give that header its own title.' }),
+      textInput(ctx, 'title', { label: 'Title', placeholder: firstHeader?.data.title || '', hint: 'Your main headline.' }),
       richText(ctx, 'standfirst', { label: 'Standfirst', mode: 'inline', hint: 'One or two sentences under the headline.' }),
-      textInput(ctx, 'byline', { label: 'Byline', placeholder: 'By …' })),
+      textInput(ctx, 'byline', { label: 'Byline', placeholder: firstHeader?.data.byline || 'By …' }),
+      headerNote),
     renderSchemePicker(story, { set: ctx.set, announce: ctx.announce }),
-    h('fieldset', { class: 'field' }, h('legend', {}, 'Search engines'),
-      counted('seoTitle', 'SEO title', SEO_TITLE_MAX, 'What a search result shows as the link. Lead with the words people would search for.'),
-      counted('seoDescription', 'SEO description', SEO_DESCRIPTION_MAX, 'The line under the link in search results. Leave empty to use the standfirst.', true),
-      h('div', { class: 'preview-card serp', 'aria-hidden': 'true' }, h('span', { class: 'preview-label' }, 'Search result preview'), searchTitle, searchDesc)),
-    h('fieldset', { class: 'field' }, h('legend', {}, 'Sharing'),
-      shareImage,
-      textArea(ctx, 'shareText', { label: 'Share text', rows: 3, placeholder: eff.seoDescription, hint: 'The description shown with a shared link. Leave empty to use the SEO description.' }),
-      h('div', { class: 'preview-card share', 'aria-hidden': 'true' }, h('span', { class: 'preview-label' }, 'Share card preview'),
-        cardImg, h('span', { class: 'share-body' }, cardTitle, cardDesc))),
+    seoDetails,
   );
   return refresh;
 }

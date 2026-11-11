@@ -19,7 +19,7 @@ export default {
     }];
     if (pack.effectNotes === 'required') {
       for (const b of moving.filter((x) => !(x.effectNote || '').trim())) {
-        out.push({ blockId: b.id, message: `This block moves (${b.effect}). What does this movement do for the reader?` });
+        out.push({ blockId: b.id, tab: 'look', focusKey: `ef-note-${b.id}`, message: `This block moves (${b.effect}). What does this movement do for the reader?` });
       }
     }
     return out;

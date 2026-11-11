@@ -1,0 +1,14 @@
+{
+  "name": "galley",
+  "private": true,
+  "type": "module",
+  "description": "Galley's tests. Galley itself has no dependencies and no build step: these tools only run the tests.",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test test/unit/*.test.mjs",
+    "test:e2e": "playwright test --workers=1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

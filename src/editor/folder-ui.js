@@ -8,6 +8,7 @@ import { getSettings, setSetting } from '../settings.js';
 import { putAsset, getBlob } from '../assets.js';
 import { syncStoryPack } from '../packs.js';
 import { STORY_DETAILS } from '../store.js';
+import { takeSnapshot } from '../snapshots.js';
 import { h } from './dom.js';
 
 export const UNSUPPORTED = 'To save straight to your OneDrive folder, use Chrome or Edge. Until then, Export is your save.';
@@ -49,7 +50,7 @@ async function askToPersist() {
   try { await navigator.storage.persist(); } catch { /* the browser said no; the folder and exports still protect the work */ }
 }
 
-export async function mountFolder(store, { wrap, button, menu, folderLine, exportLine, exportButton, dialog, announce, toast }) {
+export async function mountFolder(store, { wrap, button, menu, folderLine, exportLine, exportButton, dialog, announce, toast, unstored = () => {} }) {
   // ---- Last exported, with a nudge after 3 days
   async function renderExport() {
     if (!store.story.blocks.length) { exportLine.replaceChildren(); return; }
@@ -154,8 +155,11 @@ export async function mountFolder(store, { wrap, button, menu, folderLine, expor
       } catch (err) {
         toast(`${err.message} Carrying on without a pack.`, { tone: 'warning' });
       }
-      for (const [id, blob] of blobs) await putAsset(id, blob);
+      await takeSnapshot(store.story, `Before opening folder "${handle.name}"`).catch(() => {});
+      const lost = [];
+      for (const [id, blob] of blobs) if (!(await putAsset(id, blob))) lost.push(story.assets[id]?.name || id);
       store.update(() => story, { select: story.blocks[0]?.id ?? STORY_DETAILS, from: 'open-folder', keepModified: true });
+      unstored(lost);
       await connectFolder(handle);
       toast(`Opened the story in "${handle.name}" and saving there.${missing.length ? ` ${missing.length} media file(s) are missing from its assets folder: ${missing.join(', ')}.` : ''}`,
         { tone: missing.length ? 'warning' : undefined });

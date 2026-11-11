@@ -1,0 +1,221 @@
+{
+ "schemaVersion": 1,
+ "runtimeVersion": "1.7.0",
+ "meta": {
+  "title": "Flawed story: every check should fire",
+  "standfirst": "",
+  "byline": "Sample fixture",
+  "seoTitle": "",
+  "seoDescription": "",
+  "shareImage": null,
+  "shareText": "",
+  "pack": "packs/advanced-storytelling.json",
+  "created": "2026-11-07T10:00:00.000Z",
+  "modified": "2026-11-07T10:00:00.000Z",
+  "appendix": false
+ },
+ "blocks": [
+  {
+   "id": "b_head",
+   "type": "header",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "variant": "full",
+    "kicker": "",
+    "title": "",
+    "standfirst": "Half of all canals are neglected, says nobody in particular.",
+    "byline": "",
+    "media": "a_nocredit"
+   }
+  },
+  {
+   "id": "b_text",
+   "type": "text",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "body": "Around 45% of volunteers are retired.\nThe canal carries 3 million litres a day.\nI found the history [on Google](https://www.google.com/search?q=rochdale+canal) and [on Bing](https://www.bing.com/search?q=canal).\nOne study disagrees (Smith 2021), and so do others (Lee and Park, 2020, p.4).\nHughes (2021) describes how the group began."
+   },
+   "background": "tint"
+  },
+  {
+   "id": "b_long",
+   "type": "text",
+   "effect": "fade",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "body": "Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there. Volunteers walk the towpath every week and talk about what they find there."
+   }
+  },
+  {
+   "id": "b_media",
+   "type": "media",
+   "effect": "rise",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "kind": "image",
+    "asset": "a_nocaption",
+    "width": "wide"
+   }
+  },
+  {
+   "id": "b_video",
+   "type": "media",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "kind": "video",
+    "asset": "a_mov",
+    "width": "column"
+   }
+  },
+  {
+   "id": "b_num",
+   "type": "number",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "value": "1,240",
+    "unit": "trolleys",
+    "context": "pulled out since 2019.",
+    "sourceName": "",
+    "sourceRef": ""
+   },
+   "background": "tint"
+  },
+  {
+   "id": "b_cmp",
+   "type": "compare",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "before": {
+     "asset": "a_before",
+     "label": ""
+    },
+    "after": {
+     "asset": "a_after",
+     "label": "2026"
+    },
+    "caption": "",
+    "width": "wide"
+   }
+  },
+  {
+   "id": "b_scr",
+   "type": "scrolly",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "layout": "column",
+    "backdrop": "none",
+    "steps": [
+     {
+      "media": "a_before",
+      "text": "A first step. This step goes on and on with far too many words for one step. This step goes on and on with far too many words for one step. This step goes on and on with far too many words for one step. This step goes on and on with far too many words for one step. This step goes on and on with far too many words for one step. This step goes on and on with far too many words for one step. This step goes on and on with far too many words for one step. "
+     },
+     {
+      "media": null,
+      "text": "Short."
+     }
+    ]
+   }
+  },
+  {
+   "id": "b_embed",
+   "type": "embed",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "url": "https://duckduckgo.com/?q=canal+volunteers",
+    "title": "Search",
+    "description": "",
+    "screenshot": null,
+    "width": "column"
+   }
+  },
+  {
+   "id": "b_refs",
+   "type": "references",
+   "effect": "none",
+   "effectNote": "",
+   "note": "",
+   "data": {
+    "title": "References",
+    "items": [
+     "Hughes, R. (2021) *Water under the bridge*. Manchester: Northern Press.",
+     "Jones, K. (2019) *Never cited anywhere*. London: Example Books."
+    ],
+    "collapsed": false
+   }
+  }
+ ],
+ "assets": {
+  "a_nocredit": {
+   "name": "hero.jpg",
+   "mime": "image/jpeg",
+   "bytes": 300000,
+   "alt": "",
+   "caption": "",
+   "credit": "",
+   "licence": "",
+   "width": null,
+   "height": null
+  },
+  "a_nocaption": {
+   "name": "towpath.jpg",
+   "mime": "image/jpeg",
+   "bytes": 250000,
+   "alt": "The towpath.",
+   "caption": "",
+   "credit": "Sam Example",
+   "licence": "Own work",
+   "width": null,
+   "height": null
+  },
+  "a_mov": {
+   "name": "IMG_0412.MOV",
+   "mime": "video/quicktime",
+   "bytes": 157286400,
+   "alt": "A trolley being lifted out.",
+   "caption": "",
+   "credit": "Sam Example",
+   "licence": "Own work",
+   "width": null,
+   "height": null
+  },
+  "a_before": {
+   "name": "before.jpg",
+   "mime": "image/jpeg",
+   "bytes": 200000,
+   "alt": "The bank in 2019.",
+   "caption": "",
+   "credit": "Sam Example",
+   "licence": "Own work",
+   "width": null,
+   "height": null
+  },
+  "a_after": {
+   "name": "after.jpg",
+   "mime": "image/jpeg",
+   "bytes": 200000,
+   "alt": "The bank in 2026.",
+   "caption": "",
+   "credit": "Sam Example",
+   "licence": "Own work",
+   "width": null,
+   "height": null
+  }
+ },
+ "reflection": []
+}

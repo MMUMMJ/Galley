@@ -10,11 +10,12 @@ export function canvasSheet({ app, sheet, inspector, active, fallback }) {
   sheet.prepend(closeBtn);
   let returnTo = null;
   const isOpen = () => app.classList.contains('sheet-open');
-  function open(from, { focusField = false } = {}) {
+  function open(from, { focusField = false, focusTarget = null } = {}) {
     returnTo = from || document.activeElement;
     app.classList.add('sheet-open');
     sheet.removeAttribute('inert');
-    if (focusField) inspector.focusFirstField();
+    if (focusTarget && inspector.focusTarget) inspector.focusTarget(focusTarget);
+    else if (focusField) inspector.focusFirstField();
     else sheet.focus();
   }
   function close() {

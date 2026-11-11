@@ -1,7 +1,7 @@
 // Saver: keeps an unzipped copy of the project in a folder the student chooses
 // (ideally inside their synced OneDrive folder): index.html, story.json and assets/.
 // Chrome and Edge only (File System Access API). Writes are debounced, and only
-// asset files that changed are written. The folder handle is kept in IndexedDB,
+// asset files that changed are written (.galley-files.json records their fingerprints). The folder handle is kept in IndexedDB,
 // and permission is asked for again when the browser has forgotten it.
 import { registerSaver } from './registry.js';
 import { runtime, runtimeFiles } from './export-shared.js';
@@ -148,23 +148,52 @@ async function writeProject(story, getBlob) {
   const assetsDir = await dir.getDirectoryHandle('assets', { create: true });
   const existing = new Map();
   for await (const [name, entry] of assetsDir.entries()) if (entry.kind === 'file') existing.set(name, entry);
+  // What Galley last wrote: file name -> fingerprint. A file is only skipped when it's still there,
+  // the same size, and its fingerprint matches; anything else is written again.
+  const written = await readManifest(dir);
+  const manifest = {};
   const expected = new Set();
   for (const [id, asset] of Object.entries(story.assets)) {
     const name = R.assetPath(id, asset).slice('assets/'.length);
     expected.add(name);
     const blob = getBlob(id);
-    if (!blob) continue;
+    if (!blob) { if (written[name]) manifest[name] = written[name]; continue; }
+    const print = await fingerprint(blob);
+    manifest[name] = print;
     const there = existing.get(name);
-    if (there && (await there.getFile()).size === blob.size) continue; // unchanged: don't rewrite
+    if (there && written[name] === print && (await there.getFile()).size === blob.size) continue; // unchanged
     await writeFile(assetsDir, name, blob);
   }
-  // Remove only files Galley wrote that the story no longer uses.
+  // The story last, so story.json only ever describes a complete save: if saving stops partway,
+  // the folder still opens as the previous version, with every file it needs.
+  const source = { ...story, runtimeVersion: R.RUNTIME_VERSION };
+  await writeFile(dir, 'index.html', R.renderDocument(story, { css, js }));
+  await writeFile(dir, 'story.json', JSON.stringify(source, null, 2));
+  await writeFile(dir, MANIFEST, JSON.stringify(manifest));
+  // Only now remove files Galley wrote that the story no longer uses.
   for (const name of existing.keys()) {
     if (OURS.test(name) && !expected.has(name)) await assetsDir.removeEntry(name);
   }
-  const source = { ...story, runtimeVersion: R.RUNTIME_VERSION };
-  await writeFile(dir, 'story.json', JSON.stringify(source, null, 2));
-  await writeFile(dir, 'index.html', R.renderDocument(story, { css, js }));
+}
+
+// A media file's fingerprint: its size and SHA-256. Worked out once per file per session.
+const prints = new WeakMap();
+async function fingerprint(blob) {
+  if (!prints.has(blob)) {
+    prints.set(blob, crypto.subtle.digest('SHA-256', await blob.arrayBuffer())
+      .then((d) => `${blob.size}:${[...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('')}`));
+  }
+  return prints.get(blob);
+}
+
+const MANIFEST = '.galley-files.json';
+async function readManifest(dir) {
+  try {
+    const parsed = JSON.parse(await (await (await dir.getFileHandle(MANIFEST)).getFile()).text());
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {}; // first save, or written by an older Galley: every file is checked by writing it
+  }
 }
 
 function describe(err) {

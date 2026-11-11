@@ -7,6 +7,7 @@ export default {
       .filter((b) => b.data.backdrop === 'none' && ((b.type === 'scrolly' && b.data.layout === 'overlay') || b.type === 'textcolumn'))
       .map((b) => ({
         blockId: b.id,
+        focusKey: `${b.id}:backdrop`,
         message: `This ${b.type === 'textcolumn' ? 'text column' : 'scroll sequence'} has no box behind its text, only a shadow. On a pale or busy image the words can be hard to read. Check every image, or choose Solid or Soft vignette under Text backdrop.`,
       }));
   },

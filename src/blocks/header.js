@@ -11,19 +11,32 @@ export default {
   summary: (d, story) => d.title || story.meta.title || '(no title)',
   editorUI(el, ctx) {
     const first = ctx.story.blocks.find((b) => b.type === 'header')?.id === ctx.block.id;
+    // When editing the opening header's headline, standfirst or byline, keep Story details in step
+    // unless Story details was given a separate value.
+    const hCtx = first ? {
+      ...ctx,
+      get story() { return ctx.story; },
+      set: (key, value, o = {}) => ctx.edit((data, s) => {
+        const prev = data[key];
+        data[key] = value;
+        if ((key === 'title' || key === 'standfirst' || key === 'byline') && (!s.meta[key] || s.meta[key] === prev)) {
+          s.meta[key] = value;
+        }
+      }, { ...o, coalesce: `${ctx.block.id}:${key}` }),
+    } : ctx;
     el.append(
-      selectInput(ctx, 'variant', {
+      selectInput(hCtx, 'variant', {
         label: 'Style',
         hint: 'Use full screen for the opening header. In a portfolio, give each part a compact header.',
         options: [['full', 'Full screen'], ['compact', 'Compact']],
       }),
-      textInput(ctx, 'kicker', { label: 'Kicker', hint: 'A short label above the title, e.g. "Manchester · Feature".' }),
-      textInput(ctx, 'title', first
-        ? { label: 'Title', placeholder: ctx.story.meta.title, hint: 'Leave empty to use the title from Story details.' }
+      textInput(hCtx, 'kicker', { label: 'Kicker', hint: 'A short label above the title, e.g. "Manchester · Feature".' }),
+      textInput(hCtx, 'title', first
+        ? { label: 'Title', placeholder: ctx.story.meta.title, hint: 'Your opening headline (also updates Story details).' }
         : { label: 'Title', hint: 'The heading for this part.' }),
-      richText(ctx, 'standfirst', { label: 'Standfirst', mode: 'inline', hint: 'One or two sentences that sell the story.' }),
-      textInput(ctx, 'byline', { label: 'Byline', placeholder: 'By …' }),
-      assetPicker(ctx, 'media', { label: 'Header image or background video', kinds: ['image', 'video'] }),
+      richText(hCtx, 'standfirst', { label: 'Standfirst', mode: 'inline', hint: 'One or two sentences that sell the story.' }),
+      textInput(hCtx, 'byline', { label: 'Byline', placeholder: 'By …' }),
+      assetPicker(hCtx, 'media', { label: 'Header image or background video', kinds: ['image', 'video'] }),
       first ? null : help('This is not the first header, so it starts a new part of the page.'),
     );
   },

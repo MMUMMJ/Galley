@@ -2,6 +2,12 @@
 // that Windows or macOS re-compressed (deflate), including ZIP64 and data descriptors.
 // Compressed entries are unpacked with the browser's DecompressionStream('deflate-raw').
 
+import { crc32 } from './zip-write.js';
+
+// No single file in a story ZIP should be bigger than this once unpacked.
+const MAX_FILE = 1024 * 1024 * 1024; // 1 GB
+const damaged = (name, why) => new Error(`"${name}" in this ZIP is damaged (${why}). Try exporting it again.`);
+
 const u16 = (v, o) => v.getUint16(o, true);
 const u32 = (v, o) => v.getUint32(o, true);
 const u64 = (v, o) => Number(v.getBigUint64(o, true));
@@ -23,7 +29,7 @@ export async function isZip(blob) {
   return u32(v, 0) === 0x04034b50 || u32(v, 0) === 0x06054b50;
 }
 
-// Returns [{ name, method, size, compressedSize, offset, flags }].
+// Returns [{ name, method, size, compressedSize, offset, flags, crc }].
 export async function listZip(blob) {
   const tailLen = Math.min(blob.size, 22 + 65535 + 20);
   const tail = await view(blob, blob.size - tailLen, tailLen);
@@ -73,7 +79,7 @@ export async function listZip(blob) {
     }
     const nameBytes = new Uint8Array(cd.buffer, cd.byteOffset + p + 46, nameLen);
     const name = decodeName(nameBytes, flags & 0x0800).replace(/\\/g, '/');
-    entries.push({ name, method: u16(cd, p + 10), size, compressedSize, offset, flags });
+    entries.push({ name, method: u16(cd, p + 10), size, compressedSize, offset, flags, crc: u32(cd, p + 16) });
     p += 46 + nameLen + extraLen + commentLen;
   }
   return entries;
@@ -85,14 +91,35 @@ export async function readEntry(blob, entry, type = '') {
   const local = await view(blob, entry.offset, 30);
   if (u32(local, 0) !== 0x04034b50) throw new Error('This ZIP file is damaged (bad file header).');
   const start = entry.offset + 30 + u16(local, 26) + u16(local, 28);
+  if (entry.size > MAX_FILE) throw new Error(`"${entry.name}" in this ZIP is too big to open (over 1 GB).`);
+  if (start + entry.compressedSize > blob.size) throw damaged(entry.name, 'it\'s cut short');
   const raw = blob.slice(start, start + entry.compressedSize);
-  if (entry.method === 0) return new Blob([raw], { type });
-  if (entry.method === 8) {
+  let out;
+  if (entry.method === 0) out = new Blob([raw], { type });
+  else if (entry.method === 8) {
     if (typeof DecompressionStream !== 'function') {
       throw new Error('This ZIP is compressed and this browser can\'t unpack it. Update your browser, or unzip it and open index.html.');
     }
-    const stream = raw.stream().pipeThrough(new DecompressionStream('deflate-raw'));
-    return new Blob([await new Response(stream).arrayBuffer()], { type });
-  }
-  throw new Error(`"${entry.name}" uses a ZIP compression method Galley can't read.`);
+    // Unpacked a piece at a time, and stopped if it grows past the size the ZIP gives for it.
+    const reader = raw.stream().pipeThrough(new DecompressionStream('deflate-raw')).getReader();
+    const parts = [];
+    let total = 0;
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        total += value.length;
+        if (total > entry.size) { reader.cancel(); throw damaged(entry.name, 'it unpacks bigger than it should'); }
+        parts.push(value);
+      }
+    } catch (err) {
+      if (err.message.includes('damaged')) throw err;
+      throw damaged(entry.name, 'it won\'t unpack');
+    }
+    out = new Blob(parts, { type });
+  } else throw new Error(`"${entry.name}" uses a ZIP compression method Galley can't read.`);
+  // Every file's size and checksum must match what the ZIP says: a changed byte shows up here.
+  if (out.size !== entry.size) throw damaged(entry.name, 'its size is wrong');
+  if ((await crc32(out)) !== entry.crc) throw damaged(entry.name, 'its contents don\'t match its checksum');
+  return out;
 }

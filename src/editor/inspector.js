@@ -93,7 +93,20 @@ export function mountInspector(panel, store, deps) {
       block: { id: 'meta', data: store.story.meta },
       story: store.story,
       liveStory: () => store.story,
-      set: (key, value, o = {}) => store.update((s) => { s.meta[key] = value; }, opts(o, `meta:${key}`)),
+      set: (key, value, o = {}) => store.update((s) => {
+        const prev = s.meta[key];
+        s.meta[key] = value;
+        if (key === 'title' || key === 'standfirst' || key === 'byline') {
+          const h0 = s.blocks.find((b) => b.type === 'header');
+          if (h0 && (!h0.data[key] || h0.data[key] === prev)) h0.data[key] = value;
+        }
+      }, opts(o, `meta:${key}`)),
+      syncToHeader: () => store.update((s) => {
+        const h0 = s.blocks.find((b) => b.type === 'header');
+        if (!h0) return;
+        for (const k of ['title', 'standfirst', 'byline']) if (s.meta[k]) h0.data[k] = s.meta[k];
+      }, opts({ rerender: true })),
+      selectBlock: (id) => store.select(id, 'inspector'),
       assetUrl: deps.assetUrl,
       announce: deps.announce,
     });
@@ -189,6 +202,26 @@ export function mountInspector(panel, store, deps) {
       const first = body.querySelector('.inspector-fields [contenteditable="true"], .inspector-fields input:not(.sr-only):not([type="file"]), .inspector-fields textarea')
         || body.querySelector('.inspector-fields select, .inspector-fields button');
       if (first) first.focus();
+    },
+    focusTarget(target) {
+      if (!target) { panel.focus(); return; }
+      const nextTab = target.tab || 'write';
+      if (tab !== nextTab && store.selected !== STORY_DETAILS && store.selected !== REFLECTION) {
+        tab = nextTab;
+        render();
+      }
+      if (target.focusKey) {
+        const el = body.querySelector(`[data-focus="${CSS.escape(target.focusKey)}"]`)
+          || body.querySelector(`[data-focus$=":${CSS.escape(target.focusKey)}"]`)
+          || body.querySelector(`#${CSS.escape(target.focusKey)}`);
+        if (el) {
+          for (let d = el.closest('details'); d && body.contains(d); d = d.parentElement?.closest('details')) d.open = true;
+          el.focus();
+          el.scrollIntoView({ block: 'nearest' });
+          return;
+        }
+      }
+      this.focusFirstField();
     },
   };
 }

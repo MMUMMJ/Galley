@@ -5,15 +5,16 @@ export function startAutosave(store, savers, { getBlob, onStatus, delay = 800 })
   let timer = 0;
   let dirty = false;
   let chain = Promise.resolve();
+  let stopped = false; // another tab took over: never save over its work
 
   if (!savers.length) {
     onStatus('off');
-    return { saveNow: () => Promise.resolve(), markDirty: () => {} };
+    return { saveNow: () => Promise.resolve(), markDirty: () => {}, stop: () => {} };
   }
 
   function saveNow() {
     clearTimeout(timer);
-    if (!dirty) return chain;
+    if (!dirty || stopped) return chain;
     dirty = false;
     const story = store.story;
     onStatus('saving');
@@ -30,6 +31,7 @@ export function startAutosave(store, savers, { getBlob, onStatus, delay = 800 })
   }
 
   function markDirty() {
+    if (stopped) return;
     dirty = true;
     onStatus('pending');
     clearTimeout(timer);
@@ -46,5 +48,14 @@ export function startAutosave(store, savers, { getBlob, onStatus, delay = 800 })
     if (document.visibilityState === 'hidden') saveNow();
   });
 
-  return { saveNow, markDirty };
+  // Never saves again: first saving anything pending if save is true. (When another tab has
+  // already taken over, saving now would overwrite its work, so save is false.)
+  async function stop(save) {
+    if (save) await saveNow();
+    stopped = true;
+    clearTimeout(timer);
+    onStatus('elsewhere');
+  }
+
+  return { saveNow, markDirty, stop };
 }

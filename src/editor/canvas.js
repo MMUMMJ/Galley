@@ -4,15 +4,17 @@
 // drawn without enhance(), so nothing moves while editing: steps sit one after another, effects
 // are off. Play runs one block, moving, over the canvas (canvas-player.js).
 import { STORY_DETAILS, REFLECTION } from '../store.js';
+import { createBlock } from '../model.js';
 import { BLOCKS, blockLabel } from '../blocks/index.js';
-import { blockIssues } from '../packs.js';
+import { blockIssues, allowedBlocks } from '../packs.js';
+import { getSettings, setSetting } from '../settings.js';
 import { blockOps } from './block-ops.js';
 import { openBlockPicker } from './block-picker.js';
 import { articlePatcher } from './article-patch.js';
 import { canvasText } from './canvas-text.js';
 import { canvasSheet } from './canvas-sheet.js';
 import { canvasMedia } from './canvas-media.js';
-import { labelToolbar, toolbarKeys } from './canvas-toolbar.js';
+import { labelToolbar, toolbarKeys, closeMore, toggleMore } from './canvas-toolbar.js';
 import { drawRail } from './canvas-rail.js';
 import { canvasPlayer } from './canvas-player.js';
 import { prefersReducedMotion } from './dom.js';
@@ -30,6 +32,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   section.innerHTML = `
     <h2 class="sr-only" id="canvas-heading">Story canvas</h2>
     <nav class="canvas-rail" aria-label="Blocks">
+      <button type="button" class="rail-toggle" aria-expanded="false" aria-label="Show story outline" title="Show or hide block names in the rail"><span class="rail-toggle-icon" aria-hidden="true">☰</span><span class="rail-toggle-text">Outline</span></button>
       <ol class="rail-list"></ol>
       <button type="button" class="rail-add" aria-haspopup="dialog" aria-label="Add a block" title="Add a block"><span class="rail-add-plus" aria-hidden="true">+</span><span class="rail-add-label" aria-hidden="true">Add</span></button>
     </nav>
@@ -37,14 +40,20 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
       <div class="canvas-bar">
         <button type="button" class="btn-slim" data-open="${STORY_DETAILS}">Story details</button>
         <button type="button" class="btn-slim" data-open="${REFLECTION}">Reflection</button>
+        <span class="canvas-cue" hidden>Click text to write · Click a block for layout <button type="button" class="canvas-cue-close" aria-label="Dismiss tip" title="Dismiss tip">×</button></span>
         <span class="canvas-bar-grow"></span>
         <span class="canvas-pack" hidden></span>
-        <button type="button" class="btn-slim" data-preview title="Open the story in a new tab, moving as readers will see it">Preview <span aria-hidden="true">↗</span></button>
+        <button type="button" class="btn-slim" data-preview title="Open the whole story in a new tab, moving as readers will see it">Preview story <span aria-hidden="true">↗</span></button>
       </div>
       <div class="canvas-scroll" tabindex="0" role="region" aria-label="Story canvas. Arrow keys scroll it.">
         <div class="canvas-empty" hidden>
-          <p><strong>Your story is empty.</strong> Start it with <strong>+ Add</strong>, on the left.</p>
-          <p>New to Galley? <button type="button" class="btn" data-demo>Open the demo story</button> It shows every kind of block, and you can change anything in it.</p>
+          <p class="canvas-empty-title"><strong>Start your story</strong></p>
+          <p>Begin straight away with a headline and text, or choose from 14 visual block types.</p>
+          <div class="canvas-empty-actions">
+            <button type="button" class="btn btn-primary" data-start-writing>Start writing</button>
+            <button type="button" class="btn" data-start-add>+ Choose a block…</button>
+            <button type="button" class="btn" data-demo>Open the demo story</button>
+          </div>
         </div>
         <div class="canvas-page il-page"></div>
         <div class="canvas-chrome">
@@ -55,12 +64,18 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
             <button type="button" class="btn-slim" data-act="settings">Settings</button>
             <button type="button" class="btn-slim" data-act="text">Edit text</button>
             <button type="button" class="btn-slim" data-act="media">Image</button>
+            <button type="button" class="btn-slim" data-act="add-step" hidden>+ Step</button>
             <button type="button" class="btn-slim canvas-play" data-act="play" title="Play this block here, moving as readers will see it">Play <span aria-hidden="true">▶</span></button>
-            <button type="button" class="btn-slim" data-act="up">Up</button>
-            <button type="button" class="btn-slim" data-act="down">Down</button>
-            <button type="button" class="btn-slim" data-act="dup">Duplicate</button>
-            <button type="button" class="btn-slim btn-danger" data-act="del">Delete</button>
             <button type="button" class="btn-slim canvas-todo" data-act="todo" hidden></button>
+            <div class="canvas-more-wrap">
+              <button type="button" class="btn-slim canvas-more-btn" data-act="more" aria-expanded="false" aria-haspopup="true">More <span aria-hidden="true">▾</span></button>
+              <div class="canvas-more-menu" role="group" hidden>
+                <button type="button" class="btn-slim" data-act="up">Move up</button>
+                <button type="button" class="btn-slim" data-act="down">Move down</button>
+                <button type="button" class="btn-slim" data-act="dup">Duplicate</button>
+                <button type="button" class="btn-slim btn-danger" data-act="del">Delete</button>
+              </div>
+            </div>
           </div>
           <button type="button" class="canvas-insert" aria-haspopup="dialog" hidden>+ Add</button>
         </div>
@@ -131,14 +146,17 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   }
 
   // The selection frame and its toolbar.
+  let lastPlacedId = null;
   function place() {
     const id = store.selected;
+    if (id !== lastPlacedId) { closeMore(tools); lastPlacedId = id; }
     // With no header block, the story's opening (#il-top) is Story details.
     const el = isBlock(id) ? elOf(id) : id === STORY_DETAILS ? elOf('il-top') : null;
     page.querySelectorAll('.canvas-sel').forEach((x) => { if (x !== el) x.classList.remove('canvas-sel'); });
     el?.classList.add('canvas-sel'); // shows the block's optional empty text (kicker, byline…)
     frame.hidden = !el;
     tools.hidden = !isBlock(id) || Boolean(text.current);
+    if (tools.hidden) closeMore(tools);
     text.place();
     if (media.blockId && media.blockId !== id) media.hide();
     media.place();
@@ -147,7 +165,9 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     const b = blocks()[i];
     labelToolbar(tools, {
       index: i, count: blocks().length, label: blockLabel(b.type), el,
-      hasText: Boolean(editableIn(el)), hasMedia: media.has(el), playable: moves(b, store.story) && Boolean(playFrom),
+      hasText: Boolean(editableIn(el)), hasMedia: media.has(el),
+      hasSteps: b.type === 'scrolly' || b.type === 'scrollpoints',
+      playable: moves(b, store.story) && Boolean(playFrom),
       todo: BLOCKS[b.type] ? blockIssues(b, store.story) : [],
     });
     if (!el) { tools.style.top = `${scroller.scrollTop + 8}px`; tools.style.left = '8px'; return; }
@@ -193,8 +213,9 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
       draw.forget(el);
       lastHtml = '';
       render();
-      if (how === 'escape' || how === 'done') tools.querySelector('[data-act="text"]:not([hidden])')?.focus();
-      else if (how === 'tab-out') tools.querySelector('[data-act="settings"]')?.focus();
+      if (how === 'escape' || how === 'done' || how === 'undo') {
+        (tools.querySelector('[data-act="text"]:not([hidden])') || tools.querySelector('[data-act="settings"]:not([hidden])') || railButton(blockId))?.focus();
+      } else if (how === 'tab-out') tools.querySelector('[data-act="settings"]')?.focus();
       else if (how === 'back-out') railButton(blockId)?.focus();
     },
     openSettings: (blockId) => openSheet(railButton(blockId) || railAdd),
@@ -297,27 +318,88 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     const id = store.selected;
     if (!btn || !isBlock(id)) return;
     const act = btn.dataset.act;
-    if (act === 'settings' || act === 'todo') openSheet(btn);
-    else if (act === 'media') media.openIn(elOf(id), btn);
-    else if (act === 'play') player.open(id, btn);
-    else if (act === 'text') { const el = editableIn(elOf(id)); if (el) { scrollToSelected(); text.start(el); } }
-    else if (act === 'up' || act === 'down') {
+    if (act === 'more') { toggleMore(tools); return; }
+    if (act === 'settings' || act === 'todo') { closeMore(tools); openSheet(btn); }
+    else if (act === 'media') { closeMore(tools); media.openIn(elOf(id), btn); }
+    else if (act === 'play') { closeMore(tools); player.open(id, btn); }
+    else if (act === 'text') { closeMore(tools); const el = editableIn(elOf(id)); if (el) { scrollToSelected(); text.start(el); } }
+    else if (act === 'add-step') {
+      closeMore(tools);
+      const b = blocks()[ops.indexOf(id)];
+      if (!b || !Array.isArray(b.data.steps)) return;
+      const nextIdx = b.data.steps.length;
+      const stepObj = b.type === 'scrollpoints'
+        ? { text: '', align: 'auto', focus: true, x: 35, y: 35, w: 30, h: 30 }
+        : { media: null, text: '', align: 'center' };
+      store.update((s) => {
+        const target = s.blocks.find((x) => x.id === id);
+        if (target && Array.isArray(target.data.steps)) target.data.steps.push(stepObj);
+      }, { select: id, from: 'canvas' });
+      lastHtml = '';
+      render();
+      const stepEl = editableIn(elOf(id), `steps.${nextIdx}.text`);
+      if (stepEl) {
+        stepEl.scrollIntoView({ block: 'center', behavior: smooth() });
+        text.start(stepEl);
+      }
+      announce(`Step ${nextIdx + 1} added.`);
+    } else if (act === 'up' || act === 'down') {
       ops.moveTo(id, ops.indexOf(id) + (act === 'up' ? -1 : 1));
       render();
       scrollToSelected();
       const same = tools.querySelector(`[data-act="${act}"]`);
       (same.disabled ? tools.querySelector(`[data-act="${act === 'up' ? 'down' : 'up'}"]`) : same).focus();
-    } else if (act === 'dup') { ops.duplicate(id); render(); scrollToSelected(); tools.querySelector('[data-act="dup"]').focus(); }
-    else if (act === 'del') {
+    } else if (act === 'dup') {
+      closeMore(tools);
+      ops.duplicate(id);
+      render();
+      scrollToSelected();
+      tools.querySelector('[data-act="more"]')?.focus();
+    } else if (act === 'del') {
+      closeMore(tools);
       const next = ops.remove(id);
       render();
       (next ? railButton(next) : railAdd)?.focus();
     }
   });
+  document.addEventListener('click', (e) => {
+    if (!tools.hidden && !tools.querySelector('.canvas-more-wrap')?.contains(e.target)) closeMore(tools);
+  });
 
   toolbarKeys(tools);
 
-  // ---------------------------------------------------------------- rail and bar
+  // ---------------------------------------------------------------- rail, cue and empty-story starters
+  const railToggle = $('.rail-toggle');
+  const setRailExpanded = (expanded, save = true) => {
+    section.classList.toggle('rail-expanded', expanded);
+    railToggle.setAttribute('aria-expanded', String(expanded));
+    railToggle.setAttribute('aria-label', expanded ? 'Hide story outline' : 'Show story outline');
+    if (save) setSetting('railExpanded', expanded);
+    place();
+  };
+  railToggle.addEventListener('click', () => setRailExpanded(!section.classList.contains('rail-expanded'), true));
+  const cue = $('.canvas-cue');
+  $('.canvas-cue-close')?.addEventListener('click', () => {
+    cue.hidden = true;
+    setSetting('canvasCueDismissed', true);
+  });
+  getSettings().then((s) => {
+    if (s.railExpanded) setRailExpanded(true, false);
+    if (!s.canvasCueDismissed) cue.hidden = false;
+  });
+
+  $('[data-start-writing]').addEventListener('click', () => {
+    const allowed = allowedBlocks();
+    const types = ['header', 'text'].filter((t) => allowed.includes(t));
+    if (!types.length) { pick(0, $('[data-start-writing]')); return; }
+    const created = types.map((t) => createBlock(t));
+    store.update((s) => { s.blocks.push(...created); }, { select: created[0].id, from: 'canvas' });
+    render();
+    const firstField = editableIn(elOf(created[0].id), created[0].type === 'header' ? 'title' : undefined);
+    if (firstField) text.start(firstField);
+    announce('Started your story with a header and a text block. Type your headline.');
+  });
+  $('[data-start-add]').addEventListener('click', () => pick(0, $('[data-start-add]')));
   rail.addEventListener('click', (e) => {
     const b = e.target.closest('[data-id]');
     if (!b) return;
@@ -371,14 +453,14 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   function active() { return !section.hidden; }
 
   return {
-    // Checks send students to a block's settings, even when it's already the selected one.
-    reveal(id, from) {
+    // Checks send students to a block's settings (and a specific field when given), even when it's already the selected one.
+    reveal(id, from, focusTarget = null) {
       if (!active()) return false;
       if (text.current) text.stop('away');
       media.hide();
       render();
       scrollToSelected('center');
-      openSheet(from || railButton(id) || $(`[data-open="${STORY_DETAILS}"]`) || railAdd);
+      openSheet(from || railButton(id) || $(`[data-open="${STORY_DETAILS}"]`) || railAdd, { focusTarget });
       return true;
     },
     show() {

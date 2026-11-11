@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Galley checks</title>
+  <link rel="icon" href="data:,">
+  <style>
+    body { margin: 0; padding: 16px; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: #1c1c1c; background: #fdfcfa; }
+    h1 { font-size: 1.4rem; margin: 0 0 4px; }
+    table { border-collapse: collapse; width: 100%; max-width: 70rem; margin-top: 12px; }
+    th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid #d9d5cc; }
+    .pass { color: #0a6b2d; font-weight: 700; }
+    .fail { color: #a4001d; font-weight: 700; }
+    ul { margin: 0; padding-left: 1.2em; }
+    #summary { font-weight: 700; font-size: 1.05rem; }
+  </style>
+  <script type="module" src="checks-harness.js"></script>
+</head>
+<body>
+  <h1>Checks: flawed.json and clean.json</h1>
+  <p>Every check should ask at least one question about <code>flawed.json</code> and none about <code>clean.json</code>. Needs a local web server (see README).</p>
+  <p id="summary" role="status">Running…</p>
+  <table>
+    <thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">What it asks about flawed.json</th><th scope="col">clean.json</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</body>
+</html>

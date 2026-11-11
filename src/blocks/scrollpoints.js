@@ -16,14 +16,27 @@ function focusPicker(sub, ctx, stepIndex) {
   const w = Number.isFinite(st.w) ? st.w : 30;
   const hPct = Number.isFinite(st.h) ? st.h : 30;
 
+  const ghosts = (ctx.block.data.steps || []).map((other, j) => {
+    if (j === stepIndex || !other || !other.focus) return null;
+    const ox = Number.isFinite(other.x) ? other.x : 40;
+    const oy = Number.isFinite(other.y) ? other.y : 40;
+    const ow = Number.isFinite(other.w) ? other.w : 30;
+    const oh = Number.isFinite(other.h) ? other.h : 30;
+    return h('div', {
+      class: 'sp-crop-ghost',
+      style: `left:${ox}%;top:${oy}%;width:${ow}%;height:${oh}%`,
+      'aria-hidden': 'true',
+    }, h('span', { class: 'sp-crop-num' }, String(j + 1)));
+  }).filter(Boolean);
+
   const box = h('div', {
     class: 'sp-crop-box',
     style: `left:${x}%;top:${y}%;width:${w}%;height:${hPct}%`,
-  });
+  }, h('span', { class: 'sp-crop-num' }, String(stepIndex + 1)));
   const stage = url ? h('div', {
     class: 'sp-crop-stage',
     title: 'Click or drag across the image to set the highlight area for this step',
-  }, h('img', { src: url, alt: '', draggable: 'false' }), box) : null;
+  }, h('img', { src: url, alt: '', draggable: 'false' }), ...ghosts, box) : null;
 
   const inputs = {};
   const setBox = (nx, ny, nw, nh) => {

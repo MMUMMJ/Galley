@@ -255,6 +255,10 @@ export function attachRichEditing(body, o) {
   body.addEventListener('input', () => save());
   body.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openLink(); }
+    // Bold and italics from the keyboard, done here so they work the same in every browser
+    // (some leave them to the system, and some WebKit builds don't do them at all).
+    const style = { b: 'bold', i: 'italic' }[e.key.toLowerCase()];
+    if (style && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey) { e.preventDefault(); document.execCommand(style); refresh(); }
     if (mode === 'inline' && e.key === 'Enter') e.preventDefault();
   });
   body.addEventListener('paste', (e) => {

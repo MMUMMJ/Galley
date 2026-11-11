@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "runtimeVersion": "1.3.0",
+  "meta": {
+    "title": "Showpiece blocks", "standfirst": "A scroll sequence, a before/after slider and a big number. Sample fixture.",
+    "byline": "Sample fixture", "seoTitle": "", "seoDescription": "", "shareImage": null, "shareText": "", "pack": null,
+    "created": "2026-11-07T10:00:00.000Z", "modified": "2026-11-07T10:00:00.000Z"
+  },
+  "blocks": [
+    { "id": "b_head", "type": "header", "effect": "none", "note": "", "data": { "variant": "compact", "kicker": "Fixture", "title": "", "standfirst": "", "byline": "", "media": null } },
+    { "id": "b_intro", "type": "text", "effect": "none", "note": "", "data": { "body": "Scroll down. The image should stay put while the steps pass." } },
+    { "id": "b_scrolly", "type": "scrolly", "effect": "none", "note": "", "data": { "layout": "side", "steps": [
+      { "media": "a_g1", "text": "**Step 1.** Morning on the towpath. The banks are green and quiet." },
+      { "media": null, "text": "**Step 2.** Same image: no new picture for this step, so the first one stays." },
+      { "media": "a_g2", "text": "**Step 3.** After dark, the mill windows light up." },
+      { "media": "a_g4", "text": "**Step 4.** Last light. ## is not a heading here, but this is *italic*." }
+    ] } },
+    { "id": "b_overlay", "type": "scrolly", "effect": "none", "note": "", "data": { "layout": "overlay", "steps": [
+      { "media": "a_lock", "text": "Overlay layout: this card scrolls over a full-screen image." },
+      { "media": "a_towpath", "text": "The image changes behind the second card." }
+    ] } },
+    { "id": "b_compare", "type": "compare", "effect": "none", "note": "", "data": {
+      "before": { "asset": "a_g3", "label": "2019" }, "after": { "asset": "a_g4", "label": "2026" },
+      "caption": "The same stretch, seven years apart.", "width": "wide" } },
+    { "id": "b_number", "type": "number", "effect": "none", "note": "", "data": {
+      "value": "1,240", "unit": "trolleys", "context": "pulled from this stretch of canal since 2019.",
+      "sourceName": "Canal volunteers' log", "sourceRef": "https://example.com/log" } },
+    { "id": "b_number2", "type": "number", "effect": "none", "note": "", "data": {
+      "value": "£3.4", "unit": "million", "context": "a decimal with a prefix, and no source (preview shows a badge).",
+      "sourceName": "", "sourceRef": "" } },
+    { "id": "b_outro", "type": "text", "effect": "none", "note": "", "data": { "body": "End of the showpiece fixture." } }
+  ],
+  "assets": {
+    "a_g1": { "name": "gallery-1.svg", "mime": "image/svg+xml", "bytes": 5953, "width": 1200, "height": 900, "alt": "Green banks and a low skyline in soft morning light.", "caption": "", "credit": "Sam Example", "licence": "Own work" },
+    "a_g2": { "name": "gallery-2.svg", "mime": "image/svg+xml", "bytes": 6049, "width": 1200, "height": 900, "alt": "Lit windows reflected in the canal at night.", "caption": "", "credit": "Sam Example", "licence": "Own work" },
+    "a_g3": { "name": "gallery-3.svg", "mime": "image/svg+xml", "bytes": 6365, "width": 1200, "height": 900, "alt": "Warehouses under a clear sky.", "caption": "", "credit": "Sam Example", "licence": "Own work" },
+    "a_g4": { "name": "gallery-4.svg", "mime": "image/svg+xml", "bytes": 5991, "width": 1200, "height": 900, "alt": "Buildings silhouetted at sunset over the water.", "caption": "", "credit": "Sam Example", "licence": "CC BY-SA" },
+    "a_lock": { "name": "lock-gates.svg", "mime": "image/svg+xml", "bytes": 6751, "width": 1800, "height": 900, "alt": "Grey industrial buildings above dark water.", "caption": "", "credit": "Sam Example", "licence": "Own work" },
+    "a_towpath": { "name": "towpath-volunteers.svg", "mime": "image/svg+xml", "bytes": 6155, "width": 1200, "height": 800, "alt": "Brick warehouses beside the canal.", "caption": "", "credit": "Sam Example", "licence": "Own work" }
+  },
+  "reflection": []
+}

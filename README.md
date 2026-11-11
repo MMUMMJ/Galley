@@ -77,6 +77,22 @@ python3 -m http.server 8000
 
 Then open <http://localhost:8000/>. (Exported stories are different: they are built to open straight from `file://`.)
 
+## Tests
+
+The tests need Node and Python 3. Galley itself doesn't: the test tools are never part of the site.
+
+```sh
+npm install
+npx playwright install chromium webkit
+npm test
+```
+
+- `test/unit/` (Node's own test runner): the story model, loading and migrating stories.
+- `test/e2e/` (Playwright, in Chromium and in WebKit at iPad size): export and reopen, saving and reloading, undo, two tabs, storage failure, earlier versions, broken checks, damaged ZIPs, folder saving, keyboard editing, pasting, and story files that try to run code.
+- `test/checks.html` and `test/runtime.html`: pages to try the checks and the runtime by eye, with the sample stories in `test/fixtures/`.
+
+GitHub runs the tests on every push (`.github/workflows/test.yml`). If they crawl on a Mac (macOS can slow down the timers of processes running in the background), run them with `taskpolicy -t 0 -l 0 npm test`.
+
 ## Deploy to GitHub Pages
 
 1. Push this repo to GitHub.
@@ -106,6 +122,7 @@ runtime/            reader-facing renderer, inlined into every export
 packs/              course packs
 demo/               the demo story: a saved folder, published at /Galley/demo/
 galley-brand/       logos, colours and type (see its README)
+test/               tests (see Tests)
 ```
 
 The site's icons (`favicon.*`, `apple-touch-icon.png`, `site.webmanifest`, `icons/`) and link-preview image (`social/og-image.png`) sit in the root.
@@ -116,7 +133,7 @@ Behind the formatted editor, text is saved as a small Markdown subset, which is 
 
 ## Rules
 
-1. **No dependencies, no build step, no CDN, no frameworks.** Vanilla JavaScript, HTML and CSS.
+1. **No dependencies, no build step, no CDN, no frameworks.** Vanilla JavaScript, HTML and CSS. (`package.json` lists only the test tools.)
 2. **No backend, network calls, analytics or accounts.** Student work leaves the browser only as files the student saves themselves.
 3. **Exports work offline** from an unzipped folder opened via `file://`, in current Edge, Chrome, Safari and Firefox, with no third-party scripts.
 4. **The story is data.** Every export contains the story JSON and can be opened in the editor again.

@@ -4,10 +4,13 @@
 .idea/
 *.swp
 
-# Development only, kept on the developer's machine: the build plan, and the
-# test pages with their sample stories
+# Development only, kept on the developer's machine: the build plan
 BUILD-PLAN.md
-test/
+
+# Test tools and their output (the tests themselves are in test/)
+node_modules/
+test-results/
+playwright-report/
 
 # Original media for the demo story (demo/assets/ holds the resized copies)
 media/

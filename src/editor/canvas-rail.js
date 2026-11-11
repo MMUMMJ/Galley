@@ -11,11 +11,16 @@ export function drawRail(rail, section, store) {
   const list = store.story.blocks;
   const current = list.some((b) => b.id === sel) ? sel : list[0]?.id;
   rail.innerHTML = list.map((b, i) => {
-    const issues = BLOCKS[b.type] ? blockIssues(b, store.story) : [];
-    const label = `${i + 1}, ${blockLabel(b.type)}${issues.length ? ', needs work' : ''}`;
-    return `<li><button type="button" class="rail-item${b.id === sel ? ' is-selected' : ''}${issues.length ? ' needs-work' : ''}"
+    const mod = BLOCKS[b.type];
+    const typeLabel = blockLabel(b.type);
+    let summary = '';
+    try { summary = mod?.summary ? String(mod.summary(b.data, store.story) || '').trim() : ''; } catch { summary = ''; }
+    const issues = mod ? blockIssues(b, store.story) : [];
+    const isPart = b.type === 'header' && i > 0;
+    const label = `${i + 1}, ${typeLabel}${summary ? `: ${summary.slice(0, 60)}` : ''}${issues.length ? ', needs work' : ''}`;
+    return `<li><button type="button" class="rail-item${b.id === sel ? ' is-selected' : ''}${issues.length ? ' needs-work' : ''}${isPart ? ' is-part' : ''}"
       data-id="${esc(b.id)}" aria-label="${esc(label)}" title="${esc(label)}" ${b.id === sel ? 'aria-current="true"' : ''}
-      tabindex="${b.id === current ? '0' : '-1'}">${i + 1}</button></li>`;
+      tabindex="${b.id === current ? '0' : '-1'}"><span class="rail-num">${i + 1}</span><span class="rail-detail"><span class="rail-type">${esc(typeLabel)}</span>${summary ? `<span class="rail-sum">${esc(summary.slice(0, 48))}</span>` : ''}</span></button></li>`;
   }).join('');
   $(`[data-open="${STORY_DETAILS}"]`).setAttribute('aria-pressed', String(sel === STORY_DETAILS));
   $(`[data-open="${REFLECTION}"]`).setAttribute('aria-pressed', String(sel === REFLECTION));

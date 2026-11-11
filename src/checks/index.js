@@ -18,9 +18,17 @@ export const CHECKS = [mediaCredits, searchLinks, citations, unsourcedStats, sho
 export function runChecks(story, ctx) {
   return CHECKS.map((check) => {
     let items = [];
-    try { items = check.run(story, ctx) || []; } catch (e) { items = []; }
+    try {
+      items = check.run(story, ctx) || [];
+    } catch (e) {
+      // A check that breaks says so: "no questions" would look like a clean story.
+      console.error(`Galley: the "${check.id}" check couldn't run`, e);
+      items = [{ kind: 'error', blockId: null, message: 'This check couldn\'t run, so it can\'t say whether anything here needs a look. Reload Galley to try again.' }];
+    }
     return { id: check.id, title: check.title, items: items.map((it) => ({ kind: 'question', ...it })) };
   });
 }
+
+export const failedCount = (results) => results.filter((r) => r.items.some((i) => i.kind === 'error')).length;
 
 export const questionCount = (results) => results.reduce((n, r) => n + r.items.filter((i) => i.kind === 'question').length, 0);

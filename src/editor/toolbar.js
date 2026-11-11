@@ -1,6 +1,7 @@
 // Header controls: undo, redo, new story, and the save status line.
 import { startStory } from '../packs.js';
 import { STORY_DETAILS } from '../store.js';
+import { takeSnapshot } from '../snapshots.js';
 
 export function mountToolbar(store, { undoBtn, redoBtn, newBtn, announce }) {
   const sync = () => {
@@ -16,6 +17,7 @@ export function mountToolbar(store, { undoBtn, redoBtn, newBtn, announce }) {
     const ok = window.confirm('Start a new, empty story?\n\nYour current story will be replaced. '
       + 'You can bring it back with Undo until you close or reload this page.');
     if (!ok) return;
+    takeSnapshot(store.story, 'Before starting a new story').catch(() => {});
     const next = startStory();
     store.update(() => next, { select: next.blocks[0]?.id ?? STORY_DETAILS, from: 'toolbar' });
     announce('New story started. Use Undo to bring back the previous one.');
@@ -40,5 +42,6 @@ export function saveStatusText(state, detail) {
   if (state === 'saved') return `Saved in this browser at ${detail.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   if (state === 'error') return 'Not saved: storage problem';
   if (state === 'off') return 'Not saving: browser storage unavailable';
+  if (state === 'elsewhere') return 'Not saving: Galley is open in another tab';
   return '';
 }

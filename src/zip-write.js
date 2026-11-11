@@ -12,7 +12,8 @@ const CRC_TABLE = (() => {
   return t;
 })();
 
-async function crc32(blob) {
+// The ZIP checksum of a file (zip-read.js checks it when opening).
+export async function crc32(blob) {
   let c = 0xFFFFFFFF;
   const update = (bytes) => {
     for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);

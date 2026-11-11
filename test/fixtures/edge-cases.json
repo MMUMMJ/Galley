@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "runtimeVersion": "1.0.0",
+  "meta": {
+    "title": "Edge cases <script>alert('title')</script>",
+    "standfirst": "No header block: the runtime should build a compact one from the metadata.",
+    "byline": "", "seoTitle": "", "seoDescription": "", "shareImage": null, "shareText": "", "pack": null,
+    "created": "", "modified": ""
+  },
+  "blocks": [
+    { "id": "b_html", "type": "text", "effect": "none", "note": "", "data": { "body":
+      "Raw HTML must be shown as text: <img src=x onerror=alert(1)> <script>alert(2)</script>\nA javascript: link must not become a link: [click me](javascript:alert(3)).\nA data: link must not either: [data](data:text/html,hi).\nA very long word: Pneumonoultramicroscopicsilicovolcanoconiosis-and-then-some-more-and-more-and-more-and-more.\nA very long URL: https://example.com/a/very/long/path/that/goes/on/and/on/and/on/and/on/and/on/and/on/and/on?with=query&and=more.\nsnake_case_words and file_names_like_this stay as they are; 2 * 3 * 4 is maths.\n**Unclosed bold and *unclosed italic" } },
+    { "id": "b_empty", "type": "text", "effect": "none", "note": "", "data": { "body": "" } },
+    { "id": "b_missing", "type": "media", "effect": "none", "note": "", "data": { "kind": "image", "asset": "a_nope", "width": "column" } },
+    { "id": "b_unknown", "type": "timeline", "effect": "none", "note": "", "data": {} },
+    { "id": "b_nodata", "type": "quote", "effect": "none", "note": "" },
+    { "id": "b_gempty", "type": "gallery", "effect": "none", "note": "", "data": { "items": [], "caption": "", "width": "wide" } },
+    { "id": "b_spotify", "type": "embed", "effect": "none", "note": "", "data": {
+      "url": "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT", "title": "", "description": "", "screenshot": null, "width": "column" } },
+    { "id": "b_sc", "type": "embed", "effect": "none", "note": "", "data": {
+      "url": "https://soundcloud.com/example-artist/example-track", "title": "", "description": "", "screenshot": null, "width": "column" } },
+    { "id": "b_youtu", "type": "embed", "effect": "none", "note": "", "data": {
+      "url": "https://youtu.be/aqz-KE-bpKQ", "title": "", "description": "", "screenshot": null, "width": "wide" } },
+    { "id": "b_badurl", "type": "embed", "effect": "none", "note": "", "data": {
+      "url": "javascript:alert(4)", "title": "Bad URL", "description": "", "screenshot": null, "width": "column" } },
+    { "id": "b_div", "type": "divider", "effect": "none", "note": "", "data": { "text": "Part two" } },
+    { "id": "b_quote", "type": "quote", "effect": "none", "note": "", "data": { "text": "A quote with no attribution.\nOver two lines.", "cite": "", "role": "" } },
+    { "id": "b_refstr", "type": "references", "effect": "none", "note": "", "data": {
+      "title": "", "collapsed": true, "items": ["Smith, J. (2020) *A book*.", "", "  Jones, K. (2019) Another source. https://example.com/source."] } }
+  ],
+  "assets": {},
+  "reflection": []
+}
