@@ -7,6 +7,7 @@
 //   Enter (one-line text) or Tab: the next piece of text in the block. Shift+Tab: the one before.
 //   Esc or Done: stop typing.
 import { h } from './dom.js';
+import { openMediaEditor } from './media-editor.js';
 import { toHtml, padImages, mediaFigure, MEDIA } from './rich-core.js';
 import { attachRichEditing } from './rich-tools.js';
 
@@ -116,9 +117,9 @@ export function canvasText({ page, holder, dockOver, scroller, boxOf, blockOf, s
       const ctx = {
         // Always the current story: a file added while typing must be found when the text is tidied.
         get story() { return store.story; },
-        setAsset: (assetId, k, value) => store.update((s) => { if (s.assets[assetId]) s.assets[assetId][k] = value; },
-          { from: 'canvas-type', coalesce: `canvas-asset:${assetId}:${k}` }),
         assetUrl, importFiles, announce,
+        dataPath: c.field.split('.').slice(0, -1),
+        openMedia: (options) => { stop('media'); return openMediaEditor({ blockId: c.blockId, ...options }); },
         // Media added from the bar: fn sets data[key], so it gets the object that holds this text.
         edit: (fn) => store.update((s) => { const b = s.blocks.find((x) => x.id === c.blockId); const spot = b && fieldSpot(b.data, c.field); if (spot) fn(spot.obj, s); }, { from: 'canvas-type' }),
       };

@@ -21,7 +21,7 @@ export default {
       }
       if (!(a.credit || '').trim()) { firstField ||= 'credit'; asks.push('Who made it? Add a credit.'); }
       if (!(a.licence || '').trim()) { firstField ||= 'licence'; asks.push('May you use it? Choose a licence.'); }
-      if (asks.length) out.push({ blockId, focusKey: `${assetId}:${firstField}`, message: `${name} (${role}): ${asks.join(' ')}` });
+      if (asks.length) out.push({ blockId, assetId, field: firstField, focusKey: `${assetId}:${firstField}`, message: `${name} (${role}): ${asks.join(' ')}` });
     }
     return out;
   },

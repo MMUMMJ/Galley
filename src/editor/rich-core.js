@@ -181,7 +181,7 @@ export function mediaFigure(ctx, look = 'panel') {
       + ` data-look="${look}" data-asset="${attr(ref)}" data-pos="${attr(pos || '')}" data-name="${name}">`
       + `${media}${caption}`
       + `<span class="rte-img-tools" role="group" aria-label="${video ? 'Video' : 'Image'}">`
-      + `<button type="button" data-details>${video ? 'Description' : 'Alt text'}</button>`
+      + `<button type="button" data-details>Media details</button>`
       + `<button type="button" data-pos="left" aria-pressed="${pos === 'left'}">Left</button><button type="button" data-pos="" aria-pressed="${!pos}">Full</button>`
       + `<button type="button" data-pos="right" aria-pressed="${pos === 'right'}">Right</button>${remove}</span></figure>`;
   };

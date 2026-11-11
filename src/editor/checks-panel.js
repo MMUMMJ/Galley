@@ -5,6 +5,8 @@ import { where } from '../checks/util.js';
 import { getPack } from '../packs.js';
 import { STORY_DETAILS } from '../store.js';
 import { h, preserveFocus } from './dom.js';
+import { openMediaEditor } from './media-editor.js';
+import { reviewKey, reviewEvidence, isReviewed } from './review-state.js';
 
 // reveal(blockId, returnTo, focusTarget): shows the block's settings in a view that keeps them in a sheet (the
 // canvas); returns false when they're already on screen (Panels/Classic).
@@ -13,14 +15,13 @@ export function mountChecks(store, { button, panel, announce, reveal = () => fal
   const canPlayType = (mime) => probe.canPlayType(mime);
   let results = [];
   let timer = 0;
-  const noted = new Set(); // editorial questions the student has reviewed and chosen to keep
-  const itemKey = (checkId, it) => `${checkId}:${it.blockId || 'story'}:${it.message}`;
+  const noted = (checkId, it) => isReviewed(store.story, checkId, it, getPack());
 
   function activeQuestions() {
     let count = 0;
     for (const r of results) {
       for (const it of r.items) {
-        if (it.kind === 'question' && !noted.has(itemKey(r.id, it))) count++;
+        if (it.kind === 'question' && !noted(r.id, it)) count++;
       }
     }
     return count;
@@ -37,6 +38,10 @@ export function mountChecks(store, { button, panel, announce, reveal = () => fal
 
   function jump(blockId, target = null) {
     store.select(blockId, 'checks');
+    if (target?.assetId) {
+      close(false);
+      if (openMediaEditor({ blockId, assetId: target.assetId, focusField: target.field, returnFocus: button })) return;
+    }
     // The canvas's settings sheet opens where this panel is, so the panel closes; Close on the
     // sheet comes back to the Checks button.
     if (reveal(blockId, button, target)) close(false);
@@ -49,14 +54,18 @@ export function mountChecks(store, { button, panel, announce, reveal = () => fal
     announce(blockId === STORY_DETAILS ? 'Showing Story details.' : `Showing ${where(store.story, blockId)}.`);
   }
 
-  function toggleNoted(key) {
-    if (noted.has(key)) {
-      noted.delete(key);
-      announce('Question unmarked.');
-    } else {
-      noted.add(key);
-      announce('Marked as noted.');
-    }
+  function toggleNoted(checkId, item) {
+    const wasNoted = noted(checkId, item);
+    store.update((s) => {
+      const reviews = { ...(s.meta.reviewedChecks || {}) };
+      const key = reviewKey(checkId, item);
+      if (wasNoted) delete reviews[key];
+      else reviews[key] = reviewEvidence(s, item, getPack());
+      // Drop obsolete questions when making a new decision, keeping exports bounded.
+      const currentKeys = new Set(results.flatMap((r) => r.items.map((it) => reviewKey(r.id, it))));
+      s.meta.reviewedChecks = Object.fromEntries(Object.entries(reviews).filter(([k]) => currentKeys.has(k)));
+    }, { from: 'checks' });
+    announce(wasNoted ? 'Question unmarked.' : 'Marked as noted. This is saved with the story and will be reviewed again if its content changes.');
     compute();
   }
 
@@ -76,19 +85,18 @@ export function mountChecks(store, { button, panel, announce, reveal = () => fal
           if (it.kind === 'info' || it.kind === 'error' || !it.blockId) {
             return h('li', { class: { info: 'check-info', error: 'check-error' }[it.kind] || 'check-story' }, it.message);
           }
-          const key = itemKey(r.id, it);
-          const isNoted = noted.has(key);
+          const isNoted = noted(r.id, it);
           const label = it.blockId === STORY_DETAILS ? 'Story details' : where(store.story, it.blockId);
           return h('li', { class: `check-row${isNoted ? ' is-noted' : ''}` },
             h('button', {
               type: 'button', class: 'check-item', 'data-focus': `chk:${r.id}:${i}`,
-              onclick: () => jump(it.blockId === STORY_DETAILS ? STORY_DETAILS : it.blockId, { tab: it.tab, focusKey: it.focusKey }),
+              onclick: () => jump(it.blockId === STORY_DETAILS ? STORY_DETAILS : it.blockId, { tab: it.tab, focusKey: it.focusKey, assetId: it.assetId, field: it.field }),
             }, h('span', { class: 'check-where' }, `${label} →`), h('span', {}, it.message)),
             h('button', {
               type: 'button', class: 'btn-slim check-note-btn', 'data-focus': `chk:${r.id}:${i}:note`,
               'aria-pressed': String(isNoted),
               title: isNoted ? 'Bring this question back into your active count' : 'Mark that you have considered this prompt',
-              onclick: () => toggleNoted(key),
+              onclick: () => toggleNoted(r.id, it),
             }, isNoted ? 'Noted ✓' : 'Noted'));
         })))),
     ].flat().filter(Boolean)); // replaceChildren doesn't flatten arrays or skip nulls

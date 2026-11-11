@@ -56,7 +56,8 @@ export function mountFileMenu(store, { fileBtn: exportBtn, menu, openBtn, demoBt
 
   menu.append(prepItem, ...exporters.map((ex) => h('li', {},
     h('button', { type: 'button', class: 'menu-option', onclick: () => run(ex) },
-      h('strong', {}, `Export: ${ex.label}`), h('span', {}, ex.description)))));
+      h('strong', {}, ex.id === 'zip' ? 'Export for Moodle' : `Export: ${ex.label}`),
+      h('span', {}, ex.id === 'zip' ? 'ZIP folder (.zip). Includes your media and editable story. Upload the ZIP to Moodle.' : ex.description)))));
   // Any button choice closes the menu (the appendix checkbox stays open so they can export next).
   menu.addEventListener('click', (e) => { if (e.target.closest('button')) close(false); });
 

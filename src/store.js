@@ -2,6 +2,8 @@
 // Every change goes through update(), which works on a copy of the story,
 // so earlier versions stay intact on the undo stack.
 
+import { syncOpeningFields } from './story-edits.js';
+
 const MAX_UNDO = 200;
 
 // A selection that isn't a block: the story's metadata ("Story details").
@@ -35,6 +37,7 @@ export function createStore(initial) {
     update(recipe, opts = {}) {
       const draft = structuredClone(present);
       const next = recipe(draft) || draft;
+      if (!opts.keepModified) syncOpeningFields(present, next);
       if (!opts.keepModified) next.meta.modified = new Date().toISOString();
       const now = Date.now();
       const merge = opts.coalesce && opts.coalesce === lastKey && now - lastTime < COALESCE_MS;

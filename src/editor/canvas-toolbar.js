@@ -17,8 +17,7 @@ export function labelToolbar(tools, { index, count, label, el, hasText, hasMedia
   set('settings', `Settings for ${name}`);
   // Each spoken name starts with the button's visible text, so voice control users can say what they see.
   set('text', `Edit text: ${name}`, { hidden: !hasText });
-  const video = el?.querySelector('[data-il-asset]')?.tagName === 'VIDEO';
-  set('media', `${video ? 'Video' : 'Image'} tools for ${name}: replace, alt text`, { hidden: !hasMedia }).textContent = video ? 'Video' : 'Image';
+  set('media', `Media details for ${name}`, { hidden: !hasMedia }).textContent = 'Media';
   set('add-step', `+ Step: add a step to ${name}`, { hidden: !hasSteps });
   set('play', `Play ${name} here, moving as readers will see it`, { hidden: !playable });
   set('more', `More actions for ${name}: move, duplicate or delete`);

@@ -71,9 +71,7 @@ export default {
               'data-focus': `${bid}:tc-del:${i}`,
               onclick: () => changeImages((next) => next.filter((_, j) => j !== i), `Image ${i + 1} removed. It stays in your story's files.`),
             }, '✕'))),
-        asset ? h('details', { class: 'gallery-item-details', open: noAlt },
-          h('summary', { 'data-focus': `${bid}:tc-sum:${i}` }, 'Alt text, caption and credit'),
-          assetDetails(ctx, id)) : null);
+        asset ? assetDetails(ctx, id, { path: ['images', i] }) : null);
     }));
 
     const others = Object.entries(ctx.story.assets)

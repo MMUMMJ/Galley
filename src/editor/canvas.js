@@ -40,7 +40,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
       <div class="canvas-bar">
         <button type="button" class="btn-slim" data-open="${STORY_DETAILS}">Story details</button>
         <button type="button" class="btn-slim" data-open="${REFLECTION}">Reflection</button>
-        <span class="canvas-cue" hidden>Click text to write · Click a block for layout <button type="button" class="canvas-cue-close" aria-label="Dismiss tip" title="Dismiss tip">×</button></span>
+        <span class="canvas-cue" hidden>Click text to write · Click media for details <button type="button" class="canvas-cue-close" aria-label="Dismiss tip" title="Dismiss tip">×</button></span>
         <span class="canvas-bar-grow"></span>
         <span class="canvas-pack" hidden></span>
         <button type="button" class="btn-slim" data-preview title="Open the whole story in a new tab, moving as readers will see it">Preview story <span aria-hidden="true">↗</span></button>
@@ -63,7 +63,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
             <span class="canvas-tools-name"></span>
             <button type="button" class="btn-slim" data-act="settings">Settings</button>
             <button type="button" class="btn-slim" data-act="text">Edit text</button>
-            <button type="button" class="btn-slim" data-act="media">Image</button>
+            <button type="button" class="btn-slim" data-act="media">Media</button>
             <button type="button" class="btn-slim" data-act="add-step" hidden>+ Step</button>
             <button type="button" class="btn-slim canvas-play" data-act="play" title="Play this block here, moving as readers will see it">Play <span aria-hidden="true">▶</span></button>
             <button type="button" class="btn-slim canvas-todo" data-act="todo" hidden></button>
@@ -174,6 +174,11 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     const box = boxOf(el);
     setBox(frame, box);
     // The toolbar sits just above the block, or on its top edge when there's no room above.
+    // Measure at the full available width, before anchoring: an old left offset must not
+    // squeeze a wrapping toolbar into a column when the outline or settings change width.
+    tools.style.left = '6px';
+    tools.style.width = 'max-content';
+    tools.style.maxWidth = `${Math.max(0, scroller.clientWidth - 12)}px`;
     const above = box.top - tools.offsetHeight - 8;
     tools.style.top = `${above >= 4 ? above : box.top + 6}px`;
     tools.style.left = `${Math.max(6, Math.min(box.left + box.width - tools.offsetWidth - 6, scroller.clientWidth - tools.offsetWidth - 6))}px`;
@@ -221,7 +226,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     openSettings: (blockId) => openSheet(railButton(blockId) || railAdd),
     onStart: () => { media.hide(); place(); },
   });
-  // Clicking an image or video: Replace, Alt text and Settings on it (canvas-media.js).
+  // Selecting any media opens the shared media editor.
   const media = canvasMedia({
     page, holder: section.querySelector('.canvas-chrome'), scroller, boxOf, blockOf: blockFrom, store, importFiles, announce,
     openSettings: (blockId) => openSheet(railButton(blockId) || railAdd),
@@ -267,7 +272,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
   }
 
   scroller.addEventListener('mousemove', (e) => {
-    if (e.target.closest('.canvas-tools, .canvas-media')) return;
+    if (e.target.closest('.canvas-tools')) return;
     const s = scroller.getBoundingClientRect();
     if (!e.target.closest('.canvas-insert')) showInsert(e.clientY - s.top + scroller.scrollTop);
     const id = page.contains(e.target) ? blockIdFrom(e.target) : null;
@@ -290,7 +295,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     if (id === STORY_DETAILS) { media.hide(); openSheet(target); } else media.click(e.clientX, e.clientY);
   });
   page.addEventListener('dblclick', (e) => {
-    if (e.target.closest('[data-il-edit]')) return; // double-click in text selects a word
+    if (e.target.closest('[data-il-edit], [data-il-asset], figure')) return; // media has its own editor; text selects a word
     const id = blockIdFrom(e.target);
     if (id) { store.select(id, 'canvas'); openSheet(railButton(id)); }
   });
@@ -438,7 +443,7 @@ export function mountCanvas(section, store, { app, sheet, inspector, assetUrl, i
     if (!active()) return;
     // Any change, or choosing another block, stops the player: what it shows would be out of date.
     if (player.blockId && (change.type !== 'select' || store.selected !== player.blockId)) player.close(false);
-    if (change.type === 'undo' || change.type === 'redo') { if (text.current) text.cancel(); media.hide(); }
+    if (change.type === 'undo' || change.type === 'redo') { if (text.current) text.cancel(); }
     if (change.type === 'select') {
       render();
       if (change.from !== 'canvas' && change.from !== 'rail' && change.from !== 'checks') scrollToSelected('center');

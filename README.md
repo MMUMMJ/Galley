@@ -21,13 +21,13 @@ Galley does the same job for a digital story. Students gather their words, pictu
 
 ## What it does
 
-- **Write on the page.** The canvas shows the story as readers will see it. Click any text to type; click any picture to replace it or write its alt text. **Classic** view (blocks, settings and preview side by side) is one click away, and `?view=classic` or `?view=canvas` in a link chooses for students.
+- **Write on the page.** The canvas shows the story as readers will see it. Click any text to type; click any image, video or audio clip to open Media details. The same editor is available from block settings and Checks: replace the file, then edit its alt text or description, caption, credit and licence. Replacing affects only the selected occurrence; descriptive details follow the file everywhere it is reused. **Panels** view (blocks, settings and preview side by side) is one click away, and `?view=classic` or `?view=canvas` in a link chooses for students.
 - **Fourteen kinds of block:** header, text, columns, quote, media (image, video or sound), gallery, embed, divider and references, plus the showpieces: scroll sequence, text column, scrollpoints, before and after, and big number. Text can hold images, videos and embeds (YouTube, Vimeo, Spotify and SoundCloud play in the story; other sites show as a link card).
 - **Movement that never gets in the way.** Fade, rise, slide and zoom effects, and showpieces that move as the reader scrolls. Without JavaScript, in print and with reduced motion, everything is still there. On the canvas nothing moves, so every step can be edited; **Play** and **Preview** show the movement.
 - **Six colour schemes,** all checked for 4.5:1 contrast, and coloured bands behind any block.
 - **Newsroom details:** title, standfirst, byline, SEO title and description, and the picture and text used when the story is shared.
 - **Teaching built in:** a craft prompt on every block, maker's notes, reflection questions, and course packs that set up the editor for a module.
-- **Checks:** the questions an editor would ask before publishing (missing alt text, unsourced figures, search-results links, uncited references, long stretches of text), as prompts, never marks.
+- **Checks:** prompts can be marked **Noted**; those decisions save with the story and return for review when the relevant content changes. The questions an editor would ask before publishing (missing alt text, unsourced figures, search-results links, uncited references, long stretches of text), as prompts, never marks.
 - **Saving and publishing:** Galley saves in the browser as students work. **Export** makes a ZIP for Moodle or a single web page, and **Open…** brings either back into the editor. In Chrome and Edge, **Save to folder…** keeps an up-to-date copy in a folder, such as one in OneDrive.
 - **Accessible:** everything works from the keyboard and on an iPad, and buttons' spoken names match their visible text.
 

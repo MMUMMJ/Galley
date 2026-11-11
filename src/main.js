@@ -12,6 +12,7 @@ import { createStatus } from './editor/status.js';
 import { claimTab } from './editor/one-tab.js';
 import { assetIdsInSnapshots } from './snapshots.js';
 import { mountVersions } from './editor/versions.js';
+import { mountMediaEditor } from './editor/media-editor.js';
 import { mountBlockList } from './editor/block-list.js';
 import { mountInspector } from './editor/inspector.js';
 import { mountPreview } from './editor/preview.js';
@@ -119,6 +120,14 @@ async function boot() {
     if (added.length) announce(`Imported ${added.length} file${added.length === 1 ? '' : 's'}.`);
     return added;
   }
+
+  // All media entry points share this editor; block layout remains in the block settings.
+  mountMediaEditor(store, { importFiles, assetUrl, announce, toast,
+    openSettings: (id) => {
+      store.select(id, 'media-settings');
+      if (!canvas.reveal(id, document.querySelector(`.rail-item[data-id="${CSS.escape(id)}"]`))) inspector.focusFirstField();
+    },
+  });
 
   // 4. Panels.
   mountToolbar(store, { undoBtn: $('undo'), redoBtn: $('redo'), newBtn: $('new-story'), announce });

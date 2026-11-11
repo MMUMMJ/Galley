@@ -8,7 +8,7 @@ test('the demo story survives export and reopening', async ({ page }, info) => {
   const before = (await savedStory(page, (s) => s.blocks.length === 26)).blocks.map((b) => b.id);
   expect(before).toHaveLength(26);
   await page.locator('#file').click();
-  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('.menu-option', { hasText: 'Export: ZIP' }).click()]);
+  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('.menu-option', { hasText: 'Export for Moodle' }).click()]);
   const zip = info.outputPath('story.zip');
   await download.saveAs(zip);
   await dismissToast(page);

@@ -1,7 +1,7 @@
 // Form controls for the inspector. Each one reads its starting value from
 // ctx.block.data and writes changes back through ctx (see inspector.js).
 import { h } from './dom.js';
-import { LICENCES } from '../model.js';
+import { objectPath } from './media-targets.js';
 import { formatBytes, kindOfMime } from '../media.js';
 
 let uid = 0;
@@ -152,15 +152,15 @@ export function assetPicker(ctx, key, { label, kinds = ['image'], onSet } = {}) 
         h('span', {}, h('strong', {}, asset.name || 'Untitled file'), h('br'), `${assetKind(asset)} · ${formatBytes(asset.bytes)}`))
       : h('p', { class: 'field-hint' }, `No file chosen. Import ${kindsText}.`),
     h('div', { class: 'button-row' },
-      fileButton(ctx, {
-        label: asset ? 'Replace with a new file…' : 'Import a file…',
+      !asset ? fileButton(ctx, {
+        label: 'Import a file…',
         accept,
         focusKey: `${ctx.block.id}:${key}:import`,
         onFiles: async (files) => {
           const [added] = await ctx.importFiles(files.slice(0, 1), kinds);
           if (added) choose(added.id, added.asset, true);
         },
-      }),
+      }) : null,
       asset ? h('button', {
         type: 'button', class: 'btn', 'data-focus': `${ctx.block.id}:${key}:remove`,
         onclick: () => { choose(null); ctx.announce('File removed from this block. It stays in your story\'s files.'); },
@@ -170,35 +170,17 @@ export function assetPicker(ctx, key, { label, kinds = ['image'], onSet } = {}) 
       focusKey: `${ctx.block.id}:${key}:existing`,
       onPick: (id, a) => { choose(id, a); ctx.announce(`${a.name || 'File'} chosen.`); },
     }),
-    asset ? assetDetails(ctx, current) : null);
+    asset ? assetDetails(ctx, current, { path: [...(ctx.dataPath || []), key] }) : null);
 }
 
-// Alt text, caption, credit and licence belong to the file, so they follow it
-// into every block that uses it.
-export function assetDetails(ctx, assetId) {
-  const asset = ctx.story.assets[assetId];
-  if (!asset) return null;
-  const kind = assetKind(asset);
-  const field = (k, label, hint, multi) => {
-    const id = nextId(`${assetId}-${k}`);
-    const attrs = {
-      id, value: asset[k] || '', 'data-focus': `${ctx.block.id}:${assetId}:${k}`,
-      oninput: (e) => ctx.setAsset(assetId, k, e.target.value),
-    };
-    return wrap(id, label, hint, multi ? h('textarea', { ...attrs, rows: 2 }) : h('input', { ...attrs, type: 'text' }));
-  };
-  const licenceId = nextId(`${assetId}-licence`);
-  return h('div', { class: 'asset-details' },
-    field('alt', kind === 'image' ? 'Alt text' : 'Description',
-      kind === 'image'
-        ? 'Describe what the image shows, for readers who can\'t see it. This is not the caption.'
-        : `Describe the ${kind} for readers who can't see or hear it.`, true),
-    field('caption', 'Caption', 'Shown under the file. Adds context the image can\'t.', true),
-    field('credit', 'Credit', 'Who made it, e.g. "Photo: Sam Example".'),
-    wrap(licenceId, 'Licence', null, h('select', {
-      id: licenceId, 'data-focus': `${ctx.block.id}:${assetId}:licence`,
-      onchange: (e) => ctx.setAsset(assetId, 'licence', e.target.value),
-    }, h('option', { value: '' }, 'Not set'), LICENCES.map((l) => h('option', { value: l, selected: l === asset.licence }, l)))));
+// Every settings shortcut opens the same media editor used by the canvas and Checks.
+export function assetDetails(ctx, assetId, target = {}) {
+  if (!ctx.story.assets[assetId]) return null;
+  return h('button', {
+    type: 'button', class: 'btn media-details-open', 'data-focus': `${ctx.block.id}:${assetId}:${(target.path || []).join('.')}:${target.line ?? ''}:details`,
+    'data-media-path': `${(target.path || []).join('.')}:${target.line ?? ''}`,
+    onclick: (e) => ctx.openMedia?.({ assetId, ...target, returnFocus: e.currentTarget }),
+  }, 'Media details…');
 }
 
 // A context pointed at an object nested inside the block's data, such as
@@ -210,6 +192,7 @@ export function nested(ctx, get, focusId) {
     ...ctx,
     get story() { return ctx.story; },
     block: { id, data: get(ctx.block.data) || {} },
+    dataPath: [...(ctx.dataPath || []), ...(objectPath(ctx.block.data, get(ctx.block.data)) || [])],
     edit: (fn, opts = {}) => ctx.edit((data, story) => fn(get(data), story), opts),
     set: (key, value, opts = {}) => ctx.edit((data) => { get(data)[key] = value; }, {
       rerender: opts.rerender,

@@ -57,9 +57,7 @@ export default {
               'data-focus': `${bid}:g-del:${i}`,
               onclick: () => changeItems((next) => next.filter((_, j) => j !== i), `Image ${i + 1} removed from the gallery.`),
             }, '✕'))),
-        asset ? h('details', { class: 'gallery-item-details', open: noAlt },
-          h('summary', { 'data-focus': `${bid}:g-sum:${i}` }, 'Alt text, caption and credit'),
-          assetDetails(ctx, id)) : null);
+        asset ? assetDetails(ctx, id, { path: ['items', i] }) : null);
     }));
 
     const others = Object.entries(ctx.story.assets).filter(([id, a]) => !items.includes(id) && assetKind(a) === 'image');

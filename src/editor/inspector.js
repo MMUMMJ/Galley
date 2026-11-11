@@ -4,6 +4,7 @@
 import { BLOCKS, blockLabel } from '../blocks/index.js';
 import { h, preserveFocus } from './dom.js';
 import { STORY_DETAILS, REFLECTION } from '../store.js';
+import { openMediaEditor } from './media-editor.js';
 import { renderMetadata } from './metadata.js';
 import { renderEffects } from './effects.js';
 import { renderReflection } from './reflection.js';
@@ -27,13 +28,11 @@ export function mountInspector(panel, store, deps) {
       if (b) fn(b.data, s);
     }, opts(o));
     return {
-      block,
+      block, dataPath: [],
+      openMedia: (options) => openMediaEditor({ blockId: id, ...options }),
       get story() { return store.story; }, // always current: a file added a moment ago must be found
       edit,
       set: (key, value, o = {}) => edit((data) => { data[key] = value; }, { ...o, coalesce: `${id}:${key}` }),
-      setAsset: (assetId, key, value) => store.update((s) => {
-        if (s.assets[assetId]) s.assets[assetId][key] = value;
-      }, { from: 'inspector', coalesce: `${assetId}:${key}` }),
       importFiles: deps.importFiles,
       assetUrl: deps.assetUrl,
       announce: deps.announce,
@@ -94,12 +93,7 @@ export function mountInspector(panel, store, deps) {
       story: store.story,
       liveStory: () => store.story,
       set: (key, value, o = {}) => store.update((s) => {
-        const prev = s.meta[key];
         s.meta[key] = value;
-        if (key === 'title' || key === 'standfirst' || key === 'byline') {
-          const h0 = s.blocks.find((b) => b.type === 'header');
-          if (h0 && (!h0.data[key] || h0.data[key] === prev)) h0.data[key] = value;
-        }
       }, opts(o, `meta:${key}`)),
       syncToHeader: () => store.update((s) => {
         const h0 = s.blocks.find((b) => b.type === 'header');
